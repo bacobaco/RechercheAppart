@@ -1,0 +1,893 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chasseur d'Appartement Lyon</title>
+    <!-- Google Fonts & FontAwesome Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --bg-color: #0b0f19;
+            --bg-gradient-start: #0f172a;
+            --bg-gradient-end: #020617;
+            --panel-bg: rgba(30, 41, 59, 0.45);
+            --border-color: rgba(255, 255, 255, 0.08);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent: #6366f1;
+            --accent-glow: rgba(99, 102, 241, 0.15);
+            --success: #10b981;
+            --info: #0ea5e9;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --card-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: linear-gradient(135deg, var(--bg-gradient-start), var(--bg-gradient-end));
+            background-attachment: fixed;
+            color: var(--text-main);
+            min-height: 100vh;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 600;
+        }
+
+        /* Glassmorphism utility */
+        .glass-panel {
+            background: var(--panel-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            box-shadow: var(--card-shadow);
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem 1.5rem;
+        }
+
+        /* Header Styles */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .brand i {
+            font-size: 2.2rem;
+            background: linear-gradient(135deg, var(--accent), var(--info));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .brand h1 {
+            font-size: 1.8rem;
+            background: linear-gradient(to right, #ffffff, #e2e8f0);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .brand p {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 12px;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 14px var(--accent-glow);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            background: #4f46e5;
+            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.3);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+            box-shadow: none;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
+            box-shadow: none;
+        }
+
+        /* Dashboard Overview Stats */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            padding: 1.25rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-3px);
+            border-color: rgba(255, 255, 255, 0.15);
+        }
+
+        .stat-card h3 {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-card .value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        /* Color accent bars on stats cards */
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--accent);
+        }
+        .stat-card.total::before { background: linear-gradient(to right, var(--accent), var(--info)); }
+        .stat-card.nouveau::before { background: var(--accent); }
+        .stat-card.infos::before { background: var(--info); }
+        .stat-card.visiter::before { background: var(--success); }
+        .stat-card.attente::before { background: var(--warning); }
+        .stat-card.elimine::before { background: var(--danger); }
+
+        /* Controls: Search, filter and view toggles */
+        .controls-panel {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.25rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+        }
+
+        .search-filters {
+            display: flex;
+            gap: 1rem;
+            flex-grow: 1;
+            max-width: 800px;
+            flex-wrap: wrap;
+        }
+
+        .search-box {
+            position: relative;
+            flex-grow: 2;
+            min-width: 200px;
+        }
+
+        .search-box i {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 0.75rem 1rem 0.75rem 2.5rem;
+            background: rgba(15, 23, 42, 0.3);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            color: var(--text-main);
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .search-box input:focus {
+            border-color: var(--accent);
+            background: rgba(15, 23, 42, 0.5);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+
+        .filter-select {
+            padding: 0.75rem 1.5rem;
+            background: rgba(15, 23, 42, 0.3);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            color: var(--text-main);
+            outline: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .filter-select:focus {
+            border-color: var(--accent);
+        }
+
+        /* Main Listings Grid */
+        .listings-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
+            gap: 1.5rem;
+        }
+
+        @media (max-width: 480px) {
+            .listings-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Card Styles */
+        .listing-card {
+            display: flex;
+            flex-direction: column;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .listing-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 12px 40px rgba(0,0,0,0.5);
+        }
+
+        /* Card Status color indicator vertical border */
+        .listing-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            width: 5px;
+            background: var(--text-muted);
+        }
+
+        .listing-card.status-nouveau::before { background: var(--accent); }
+        .listing-card.status-infos::before { background: var(--info); }
+        .listing-card.status-visiter::before { background: var(--success); }
+        .listing-card.status-attente::before { background: var(--warning); }
+        .listing-card.status-loue::before { background: #475569; }
+        .listing-card.status-elimine::before { background: var(--danger); }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .card-title {
+            font-size: 1.15rem;
+            line-height: 1.4;
+            color: var(--text-main);
+            font-weight: 600;
+        }
+
+        .card-price {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.35rem;
+            font-weight: 700;
+            color: var(--success);
+            white-space: nowrap;
+        }
+
+        .card-meta-tags {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin-bottom: 1rem;
+        }
+
+        .tag {
+            font-size: 0.75rem;
+            padding: 0.25rem 0.65rem;
+            border-radius: 6px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.02em;
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+        }
+
+        .tag-source {
+            background: rgba(99, 102, 241, 0.15);
+            color: #a5b4fc;
+            border: 1px solid rgba(99, 102, 241, 0.3);
+        }
+
+        .tag-quartier {
+            background: rgba(14, 165, 233, 0.15);
+            color: #7dd3fc;
+            border: 1px solid rgba(14, 165, 233, 0.3);
+        }
+
+        .tag-date {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-muted);
+            border: 1px solid var(--border-color);
+        }
+
+        .card-specs {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.75rem;
+            padding: 0.85rem;
+            background: rgba(15, 23, 42, 0.3);
+            border-radius: 10px;
+            margin-bottom: 1rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .spec-item {
+            text-align: center;
+        }
+
+        .spec-label {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            margin-bottom: 0.25rem;
+        }
+
+        .spec-value {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        .card-address {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .card-address i {
+            color: var(--accent);
+        }
+
+        .card-address a {
+            color: #38bdf8;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .card-address a:hover {
+            color: #7dd3fc;
+            text-decoration: underline;
+        }
+
+        /* Notes & Annotations styling */
+        .card-notes {
+            margin-top: auto;
+            background: rgba(15, 23, 42, 0.2);
+            border-top: 1px solid var(--border-color);
+            padding-top: 1rem;
+            margin-bottom: 1.25rem;
+        }
+
+        .notes-textarea {
+            width: 100%;
+            background: rgba(15, 23, 42, 0.4);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-main);
+            padding: 0.5rem;
+            font-family: inherit;
+            font-size: 0.82rem;
+            resize: vertical;
+            min-height: 80px;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .notes-textarea:focus {
+            border-color: var(--accent);
+            background: rgba(15, 23, 42, 0.6);
+        }
+
+        .notes-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.35rem;
+        }
+
+        .notes-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+        }
+
+        .save-indicator {
+            font-size: 0.7rem;
+            color: var(--success);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .save-indicator.active {
+            opacity: 1;
+        }
+
+        /* Card Actions and dropdowns */
+        .card-actions {
+            display: flex;
+            gap: 0.75rem;
+            align-items: center;
+            margin-top: 0.5rem;
+        }
+
+        .status-dropdown {
+            flex-grow: 1;
+            padding: 0.65rem;
+            background: rgba(15, 23, 42, 0.4);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-main);
+            outline: none;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .status-dropdown:focus {
+            border-color: var(--accent);
+        }
+
+        .status-dropdown option {
+            background: var(--bg-color);
+            color: var(--text-main);
+        }
+
+        .card-btn {
+            background: rgba(99, 102, 241, 0.1);
+            color: var(--accent);
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            padding: 0.65rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .card-btn:hover {
+            background: var(--accent);
+            color: white;
+            box-shadow: 0 4px 12px var(--accent-glow);
+        }
+
+        /* Empty state styling */
+        .empty-state {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 4rem 2rem;
+            color: var(--text-muted);
+        }
+
+        .empty-state i {
+            font-size: 3.5rem;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(135deg, var(--accent), var(--info));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .empty-state h3 {
+            font-size: 1.5rem;
+            color: var(--text-main);
+            margin-bottom: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Dashboard Header -->
+        <header class="glass-panel">
+            <div class="brand">
+                <i class="fa-solid fa-house-chimney-window"></i>
+                <div>
+                    <h1>Chasseur d'Appartement</h1>
+                    <p>Suivi de recherche d'appartements à Lyon (Damien & Isabelle)</p>
+                </div>
+            </div>
+            
+            <div class="header-actions">
+                <!-- Scan trigger and console logs panels removed per instruction -->
+            </div>
+        </header>
+
+        <!-- Dashboard Stats Grid -->
+        <div class="stats-grid" id="stats-grid">
+            <div class="glass-panel stat-card total">
+                <h3>Total Trouvés</h3>
+                <div class="value" id="stat-total">0</div>
+            </div>
+            <div class="glass-panel stat-card visiter">
+                <h3>À visiter</h3>
+                <div class="value" id="stat-visiter">0</div>
+            </div>
+            <div class="glass-panel stat-card infos">
+                <h3>Demandes infos</h3>
+                <div class="value" id="stat-infos">0</div>
+            </div>
+            <div class="glass-panel stat-card attente">
+                <h3>En attente</h3>
+                <div class="value" id="stat-attente">0</div>
+            </div>
+            <div class="glass-panel stat-card nouveau">
+                <h3>Nouveaux</h3>
+                <div class="value" id="stat-nouveau">0</div>
+            </div>
+            <div class="glass-panel stat-card elimine">
+                <h3>Éliminés / Loués</h3>
+                <div class="value" id="stat-elimines">0</div>
+            </div>
+        </div>
+
+        <!-- Filters and controls -->
+        <div class="glass-panel controls-panel">
+            <div class="search-filters">
+                <div class="search-box">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="text" id="search-input" placeholder="Rechercher par mot-clé (titre, description, adresse...)" oninput="filterAndRender()">
+                </div>
+                <select class="filter-select" id="filter-source" onchange="filterAndRender()">
+                    <option value="">Toutes les sources</option>
+                </select>
+                <select class="filter-select" id="filter-quartier" onchange="filterAndRender()">
+                    <option value="">Tous les quartiers</option>
+                </select>
+            </div>
+            
+            <button class="btn btn-secondary" id="toggle-eliminated-btn" onclick="toggleShowEliminated()">
+                <i class="fa-solid fa-eye"></i> Afficher les éliminés
+            </button>
+        </div>
+
+        <!-- Grid of listings -->
+        <div class="listings-grid" id="listings-grid">
+            <div class="empty-state">
+                <i class="fa-solid fa-spinner fa-spin"></i>
+                <h3>Chargement des appartements...</h3>
+                <p>Connexion à la base de données locale.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let allListings = [];
+        let showEliminated = false;
+
+        // On Load initialization
+        window.addEventListener('DOMContentLoaded', () => {
+            fetchData();
+            // Auto update data from database
+            setInterval(fetchData, 8000);
+        });
+
+        // Fetch local database listings
+        async function fetchData() {
+            try {
+                const response = await fetch('/api/data');
+                allListings = await response.json();
+                populateFilters();
+                updateStats();
+                filterAndRender();
+            } catch (err) {
+                console.error("Error fetching listings:", err);
+            }
+        }
+
+        // Populate search dropdowns (Sources & Quartiers) dynamically
+        function populateFilters() {
+            const sourceSelect = document.getElementById('filter-source');
+            const quartierSelect = document.getElementById('filter-quartier');
+            
+            const currentSource = sourceSelect.value;
+            const currentQuartier = quartierSelect.value;
+            
+            const sources = new Set();
+            const quartiers = new Set();
+            
+            allListings.forEach(item => {
+                if (item.source) sources.add(item.source);
+                if (item.quartier) {
+                    const qName = item.quartier.split(',')[0].trim();
+                    quartiers.add(qName);
+                }
+            });
+            
+            // Build Source Select options
+            sourceSelect.innerHTML = '<option value="">Toutes les sources</option>';
+            Array.from(sources).sort().forEach(src => {
+                const opt = document.createElement('option');
+                opt.value = src;
+                opt.textContent = src;
+                sourceSelect.appendChild(opt);
+            });
+            sourceSelect.value = currentSource;
+            
+            // Build Quartier Select options
+            quartierSelect.innerHTML = '<option value="">Tous les quartiers</option>';
+            Array.from(quartiers).sort().forEach(q => {
+                const opt = document.createElement('option');
+                opt.value = q;
+                opt.textContent = q;
+                quartierSelect.appendChild(opt);
+            });
+            quartierSelect.value = currentQuartier;
+        }
+
+        // Compute dashboard statistic values
+        function updateStats() {
+            document.getElementById('stat-total').textContent = allListings.length;
+            document.getElementById('stat-visiter').textContent = allListings.filter(i => i.statut === "À visiter").length;
+            document.getElementById('stat-infos').textContent = allListings.filter(i => i.statut === "Demande d'infos").length;
+            document.getElementById('stat-attente').textContent = allListings.filter(i => i.statut === "En attente").length;
+            document.getElementById('stat-nouveau').textContent = allListings.filter(i => i.statut === "Nouveau").length;
+            document.getElementById('stat-elimines').textContent = allListings.filter(i => i.statut === "Éliminer" || i.statut === "Déjà loué").length;
+        }
+
+        // Toggle eliminated listings visibility
+        function toggleShowEliminated() {
+            showEliminated = !showEliminated;
+            const btn = document.getElementById('toggle-eliminated-btn');
+            if (showEliminated) {
+                btn.className = "btn";
+                btn.innerHTML = '<i class="fa-solid fa-eye-slash"></i> Masquer les éliminés';
+            } else {
+                btn.className = "btn btn-secondary";
+                btn.innerHTML = '<i class="fa-solid fa-eye"></i> Afficher les éliminés';
+            }
+            filterAndRender();
+        }
+
+        // Save updated notes to Python server backend
+        let saveTimeouts = {};
+        function saveNotes(title, notes, indicatorElId) {
+            const indicator = document.getElementById(indicatorElId);
+            indicator.textContent = "Sauvegarde...";
+            indicator.classList.add('active');
+            
+            // Debounce save API calls
+            if (saveTimeouts[title]) clearTimeout(saveTimeouts[title]);
+            
+            saveTimeouts[title] = setTimeout(async () => {
+                try {
+                    const response = await fetch('/api/update_notes', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ titre: title, notes: notes })
+                    });
+                    if (response.ok) {
+                        indicator.textContent = "Enregistré";
+                        setTimeout(() => indicator.classList.remove('active'), 1500);
+                        // Update in local array too
+                        const item = allListings.find(i => i.titre === title);
+                        if (item) item.notes = notes;
+                    } else {
+                        indicator.textContent = "Erreur de sauvegarde";
+                    }
+                } catch (err) {
+                    console.error("Save error:", err);
+                    indicator.textContent = "Erreur réseau";
+                }
+            }, 1000);
+        }
+
+        // Save updated status to Python server backend
+        async function saveStatus(title, newStatus) {
+            try {
+                const response = await fetch('/api/update_status', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ titre: title, statut: newStatus })
+                });
+                if (response.ok) {
+                    // Update locally and re-render
+                    const item = allListings.find(i => i.titre === title);
+                    if (item) item.statut = newStatus;
+                    updateStats();
+                    filterAndRender();
+                } else {
+                    alert("Erreur de sauvegarde du statut.");
+                }
+            } catch (err) {
+                console.error("Error saving status:", err);
+            }
+        }
+
+        // Filter search input results and render matching cards
+        function filterAndRender() {
+            const searchVal = document.getElementById('search-input').value.toLowerCase().trim();
+            const sourceVal = document.getElementById('filter-source').value;
+            const quartierVal = document.getElementById('filter-quartier').value;
+            const grid = document.getElementById('listings-grid');
+            
+            let filtered = allListings.filter(item => {
+                const isEliminated = (item.statut === "Éliminer" || item.statut === "Déjà loué");
+                if (isEliminated && !showEliminated) return false;
+                if (sourceVal && item.source !== sourceVal) return false;
+                
+                if (quartierVal) {
+                    const qName = item.quartier ? item.quartier.split(',')[0].trim() : "";
+                    if (qName !== quartierVal) return false;
+                }
+                
+                if (searchVal) {
+                    const text = (item.titre + " " + (item.description || "") + " " + (item.adresse_estimee || "") + " " + (item.quartier || "") + " " + (item.source || "")).toLowerCase();
+                    if (!text.includes(searchVal)) return false;
+                }
+                
+                return true;
+            });
+            
+            if (filtered.length === 0) {
+                grid.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fa-solid fa-face-frown"></i>
+                        <h3>Aucune annonce trouvée</h3>
+                        <p>Essayez de modifier vos filtres.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            grid.innerHTML = "";
+            filtered.forEach((item, idx) => {
+                const card = document.createElement('div');
+                
+                let statusClass = "status-nouveau";
+                if (item.statut === "À visiter") statusClass = "status-visiter";
+                else if (item.statut === "Demande d'infos") statusClass = "status-infos";
+                else if (item.statut === "En attente") statusClass = "status-attente";
+                else if (item.statut === "Déjà loué") statusClass = "status-loue";
+                else if (item.statut === "Éliminer") statusClass = "status-elimine";
+                
+                card.className = `glass-panel listing-card ${statusClass}`;
+                
+                const pricePerM2 = item.prix_m2 ? `${item.prix_m2.toFixed(1)} €/m²` : "Non défini";
+                const notesValue = item.notes || "";
+                const indicatorId = `save-indicator-${idx}`;
+                
+                let addressHtml = `<span><i class="fa-solid fa-map-pin"></i> ${item.adresse_estimee || "Non précisée"}</span>`;
+                if (item.google_street_view) {
+                    addressHtml = `
+                        <a href="${item.google_street_view}" target="_blank" title="Voir l'adresse dans Google Maps / Street View">
+                            <i class="fa-solid fa-location-dot"></i> ${item.adresse_estimee} <i class="fa-solid fa-up-right-from-square" style="font-size: 0.75rem; margin-left: 0.2rem;"></i>
+                        </a>
+                    `;
+                }
+                
+                card.innerHTML = `
+                    <div class="card-header">
+                        <h3 class="card-title">${item.titre}</h3>
+                        <div class="card-price">${item.prix}</div>
+                    </div>
+                    
+                    <div class="card-meta-tags">
+                        <span class="tag tag-source"><i class="fa-solid fa-globe"></i> ${item.source}</span>
+                        <span class="tag tag-quartier"><i class="fa-solid fa-map-location-dot"></i> ${item.quartier || "Lyon Centre"}</span>
+                        <span class="tag tag-date"><i class="fa-regular fa-calendar"></i> Trouvé le ${item.date_decouverte}</span>
+                    </div>
+                    
+                    <div class="card-specs">
+                        <div class="spec-item">
+                            <div class="spec-label">Surface</div>
+                            <div class="spec-value">${item.surface} m²</div>
+                        </div>
+                        <div class="spec-item">
+                            <div class="spec-label">Pièces</div>
+                            <div class="spec-value">${item.nb_pieces || 'N/A'}</div>
+                        </div>
+                        <div class="spec-item">
+                            <div class="spec-label">Loyer / m²</div>
+                            <div class="spec-value">${pricePerM2}</div>
+                        </div>
+                    </div>
+                    
+                    <div class="card-address">
+                        ${addressHtml}
+                    </div>
+                    
+                    <div class="card-notes">
+                        <div class="notes-header">
+                            <span class="notes-label"><i class="fa-regular fa-pen-to-square"></i> Notes &amp; Observations</span>
+                            <span class="save-indicator" id="${indicatorId}">Enregistré</span>
+                        </div>
+                        <textarea class="notes-textarea" placeholder="Rédigez vos notes pour cette annonce..." oninput="saveNotes('${item.titre.replace(/'/g, "\\'")}', this.value, '${indicatorId}')">${notesValue}</textarea>
+                    </div>
+                    
+                    <div class="card-actions">
+                        <select class="status-dropdown" onchange="saveStatus('${item.titre.replace(/'/g, "\\'")}', this.value)">
+                            <option value="Nouveau" ${item.statut === "Nouveau" ? "selected" : ""}>Nouveau</option>
+                            <option value="Demande d'infos" ${item.statut === "Demande d'infos" ? "selected" : ""}>Demande d'infos</option>
+                            <option value="À visiter" ${item.statut === "À visiter" ? "selected" : ""}>À visiter</option>
+                            <option value="En attente" ${item.statut === "En attente" ? "selected" : ""}>En attente</option>
+                            <option value="Déjà loué" ${item.statut === "Déjà loué" ? "selected" : ""}>Déjà loué</option>
+                            <option value="Éliminer" ${item.statut === "Éliminer" ? "selected" : ""}>Éliminer</option>
+                        </select>
+                        
+                        <a href="${item.lien_annonce}" target="_blank" class="card-btn">
+                            <i class="fa-solid fa-up-right-from-square"></i> Voir
+                        </a>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,71 @@
+# --- Agent de Recherche Immobilière Lyon Centre ---
+
+## Objectif
+Trouver des annonces d'appartements en location dans le centre de Lyon correspondant aux critères STRICTS du profil locataire, et les enregistrer dans `data.json`. Utiliser le web pour chercher les annonces.
+
+## Profil Locataire
+- Damien Samain (Indépendant) & Isabelle Chol (DRH Framatome).
+- Dossier solide (multi propriétaires, grosse épargne, CDI Framatome - 120k€ annuel brut), recherche de longue durée (Bail vide/non meublé).
+
+## Critères de Recherche (STRICTS)
+- **Type de bail** : NON MEUBLÉ / VIDE uniquement.
+- **Équipement** : ASCENSEUR OBLIGATOIRE (sauf si RDC, mais 2ème étage ou plus préféré).
+- **Surface** : > 75 m² (Idéalement entre 100 m² et 150 m²).
+- **Pièces** : 3 à 4 pièces MAXIMUM (Minimum 2 chambres).
+- **Budget** : Entre 1500 € et 2500 € (Charges comprises).
+- **Localisation** : Lyon Centre uniquement.
+  - 69002 (Presqu'île, Ainay, Jacobins, Bellecour)
+  - 69006 (Foch, Parc de la Tête d'Or, Brotteaux)
+  - 69001 (Pentes, Terreaux - zones calmes)
+  - 69003 (Préfecture, Quais du Rhône - zones calmes)
+- **Qualité de vie** : Calme absolu (éviter les rues bruyantes ou bars en bas), Luminosité, Cuisine équipée souhaitée.
+- **Transport** : Proche des transports en commun (Metro, Tram, pas de Bus) maximum 10mn à pieds et 45 minutes max pour aller au travail Framatome Gerland.
+- **Bonus** : Climatisation, balcon/terrasse, parking/garage, cachet de l'ancien (parquets, cheminées).
+
+## Sources à Scanner
+- Bien'ici, SeLoger, PAP, LeBonCoin.
+- Agences de prestige : Barnes Lyon, Sotheby's Lyon, Belles Demeures, Propriétés Le Figaro.
+
+## Format de Sortie (data.json)
+Chaque annonce doit être ajoutée au format suivant :
+```json
+{
+    "titre": "string",
+    "prix": "string (ex: 1 850,00 €)",
+    "surface": float,
+    "nb_pieces": int,
+    "quartier": "string",
+    "adresse_estimee": "string",
+    "avantages": "string (liste à virgule)",
+    "inconvenients": "string (liste à virgule)",
+    "prix_m2": float,
+    "source": "string",
+    "lien_annonce": "string",
+    "google_street_view": "string (URL unique si adresse précise)",
+    "date_decouverte": "YYYY-MM-DD",
+    "statut": "Nouveau",
+    "remarques_visite": "",
+    "questions_visite": "",
+    "notes": "string (Initialiser avec Avantages/Inconvénients)"
+}
+```
+
+## Règles et Contraintes
+1. **Doublons** : Avant d'ajouter, VERIFIE ABSOLUMENT si le `lien_annonce` ou une annonce semble être la même que celle qui existe déjà dans `data.json`. Si c'est le cas, ne pas ajouter l'annonce.
+2. **Fraîcheur** : Ignorer les annonces datant de plus de 14 jours.
+3. **Adresse** : Renseigner `google_street_view` uniquement si l'adresse exacte (numéro + rue) est mentionnée explicitement.
+4. **Validation** : Si un critère obligatoire (Vide, Ascenseur, Surface) n'est pas respecté, l'annonce doit être rejetée.
+5. **Calculs** : Calculer systématiquement le `prix_m2` (Loyer CC / Surface).
+6. **Notes** : Initialiser le champ `notes` avec un résumé des avantages et inconvénients.
+7. **Vérification des liens** : Vérifier systématiquement que chaque lien est valide et mène bien à l'annonce correspondant à la description.
+    - Éviter les URLs de type 'preprod', 'immo-facile' (souvent instables) ou les redirections vers des recherches générales.
+    - Privilégier les liens directs SeLoger, Bien'ici ou le site officiel de l'agence (ex: Quadral, Pedrini).
+    - Si un lien portail semble instable, rechercher l'annonce par son prix/surface pour trouver le lien direct de l'agence.
+
+## Workflow de l'Agent
+1. Charger `data.json`.
+2. Parcourir les sites sources avec les filtres appropriés.
+3. Extraire les détails des nouvelles annonces.
+4. Valider par rapport aux critères obligatoires.
+5. Générer le lien Google Street View si possible.
+6. Mettre à jour `data.json` avec les nouvelles pépites trouvées (SANS JAMAIS supprimer les annonces existantes, même 'Éliminer' Obligatoire pour éviter les doublons !).
