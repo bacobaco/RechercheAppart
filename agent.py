@@ -625,8 +625,16 @@ def scrape_jinka():
                     jinka_id = item.get("id", "")
                     
                     # Lien de redirection Jinka pour voir l'annonce originale
-                    alert_token = item.get("alert_id") or alert_id
-                    jinka_url = f"https://api.jinka.fr/alert_result_view_ad?ad={jinka_id}&alert_token={alert_token}"
+                    external_id = item.get("external_id")
+                    jinka_source = (item.get("source") or "").lower()
+                    if "bienici" in jinka_source and external_id:
+                        jinka_url = f"https://www.bienici.com/annonce/{external_id}"
+                    elif "seloger" in jinka_source and external_id:
+                        jinka_url = f"https://www.seloger.com/annonces/locations/appartement/lyon/{external_id}.htm"
+                    elif "leboncoin" in jinka_source and external_id and external_id.isdigit():
+                        jinka_url = f"https://www.leboncoin.fr/ad/locations/{external_id}"
+                    else:
+                        jinka_url = f"https://www.jinka.fr/ad/{jinka_id}"
                     
                     jinka_source = item.get("source_label") or item.get("source", "Jinka")
                     jinka_date = item.get("created_at") or item.get("date", "")
