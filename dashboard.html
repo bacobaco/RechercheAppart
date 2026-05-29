@@ -716,26 +716,26 @@
 
         // Save updated notes to Python server backend
         let saveTimeouts = {};
-        function saveNotes(title, notes, indicatorElId) {
+        function saveNotes(url, notes, indicatorElId) {
             const indicator = document.getElementById(indicatorElId);
             indicator.textContent = "Sauvegarde...";
             indicator.classList.add('active');
             
             // Debounce save API calls
-            if (saveTimeouts[title]) clearTimeout(saveTimeouts[title]);
+            if (saveTimeouts[url]) clearTimeout(saveTimeouts[url]);
             
-            saveTimeouts[title] = setTimeout(async () => {
+            saveTimeouts[url] = setTimeout(async () => {
                 try {
                     const response = await fetch('/api/update_notes', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ titre: title, notes: notes })
+                        body: JSON.stringify({ lien_annonce: url, notes: notes })
                     });
                     if (response.ok) {
                         indicator.textContent = "Enregistré";
                         setTimeout(() => indicator.classList.remove('active'), 1500);
                         // Update in local array too
-                        const item = allListings.find(i => i.titre === title);
+                        const item = allListings.find(i => i.lien_annonce === url);
                         if (item) item.notes = notes;
                     } else {
                         indicator.textContent = "Erreur de sauvegarde";
@@ -748,16 +748,16 @@
         }
 
         // Save updated status to Python server backend
-        async function saveStatus(title, newStatus) {
+        async function saveStatus(url, newStatus) {
             try {
                 const response = await fetch('/api/update_status', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ titre: title, statut: newStatus })
+                    body: JSON.stringify({ lien_annonce: url, statut: newStatus })
                 });
                 if (response.ok) {
                     // Update locally and re-render
-                    const item = allListings.find(i => i.titre === title);
+                    const item = allListings.find(i => i.lien_annonce === url);
                     if (item) item.statut = newStatus;
                     updateStats();
                     filterAndRender();
@@ -867,11 +867,11 @@
                             <span class="notes-label"><i class="fa-regular fa-pen-to-square"></i> Notes &amp; Observations</span>
                             <span class="save-indicator" id="${indicatorId}">Enregistré</span>
                         </div>
-                        <textarea class="notes-textarea" placeholder="Rédigez vos notes pour cette annonce..." oninput="saveNotes('${item.titre.replace(/'/g, "\\'")}', this.value, '${indicatorId}')">${notesValue}</textarea>
+                        <textarea class="notes-textarea" placeholder="Rédigez vos notes pour cette annonce..." oninput="saveNotes('${item.lien_annonce.replace(/'/g, "\\'")}', this.value, '${indicatorId}')">${notesValue}</textarea>
                     </div>
                     
                     <div class="card-actions">
-                        <select class="status-dropdown" onchange="saveStatus('${item.titre.replace(/'/g, "\\'")}', this.value)">
+                        <select class="status-dropdown" onchange="saveStatus('${item.lien_annonce.replace(/'/g, "\\'")}', this.value)">
                             <option value="Nouveau" ${item.statut === "Nouveau" ? "selected" : ""}>Nouveau</option>
                             <option value="Demande d'infos" ${item.statut === "Demande d'infos" ? "selected" : ""}>Demande d'infos</option>
                             <option value="À visiter" ${item.statut === "À visiter" ? "selected" : ""}>À visiter</option>

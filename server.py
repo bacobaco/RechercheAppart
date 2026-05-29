@@ -84,6 +84,7 @@ class DashboardHandler(http.server.SimpleHTTPRequestHandler):
             post_data = self.rfile.read(content_length)
             params = json.loads(post_data.decode('utf-8'))
             title = params.get("titre")
+            url = params.get("lien_annonce")
             new_status = params.get("statut")
             
             if os.path.exists(DATA_FILE):
@@ -91,7 +92,7 @@ class DashboardHandler(http.server.SimpleHTTPRequestHandler):
                     data = json.load(f)
                 updated = False
                 for item in data:
-                    if item.get("titre") == title:
+                    if (url and item.get("lien_annonce") == url) or (not url and item.get("titre") == title):
                         item["statut"] = new_status
                         updated = True
                         break
@@ -109,6 +110,7 @@ class DashboardHandler(http.server.SimpleHTTPRequestHandler):
             post_data = self.rfile.read(content_length)
             params = json.loads(post_data.decode('utf-8'))
             title = params.get("titre")
+            url = params.get("lien_annonce")
             new_notes = params.get("notes")
             
             if os.path.exists(DATA_FILE):
@@ -116,7 +118,7 @@ class DashboardHandler(http.server.SimpleHTTPRequestHandler):
                     data = json.load(f)
                 updated = False
                 for item in data:
-                    if item.get("titre") == title:
+                    if (url and item.get("lien_annonce") == url) or (not url and item.get("titre") == title):
                         item["notes"] = new_notes
                         updated = True
                         break
