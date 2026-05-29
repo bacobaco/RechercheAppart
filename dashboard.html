@@ -284,9 +284,18 @@
         }
 
         .listing-card:hover {
-            transform: translateY(-5px);
-            border-color: rgba(255, 255, 255, 0.15);
-            box-shadow: 0 12px 40px rgba(0,0,0,0.5);
+            border-color: var(--accent);
+            box-shadow: 0 0 20px var(--accent-glow), var(--card-shadow);
+        }
+
+        /* Drag and Drop visual feedback */
+        .listing-card.dragging {
+            opacity: 0.4;
+            border: 2px dashed var(--accent);
+        }
+        .listing-card.drag-over {
+            border-top: 3px solid var(--accent);
+            transform: scale(0.99);
         }
 
         /* Card Status color indicator vertical border */
@@ -640,6 +649,17 @@
         // Fetch local database listings
         async function fetchData() {
             try {
+                // Do not auto-update or re-render if the user is editing/interacting
+                const activeEl = document.activeElement;
+                const isEditing = activeEl && (
+                    activeEl.id === 'search-input' ||
+                    activeEl.id === 'filter-source' ||
+                    activeEl.id === 'filter-quartier' ||
+                    activeEl.classList.contains('notes-textarea') ||
+                    activeEl.classList.contains('status-dropdown')
+                );
+                if (isEditing) return;
+
                 const response = await fetch('/api/data');
                 allListings = await response.json();
                 populateFilters();
@@ -808,6 +828,7 @@
             grid.innerHTML = "";
             filtered.forEach((item, idx) => {
                 const card = document.createElement('div');
+                card.setAttribute('draggable', 'true');
                 
                 let statusClass = "status-nouveau";
                 if (item.statut === "À visiter") statusClass = "status-visiter";
@@ -867,7 +888,7 @@
                             <span class="notes-label"><i class="fa-regular fa-pen-to-square"></i> Notes &amp; Observations</span>
                             <span class="save-indicator" id="${indicatorId}">Enregistré</span>
                         </div>
-                        <textarea class="notes-textarea" placeholder="Rédigez vos notes pour cette annonce..." oninput="saveNotes('${item.lien_annonce.replace(/'/g, "\\'")}', this.value, '${indicatorId}')">${notesValue}</textarea>
+                        <textarea class="notes-textarea" placeholder="Rédigez vos notes pour cette annonce..." onchange="saveNotes('${item.lien_annonce.replace(/'/g, "\\'")}', this.value, '${indicatorId}')">${notesValue}</textarea>
                     </div>
                     
                     <div class="card-actions">
@@ -885,6 +906,65 @@
                         </a>
                     </div>
                 `;
+                
+                // Drag & Drop events
+                card.addEventListener('dragstart', (e) => {
+                    e.dataTransfer.effectAllowed = 'move';
+                    e.dataTransfer.setData('text/plain', item.lien_annonce);
+                    card.classList.add('dragging');
+                });
+                
+                card.addEventListener('dragend', () => {
+                    card.classList.remove('dragging');
+                    document.querySelectorAll('.listing-card').forEach(c => c.classList.remove('drag-over'));
+                });
+                
+                card.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    e.dataTransfer.dropEffect = 'move';
+                });
+                
+                card.addEventListener('dragenter', (e) => {
+                    e.preventDefault();
+                    if (!card.classList.contains('dragging')) {
+                        card.classList.add('drag-over');
+                    }
+                });
+                
+                card.addEventListener('dragleave', () => {
+                    card.classList.remove('drag-over');
+                });
+                
+                card.addEventListener('drop', async (e) => {
+                    e.preventDefault();
+                    card.classList.remove('drag-over');
+                    const draggedUrl = e.dataTransfer.getData('text/plain');
+                    if (draggedUrl === item.lien_annonce) return;
+                    
+                    const draggedIdx = allListings.findIndex(i => i.lien_annonce === draggedUrl);
+                    const targetIdx = allListings.findIndex(i => i.lien_annonce === item.lien_annonce);
+                    
+                    if (draggedIdx !== -1 && targetIdx !== -1) {
+                        const [draggedItem] = allListings.splice(draggedIdx, 1);
+                        allListings.splice(targetIdx, 0, draggedItem);
+                        
+                        filterAndRender();
+                        
+                        try {
+                            const response = await fetch('/api/update_order', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify(allListings)
+                            });
+                            if (!response.ok) {
+                                console.error("Error saving new order");
+                            }
+                        } catch (err) {
+                            console.error("Network error saving order:", err);
+                        }
+                    }
+                });
+                
                 grid.appendChild(card);
             });
         }
