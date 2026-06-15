@@ -747,6 +747,47 @@ def scrape_jinka():
     print(f"[INFO] Total Jinka: {len(ads)} annonces récupérées.")
     return ads
 
+def start_server_if_not_running():
+    import socket
+    import subprocess
+    import sys
+    
+    port = 8000
+    is_running = False
+    try:
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            s.settimeout(1.0)
+            s.connect(("127.0.0.1", port))
+            is_running = True
+    except (socket.timeout, ConnectionRefusedError, OSError):
+        is_running = False
+
+    if is_running:
+        print(f"[INFO] Le serveur est déjà lancé sur le port {port}.")
+    else:
+        print(f"[INFO] Le serveur n'est pas lancé. Démarrage de server.py...")
+        server_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "server.py")
+        try:
+            log_file = open("server.log", "w", encoding="utf-8")
+            if sys.platform == "win32":
+                subprocess.Popen(
+                    [sys.executable, "-u", server_path],
+                    creationflags=subprocess.DETACHED_PROCESS,
+                    stdout=log_file,
+                    stderr=subprocess.STDOUT
+                )
+            else:
+                subprocess.Popen(
+                    [sys.executable, "-u", server_path],
+                    stdout=log_file,
+                    stderr=subprocess.STDOUT,
+                    start_new_session=True
+                )
+            log_file.close()
+            print("[INFO] server.py lancé avec succès.")
+        except Exception as e:
+            print(f"[ERREUR] Impossible de lancer server.py: {e}")
+
 def main():
     print("=== Démarrage de l'Agent de Recherche Immobilière ===")
     
@@ -1055,6 +1096,9 @@ def main():
             print(f"[ERREUR] Impossible de sauvegarder dans {DATA_FILE}: {e}")
     else:
         print("[INFO] Scan terminé. Aucune nouvelle annonce trouvée.")
+
+    # 4. Start the server if not already running
+    start_server_if_not_running()
     
 if __name__ == "__main__":
     main()
