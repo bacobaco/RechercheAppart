@@ -748,6 +748,219 @@ def scrape_jinka():
     print(f"[INFO] Total Jinka: {len(ads)} annonces récupérées.")
     return ads
 
+def scrape_lodgis():
+    """Récupère les annonces depuis Lodgis (spécialiste location meublée de standing à Lyon).
+    Lodgis propose des annonces exclusives souvent absentes des agrégateurs classiques."""
+    print("[INFO] Interrogation du site Lodgis...")
+    ads = []
+    
+    if not sync_playwright:
+        print("[ERREUR] Playwright n'est pas disponible pour Lodgis.")
+        return []
+    
+    VALID_ARRONDISSEMENTS = {"1": "69001", "2": "69002", "3": "69003", "6": "69006"}
+    
+    try:
+        with sync_playwright() as p:
+            browser = p.chromium.launch(headless=True)
+            page = browser.new_page()
+            page.set_extra_http_headers({
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+            })
+            
+            url = "https://www.lodgis.com/fr/lyon,location-meublee/location-meuble-lyon_19606.cat.html"
+            page.goto(url, wait_until="networkidle", timeout=30000)
+            page.wait_for_timeout(2000)
+            
+            # Accept cookies if present
+            try:
+                cookie_btn = page.locator("button:has-text('Accepter'), button:has-text('Tout accepter'), #didomi-notice-agree-button")
+                if cookie_btn.count() > 0:
+                    cookie_btn.first.click()
+                    page.wait_for_timeout(1000)
+            except:
+                pass
+            
+            html = page.content()
+            
+            # Parse cards from the search page
+            import re as _re
+            card_starts = [m.start() for m in _re.finditer(r'<div class="card card__appart">', html)]
+            print(f"[INFO] {len(card_starts)} annonces trouvées sur Lodgis.")
+            
+            candidates = []
+            for i, start in enumerate(card_starts):
+                end = card_starts[i+1] if i + 1 < len(card_starts) else len(html)
+                card_html = html[start:end]
+                
+                # Extract link
+                link_match = _re.search(r'href="(https://www\.lodgis\.com/[^"]+\.mod\.html)"', card_html)
+                if not link_match:
+                    continue
+                ad_url = link_match.group(1)
+                
+                # Extract ID
+                id_match = _re.search(r'/(LPA\d+)', ad_url)
+                ad_id = id_match.group(1) if id_match else None
+                if not ad_id:
+                    continue
+                
+                # Extract arrondissement from URL (e.g. -lyon-6.mod.html)
+                arr_match = _re.search(r'-lyon-(\d+)\.mod\.html', ad_url)
+                if not arr_match or arr_match.group(1) not in VALID_ARRONDISSEMENTS:
+                    continue
+                postal_code = VALID_ARRONDISSEMENTS[arr_match.group(1)]
+                
+                # Extract title
+                title_match = _re.search(r'class="card-title card__appart__title">([^<]+)</p>', card_html)
+                title = title_match.group(1).strip() if title_match else "Appartement"
+                
+                # Extract surface
+                surface_match = _re.search(r'class="card-surface">([^<]+)</div>', card_html)
+                surface = None
+                if surface_match:
+                    s_match = _re.search(r'(\d+(?:[.,]\d+)?)', surface_match.group(1))
+                    if s_match:
+                        surface = float(s_match.group(1).replace(",", "."))
+                
+                # Quick filter: surface > 75
+                if not surface or surface < 75:
+                    continue
+                
+                # Extract price
+                price_match = _re.search(r'class="price">([^<]+)</span>', card_html)
+                price = None
+                if price_match:
+                    price_clean = _re.sub(r'[^\d]', '', price_match.group(1))
+                    if price_clean:
+                        price = float(price_clean)
+                
+                # Quick filter: price 1500-2500
+                if price and (price < 1500 or price > 2500):
+                    continue
+                
+                # Quick filter: at least 2 bedrooms (filter out studios and 1-chambre)
+                if "studio" in title.lower():
+                    continue
+                if "1 chambre" in title.lower():
+                    continue
+                
+                candidates.append({
+                    "id": ad_id,
+                    "url": ad_url,
+                    "title": title,
+                    "surface": surface,
+                    "price": price,
+                    "postal_code": postal_code,
+                })
+            
+            print(f"[INFO] {len(candidates)} annonces Lodgis passent le pré-filtrage. Récupération des détails...")
+            
+            # Visit detail pages for candidates
+            for cand in candidates[:10]:  # Max 10 to avoid overloading
+                try:
+                    page.goto(cand["url"], wait_until="networkidle", timeout=20000)
+                    page.wait_for_timeout(1000)
+                    
+                    body_text = page.locator("body").inner_text()
+                    page_title = ""
+                    try:
+                        page_title = page.title()
+                    except:
+                        pass
+                    
+                    description = body_text
+                    
+                    # Extract rooms from title or description
+                    rooms = None
+                    rooms_match = _re.search(r'(\d+)\s*(?:pièces|pieces|p\.)', description, _re.IGNORECASE)
+                    if rooms_match:
+                        rooms = int(rooms_match.group(1))
+                    else:
+                        tf_match = _re.search(r'\b[tf](\d)\b', cand["title"] + " " + page_title, _re.IGNORECASE)
+                        if tf_match:
+                            rooms = int(tf_match.group(1))
+                    
+                    # Extract bedrooms
+                    bedrooms = None
+                    bed_match = _re.search(r'(\d+)\s*(?:chambres?|ch\b)', description, _re.IGNORECASE)
+                    if bed_match:
+                        bedrooms = int(bed_match.group(1))
+                    elif "2 chambres" in cand["title"].lower():
+                        bedrooms = 2
+                    elif "3 chambres" in cand["title"].lower():
+                        bedrooms = 3
+                    
+                    # Extract floor
+                    floor = None
+                    floor_match = _re.search(r'(\d+)(?:er|ème|e|eme)?\s*étage', description, _re.IGNORECASE)
+                    if floor_match:
+                        floor = int(floor_match.group(1))
+                    
+                    has_elevator = "ascenseur" in description.lower() and "sans ascenseur" not in description.lower()
+                    is_rdc = "rez-de-chaussée" in description.lower() or "rdc" in description.lower()
+                    if floor == 0:
+                        is_rdc = True
+                    
+                    # Extract address from URL pattern
+                    addr_match = _re.search(r'/LPA\d+-(.+?)-appartement-lyon', cand["url"])
+                    address_hint = ""
+                    if addr_match:
+                        address_hint = addr_match.group(1).replace("-", " ").title()
+                    
+                    # Determine district label
+                    district_map = {
+                        "69001": "Lyon 1er",
+                        "69002": "Lyon 2e",
+                        "69003": "Lyon 3e",
+                        "69006": "Lyon 6e"
+                    }
+                    district_name = district_map.get(cand["postal_code"], "Lyon Centre")
+                    
+                    # GPS coordinates based on postal code
+                    lat, lon = get_district_coordinates(
+                        address_hint + " " + cand["postal_code"] + " Lyon"
+                    )
+                    
+                    ad_item = {
+                        "source": "Lodgis",
+                        "id": f"lodgis_{cand['id']}",
+                        "url": cand["url"],
+                        "title": cand["title"],
+                        "description": description,
+                        "price": cand["price"],
+                        "surfaceArea": cand["surface"],
+                        "postalCode": cand["postal_code"],
+                        "city": "Lyon",
+                        "district": {"libelle": district_name},
+                        "roomsQuantity": rooms,
+                        "bedroomsQuantity": bedrooms,
+                        "isFurnished": True,  # Lodgis = meublé uniquement
+                        "publicationDate": datetime.now().strftime("%Y-%m-%d"),
+                        "hasElevator": has_elevator,
+                        "floor": floor,
+                        "isGroundFloor": is_rdc,
+                        "blurInfo": {
+                            "position": {
+                                "lat": lat,
+                                "lon": lon
+                            }
+                        },
+                        "hasBalcony": "balcon" in description.lower() or "terrasse" in description.lower(),
+                        "hasTerrace": "terrasse" in description.lower()
+                    }
+                    ads.append(ad_item)
+                    
+                except Exception as ex:
+                    print(f"[ERREUR] Échec du scraping de {cand['url']}: {ex}")
+            
+            browser.close()
+    except Exception as e:
+        print(f"[ERREUR] Échec de la récupération sur Lodgis: {e}")
+    
+    print(f"[INFO] Total Lodgis: {len(ads)} annonces récupérées.")
+    return ads
+
 def start_server_if_not_running():
     import socket
     import subprocess
@@ -829,6 +1042,12 @@ def main():
         all_raw_ads.extend(scrape_jinka())
     except Exception as e:
         print(f"[ERREUR] Échec du scan Jinka: {e}")
+    
+    # Source E: Lodgis (spécialiste location meublée de standing)
+    try:
+        all_raw_ads.extend(scrape_lodgis())
+    except Exception as e:
+        print(f"[ERREUR] Échec du scan Lodgis: {e}")
         
     # Source D: LeBonCoin (désactivé — protégé par DataDome/captcha même via Playwright)
     # PAP et SeLoger sont également bloqués par Cloudflare.
