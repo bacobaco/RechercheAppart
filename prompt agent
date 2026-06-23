@@ -5,11 +5,12 @@ Trouver des annonces d'appartements en location dans le centre de Lyon correspon
 
 ## Profil Locataire
 - Damien Samain (Indépendant) & Isabelle Chol (DRH Framatome).
-- Dossier solide (multi propriétaires, grosse épargne, CDI Framatome - 120k€ annuel brut), recherche de longue durée (Bail vide/non meublé).
+- Dossier solide (multi propriétaires, grosse épargne, CDI Framatome - 120k€ annuel brut), recherche de longue durée (Bail meublé de haut standing).
 
 ## Critères de Recherche (STRICTS)
-- **Type de bail** : NON MEUBLÉ / VIDE uniquement.
-- **Équipement** : ASCENSEUR OBLIGATOIRE (sauf si RDC, mais 2ème étage ou plus préféré).
+- **Type de bail** : MEUBLÉ de haut standing uniquement.
+- **Équipement** : ASCENSEUR OBLIGATOIRE (sauf si RDC, mais 2ème étage ou plus préféré) et CLIMATISATION OBLIGATOIRE.
+- **Exclusion** : DUPLEX STRICTEMENT EXCLUS (pas de duplex).
 - **Surface** : > 75 m² (Idéalement entre 100 m² et 150 m²).
 - **Pièces** : 3 à 4 pièces MAXIMUM (Minimum 2 chambres).
 - **Budget** : Entre 1500 € et 2500 € (Charges comprises).
@@ -20,7 +21,7 @@ Trouver des annonces d'appartements en location dans le centre de Lyon correspon
   - 69003 (Préfecture, Quais du Rhône - zones calmes)
 - **Qualité de vie** : Calme absolu (éviter les rues bruyantes ou bars en bas), Luminosité, Cuisine équipée souhaitée.
 - **Transport** : Proche des transports en commun (Metro, Tram, pas de Bus) maximum 10mn à pieds et 45 minutes max pour aller au travail Framatome Gerland.
-- **Bonus** : Climatisation, balcon/terrasse, parking/garage, cachet de l'ancien (parquets, cheminées).
+- **Bonus** : balcon/terrasse, parking/garage, cachet de l'ancien (parquets, cheminées).
 
 ## Sources à Scanner
 - Bien'ici, SeLoger, PAP, LeBonCoin.
@@ -54,7 +55,7 @@ Chaque annonce doit être ajoutée au format suivant :
 1. **Doublons** : Avant d'ajouter, VERIFIE ABSOLUMENT si le `lien_annonce` ou une annonce semble être la même que celle qui existe déjà dans `data.json`. Si c'est le cas, ne pas ajouter l'annonce.
 2. **Fraîcheur** : Ignorer les annonces datant de plus de 14 jours.
 3. **Adresse** : Renseigner `google_street_view` uniquement si l'adresse exacte (numéro + rue) est mentionnée explicitement.
-4. **Validation** : Si un critère obligatoire (Vide, Ascenseur, Surface) n'est pas respecté, l'annonce doit être rejetée.
+4. **Validation** : Si un critère obligatoire (Meublé, Climatisation, Pas de duplex, Ascenseur, Surface) n'est pas respecté, l'annonce doit être rejetée.
 5. **Calculs** : Calculer systématiquement le `prix_m2` (Loyer CC / Surface).
 6. **Notes** : Initialiser le champ `notes` avec un résumé des avantages et inconvénients.
 7. **Vérification des liens** : Vérifier systématiquement que chaque lien est valide et mène bien à l'annonce correspondant à la description.

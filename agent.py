@@ -268,6 +268,7 @@ def scrape_bienici():
       "sortBy": "publicationDate",
       "sortOrder": "desc",
       "onTheMarket": [True],
+      "furnished": [True],
       "zoneIdsByTypes": {
         "zoneIds": ["-10680", "-10679", "-10690", "-120967"] # Lyon 2, 1, 6, 3
       }
@@ -380,7 +381,7 @@ def scrape_barnes():
 
 def scrape_leboncoin():
     print("[INFO] Interrogation du site LeBonCoin...")
-    url = "https://www.leboncoin.fr/recherche?category=10&locations=Lyon_69001__45.76795_4.83438_3586,Lyon_69002__45.75365_4.82888_3765,Lyon_69003__45.75639_4.85558_7254,Lyon_69006__45.7716_4.85352_3618&real_estate_type=2&price=1500-2500&square=75-max&rooms=3-4&furnished=2&sort=time&order=desc"
+    url = "https://www.leboncoin.fr/recherche?category=10&locations=Lyon_69001__45.76795_4.83438_3586,Lyon_69002__45.75365_4.82888_3765,Lyon_69003__45.75639_4.85558_7254,Lyon_69006__45.7716_4.85352_3618&real_estate_type=2&price=1500-2500&square=75-max&rooms=3-4&furnished=1&sort=time&order=desc"
     ads = []
     
     if not sync_playwright:
@@ -893,10 +894,22 @@ def main():
                 price = float(match.group(1).replace(" ", "").replace(",", "."))
                 
         # C. Filter Validation
-        # 1. Furnished check (Vide only)
+        # 1. Furnished check (Meublé only)
         is_furnished = ad.get("isFurnished", False) or is_text_furnished(title + " " + description) or ad.get("furnished", False)
-        if is_furnished:
-            print(f"[REJECT] {ad_id}: Logement meublé.")
+        if not is_furnished:
+            print(f"[REJECT] {ad_id}: Logement non meublé.")
+            continue
+
+        # 1b. Climatisation check (Mandatory)
+        has_ac = any(kw in (title + " " + description).lower() for kw in ["clim", "climatisation", "climatise", "climatisé"])
+        if not has_ac:
+            print(f"[REJECT] {ad_id}: Pas de climatisation.")
+            continue
+
+        # 1c. Duplex check (Forbidden)
+        is_duplex = "duplex" in (title + " " + description).lower()
+        if is_duplex:
+            print(f"[REJECT] {ad_id}: Logement en duplex.")
             continue
             
         # 2. Surface check (> 75 m²)
