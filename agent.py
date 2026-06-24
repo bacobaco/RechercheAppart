@@ -1001,7 +1001,7 @@ def scrape_urbansejour():
             
             for crawl_url in pages_to_crawl:
                 try:
-                    resp = page.goto(crawl_url, wait_until="networkidle", timeout=15000)
+                    resp = page.goto(crawl_url, wait_until="domcontentloaded", timeout=20000)
                     if resp and resp.status == 200:
                         html = page.content()
                         links = _re.findall(r'href="(https://www\.urbansejour\.com/appartement/[^"#]+)"', html)
@@ -1035,7 +1035,7 @@ def scrape_urbansejour():
             # 3. Visit each detail page
             for cand in filtered_links[:15]:  # Max 15
                 try:
-                    page.goto(cand["url"], wait_until="networkidle", timeout=20000)
+                    page.goto(cand["url"], wait_until="domcontentloaded", timeout=30000)
                     page.wait_for_timeout(1000)
                     
                     body_text = page.locator("body").inner_text()
