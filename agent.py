@@ -961,6 +961,216 @@ def scrape_lodgis():
     print(f"[INFO] Total Lodgis: {len(ads)} annonces récupérées.")
     return ads
 
+def scrape_urbansejour():
+    """Récupère les annonces depuis Urban Séjour (spécialiste location meublée à Lyon).
+    Petite agence locale avec un inventaire exclusif non présent sur les agrégateurs."""
+    print("[INFO] Interrogation du site Urban Séjour...")
+    ads = []
+    
+    if not sync_playwright:
+        print("[ERREUR] Playwright n'est pas disponible pour Urban Séjour.")
+        return []
+    
+    VALID_PREFIXES = {
+        "lyon-1-": "69001",
+        "lyon-2-": "69002",
+        "lyon-3-": "69003",
+        "lyon-6-": "69006",
+    }
+    
+    try:
+        with sync_playwright() as p:
+            browser = p.chromium.launch(headless=True)
+            page = browser.new_page()
+            page.set_extra_http_headers({
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+            })
+            
+            # 1. Crawl listing pages to discover all apartment URLs
+            import re as _re
+            all_apt_links = set()
+            pages_to_crawl = [
+                "https://www.urbansejour.com/",
+                "https://www.urbansejour.com/appartements-par-localisation/",
+                "https://www.urbansejour.com/location-meublee/lyon/",
+                "https://www.urbansejour.com/location-meublee/lyon-1/",
+                "https://www.urbansejour.com/location-meublee/lyon-2/",
+                "https://www.urbansejour.com/location-meublee/lyon-3/",
+                "https://www.urbansejour.com/location-meublee/lyon-6/",
+            ]
+            
+            for crawl_url in pages_to_crawl:
+                try:
+                    resp = page.goto(crawl_url, wait_until="networkidle", timeout=15000)
+                    if resp and resp.status == 200:
+                        html = page.content()
+                        links = _re.findall(r'href="(https://www\.urbansejour\.com/appartement/[^"#]+)"', html)
+                        all_apt_links.update(links)
+                except:
+                    pass
+            
+            # 2. Filter for target arrondissements only
+            filtered_links = []
+            for link in sorted(all_apt_links):
+                # Extract arrondissement from URL
+                postal_code = None
+                for prefix, pc in VALID_PREFIXES.items():
+                    if prefix in link:
+                        postal_code = pc
+                        break
+                if not postal_code:
+                    continue
+                
+                # Pre-filter from URL slug: skip studios and 1-chambre
+                slug = link.lower()
+                if "studio" in slug:
+                    continue
+                if "1-chambre" in slug and "2-chambre" not in slug and "3-chambre" not in slug:
+                    continue
+                
+                filtered_links.append({"url": link, "postal_code": postal_code})
+            
+            print(f"[INFO] {len(all_apt_links)} annonces trouvées sur Urban Séjour, {len(filtered_links)} après pré-filtrage.")
+            
+            # 3. Visit each detail page
+            for cand in filtered_links[:15]:  # Max 15
+                try:
+                    page.goto(cand["url"], wait_until="networkidle", timeout=20000)
+                    page.wait_for_timeout(1000)
+                    
+                    body_text = page.locator("body").inner_text()
+                    page_title = ""
+                    try:
+                        page_title = page.title()
+                    except:
+                        pass
+                    
+                    description = body_text
+                    
+                    # Extract surface (first m² mention that's > 20)
+                    surface = None
+                    surface_matches = _re.findall(r'(\d+(?:[.,]\d+)?)\s*m[²2]', description)
+                    for sm in surface_matches:
+                        val = float(sm.replace(",", "."))
+                        if val > 20:
+                            surface = val
+                            break
+                    
+                    # Quick filter: surface > 75
+                    if not surface or surface < 75:
+                        continue
+                    
+                    # Extract price (first €/mois pattern)
+                    price = None
+                    price_matches = _re.findall(r'(\d[\d\s]*(?:,\d+)?)\s*€\s*(?:/\s*mois)?', description)
+                    for pm in price_matches:
+                        val_str = _re.sub(r'[^\d,.]', '', pm).replace(",", ".")
+                        try:
+                            val = float(val_str)
+                            if 500 < val < 5000:  # Reasonable rent range
+                                price = val
+                                break
+                        except:
+                            pass
+                    
+                    # Quick filter: price 1500-2500
+                    if price and (price < 1500 or price > 2500):
+                        continue
+                    
+                    # Extract rooms
+                    rooms = None
+                    rooms_match = _re.search(r'(\d+)\s*(?:pièces|pieces|p\.)', description, _re.IGNORECASE)
+                    if rooms_match:
+                        rooms = int(rooms_match.group(1))
+                    else:
+                        tf_match = _re.search(r'\b[tf](\d)\b', page_title + " " + cand["url"], _re.IGNORECASE)
+                        if tf_match:
+                            rooms = int(tf_match.group(1))
+                    
+                    # Extract bedrooms
+                    bedrooms = None
+                    bed_match = _re.search(r'(\d+)\s*chambre', description, _re.IGNORECASE)
+                    if bed_match:
+                        bedrooms = int(bed_match.group(1))
+                    elif "2 chambres" in cand["url"]:
+                        bedrooms = 2
+                    elif "3 chambres" in cand["url"]:
+                        bedrooms = 3
+                    
+                    # Extract floor
+                    floor = None
+                    floor_match = _re.search(r'(\d+)(?:er|ème|e|eme)?\s*étage', description, _re.IGNORECASE)
+                    if floor_match:
+                        floor = int(floor_match.group(1))
+                    
+                    has_elevator = "ascenseur" in description.lower() and "sans ascenseur" not in description.lower()
+                    is_rdc = "rez-de-chaussée" in description.lower() or "rdc" in description.lower()
+                    if floor == 0:
+                        is_rdc = True
+                    
+                    # Generate ad ID from URL slug
+                    slug_match = _re.search(r'/appartement/(.+?)/?$', cand["url"])
+                    ad_slug = slug_match.group(1) if slug_match else "unknown"
+                    ad_id = f"urbansejour_{ad_slug[:50]}"
+                    
+                    # Title from page or URL
+                    title = page_title.split(" - ")[0].strip() if page_title else "Appartement Urban Séjour"
+                    if "Location" in title:
+                        title = title.split("Location")[0].strip()
+                    
+                    # District label
+                    district_map = {
+                        "69001": "Lyon 1er",
+                        "69002": "Lyon 2e",
+                        "69003": "Lyon 3e",
+                        "69006": "Lyon 6e"
+                    }
+                    district_name = district_map.get(cand["postal_code"], "Lyon Centre")
+                    
+                    # GPS coordinates
+                    lat, lon = get_district_coordinates(
+                        district_name + " " + cand["postal_code"] + " Lyon"
+                    )
+                    
+                    ad_item = {
+                        "source": "Urban Séjour",
+                        "id": ad_id,
+                        "url": cand["url"],
+                        "title": title,
+                        "description": description,
+                        "price": price,
+                        "surfaceArea": surface,
+                        "postalCode": cand["postal_code"],
+                        "city": "Lyon",
+                        "district": {"libelle": district_name},
+                        "roomsQuantity": rooms,
+                        "bedroomsQuantity": bedrooms,
+                        "isFurnished": True,  # Urban Séjour = meublé uniquement
+                        "publicationDate": datetime.now().strftime("%Y-%m-%d"),
+                        "hasElevator": has_elevator,
+                        "floor": floor,
+                        "isGroundFloor": is_rdc,
+                        "blurInfo": {
+                            "position": {
+                                "lat": lat,
+                                "lon": lon
+                            }
+                        },
+                        "hasBalcony": "balcon" in description.lower() or "terrasse" in description.lower(),
+                        "hasTerrace": "terrasse" in description.lower()
+                    }
+                    ads.append(ad_item)
+                    
+                except Exception as ex:
+                    print(f"[ERREUR] Échec du scraping Urban Séjour {cand['url']}: {ex}")
+            
+            browser.close()
+    except Exception as e:
+        print(f"[ERREUR] Échec de la récupération sur Urban Séjour: {e}")
+    
+    print(f"[INFO] Total Urban Séjour: {len(ads)} annonces récupérées.")
+    return ads
+
 def start_server_if_not_running():
     import socket
     import subprocess
@@ -1048,6 +1258,12 @@ def main():
         all_raw_ads.extend(scrape_lodgis())
     except Exception as e:
         print(f"[ERREUR] Échec du scan Lodgis: {e}")
+    
+    # Source F: Urban Séjour (agence locale meublée de qualité)
+    try:
+        all_raw_ads.extend(scrape_urbansejour())
+    except Exception as e:
+        print(f"[ERREUR] Échec du scan Urban Séjour: {e}")
         
     # Source D: LeBonCoin (désactivé — protégé par DataDome/captcha même via Playwright)
     # PAP et SeLoger sont également bloqués par Cloudflare.
