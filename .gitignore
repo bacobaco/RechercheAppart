@@ -1,0 +1,20 @@
+# Credentials and Sessions
+*_session.json
+*_token.json
+*_url.json
+data.json
+
+# Logs
+*.log
+
+# Pygame files (games)
+maze_game.py
+snake_game.py
+
+# Python Cache
+__pycache__/
+*.pyc
+
+# Local Environment
+.env
+.venv/

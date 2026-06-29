@@ -1171,6 +1171,227 @@ def scrape_urbansejour():
     print(f"[INFO] Total Urban Séjour: {len(ads)} annonces récupérées.")
     return ads
 
+def scrape_gdc():
+    """Récupère les annonces depuis Gens de Confiance.
+    Nécessite d'avoir lancé login_gdc.py au moins une fois."""
+    print("[INFO] Interrogation du site Gens de Confiance...")
+    ads = []
+    
+    if not sync_playwright:
+        print("[ERREUR] Playwright n'est pas disponible pour Gens de Confiance.")
+        return []
+        
+    SESSION_FILE = "gdc_session.json"
+    URL_FILE = "gdc_url.json"
+    
+    if not os.path.exists(SESSION_FILE):
+        print("[WARN] Session Gens de Confiance absente. Lancez d'abord: python login_gdc.py")
+        return []
+        
+    search_url = "https://gensdeconfiance.com/fr/s/immobilier/locations-immobilieres?type=offering&rootLocales=fr%2Cen&currentAdSort=displayDate_desc"
+    if os.path.exists(URL_FILE):
+        try:
+            with open(URL_FILE, "r", encoding="utf-8") as f:
+                url_data = json.load(f)
+                search_url = url_data.get("search_url", search_url)
+        except Exception as e:
+            print(f"[WARN] Impossible de lire {URL_FILE}: {e}")
+            
+    try:
+        with sync_playwright() as p:
+            browser = p.chromium.launch(headless=True)
+            context = browser.new_context(
+                storage_state=SESSION_FILE,
+                viewport={"width": 1280, "height": 900},
+                user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+            )
+            page = context.new_page()
+            
+            print(f"[INFO] Navigation vers {search_url}...")
+            page.goto(search_url, wait_until="domcontentloaded", timeout=30000)
+            
+            # Dismiss cookie banner
+            try:
+                cookie_btn = page.locator("button#axeptio_btn_acceptAll")
+                if cookie_btn.count() > 0:
+                    cookie_btn.first.click(force=True)
+                    page.wait_for_timeout(500)
+            except:
+                pass
+                
+            try:
+                page.wait_for_selector("a[href*='/ui/post/'], a[href*='/annonce/']", timeout=15000)
+            except Exception as e:
+                print(f"[WARN] Aucune annonce trouvée ou chargement trop long sur GDC: {e}")
+                browser.close()
+                return []
+                
+            cards = page.locator("a[href*='/ui/post/'], a[href*='/annonce/']").all()
+            print(f"[INFO] {len(cards)} éléments d'annonces trouvés sur Gens de Confiance.")
+            
+            candidates = []
+            seen_urls = set()
+            
+            for card in cards:
+                try:
+                    href = card.get_attribute("href")
+                    if not href or not ("/ui/post/" in href or "/annonce/" in href):
+                        continue
+                    
+                    ad_url = href if href.startswith("http") else f"https://gensdeconfiance.com{href}"
+                    norm_url = ad_url.split('?')[0]
+                    if norm_url in seen_urls:
+                        continue
+                    seen_urls.add(norm_url)
+                    
+                    text = card.inner_text()
+                    lines = [l.strip() for l in text.split('\n') if l.strip()]
+                    if not lines:
+                        continue
+                        
+                    price = None
+                    for line in lines:
+                        if "€" in line:
+                            price_digits = "".join(c for c in line if c.isdigit())
+                            if price_digits:
+                                price = float(price_digits)
+                                break
+                            
+                    title_line = ""
+                    for line in lines:
+                        if len(line) > len(title_line) and not any(kw in line for kw in ["€", "minutes", "secondes", "heure", "jour"]):
+                            title_line = line
+                    
+                    postal_code = "69002"
+                    for pc in ["69001", "69002", "69003", "69006"]:
+                        if pc in text:
+                            postal_code = pc
+                            break
+                    for dist in ["Lyon 1e", "Lyon 2e", "Lyon 3e", "Lyon 6e", "Lyon 1er", "Lyon 2ème", "Lyon 3ème", "Lyon 6ème", "Lyon 1", "Lyon 2", "Lyon 3", "Lyon 6"]:
+                        if dist in text:
+                            if "1" in dist: postal_code = "69001"
+                            elif "2" in dist: postal_code = "69002"
+                            elif "3" in dist: postal_code = "69003"
+                            elif "6" in dist: postal_code = "69006"
+                            break
+                    
+                    surface = None
+                    m = re.search(r'(\d+(?:[.,]\d+)?)\s*m²', text, re.IGNORECASE)
+                    if m:
+                        surface = float(m.group(1).replace(",", "."))
+                        
+                    if price and (price < 1500 or price > 2500):
+                        continue
+                    if surface and surface <= 75:
+                        continue
+                        
+                    candidates.append({
+                        "url": norm_url,
+                        "title": title_line or "Appartement Gens de Confiance",
+                        "price": price,
+                        "surface": surface,
+                        "postal_code": postal_code,
+                        "card_text": text
+                    })
+                except Exception as ex:
+                    print(f"[WARN] Erreur pré-parsing carte GDC: {ex}")
+                    
+            print(f"[INFO] {len(candidates)} annonces GDC passent le pré-filtrage. Récupération des détails...")
+            
+            for cand in candidates[:10]:
+                try:
+                    page.goto(cand["url"], wait_until="domcontentloaded", timeout=20000)
+                    page.wait_for_timeout(2000)
+                    
+                    page_title = page.title()
+                    description = page.locator("body").inner_text()
+                    
+                    if "Just a moment" in page_title or "Verification" in page_title or len(description) < 400:
+                        print(f"[WARN] Impossible de charger les détails pour {cand['url']} (Cloudflare ou bloqué). Utilisation du texte de la carte.")
+                        description = cand["card_text"]
+                    
+                    rooms = None
+                    rooms_match = re.search(r'(\d+)\s*(?:pièces|pieces|p\.)', description, re.IGNORECASE)
+                    if rooms_match:
+                        rooms = int(rooms_match.group(1))
+                        
+                    bedrooms = None
+                    bed_match = re.search(r'(\d+)\s*(?:chambres|chambre|ch\b)', description, re.IGNORECASE)
+                    if bed_match:
+                        bedrooms = int(bed_match.group(1))
+                        
+                    floor = None
+                    floor_match = re.search(r'(\d+)(?:er|ème|e|eme)?\s*étage', description, re.IGNORECASE)
+                    if floor_match:
+                        floor = int(floor_match.group(1))
+                        
+                    has_elevator = "ascenseur" in description.lower() and "sans ascenseur" not in description.lower()
+                    is_rdc = "rez-de-chaussée" in description.lower() or "rdc" in description.lower()
+                    if floor == 0:
+                        is_rdc = True
+                        
+                    postal_code = cand["postal_code"]
+                    for pc in ["69001", "69002", "69003", "69006"]:
+                        if pc in description:
+                            postal_code = pc
+                            break
+                            
+                    district_map = {
+                        "69001": "Lyon 1er",
+                        "69002": "Lyon 2e",
+                        "69003": "Lyon 3e",
+                        "69006": "Lyon 6e"
+                    }
+                    district_name = district_map.get(postal_code, "Lyon Centre")
+                    
+                    lat, lon = get_district_coordinates(
+                        cand["title"] + " " + description + " " + postal_code
+                    )
+                    
+                    # Extract unique identifier from URL
+                    slug = cand['url'].split('/')[-1].split('?')[0]
+                    suffix = slug.split('-')[-1]
+                    ad_id = f"gdc_{suffix}"
+                    
+                    ad_item = {
+                        "source": "Gens de Confiance",
+                        "id": ad_id,
+                        "url": cand["url"],
+                        "title": cand["title"],
+                        "description": description,
+                        "price": cand["price"],
+                        "surfaceArea": cand["surface"],
+                        "postalCode": postal_code,
+                        "city": "Lyon",
+                        "district": {"libelle": district_name},
+                        "roomsQuantity": rooms,
+                        "bedroomsQuantity": bedrooms,
+                        "isFurnished": is_text_furnished(cand["title"] + " " + description),
+                        "publicationDate": datetime.now().strftime("%Y-%m-%d"),
+                        "hasElevator": has_elevator,
+                        "floor": floor,
+                        "isGroundFloor": is_rdc,
+                        "blurInfo": {
+                            "position": {
+                                "lat": lat,
+                                "lon": lon
+                            }
+                        },
+                        "hasBalcony": "balcon" in description.lower() or "terrasse" in description.lower(),
+                        "hasTerrace": "terrasse" in description.lower()
+                    }
+                    ads.append(ad_item)
+                    
+                except Exception as ex:
+                    print(f"[ERREUR] Échec du scraping de {cand['url']}: {ex}")
+                    
+            browser.close()
+    except Exception as e:
+        print(f"[ERREUR] Échec de la récupération sur Gens de Confiance: {e}")
+        
+    print(f"[INFO] Total Gens de Confiance: {len(ads)} annonces récupérées.")
+    return ads
+
 def start_server_if_not_running():
     import socket
     import subprocess
@@ -1264,6 +1485,12 @@ def main():
         all_raw_ads.extend(scrape_urbansejour())
     except Exception as e:
         print(f"[ERREUR] Échec du scan Urban Séjour: {e}")
+        
+    # Source G: Gens de Confiance (Playwright + Session)
+    try:
+        all_raw_ads.extend(scrape_gdc())
+    except Exception as e:
+        print(f"[ERREUR] Échec du scan Gens de Confiance: {e}")
         
     # Source D: LeBonCoin (désactivé — protégé par DataDome/captcha même via Playwright)
     # PAP et SeLoger sont également bloqués par Cloudflare.
