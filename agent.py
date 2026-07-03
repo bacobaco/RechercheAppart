@@ -125,6 +125,17 @@ def is_text_furnished(text):
     # Now check for remaining 'meublé' occurrences
     return bool(re.search(r'\bmeublée?\b', cleaned))
 
+def extract_gdc_uuid(url):
+    """Extract 36-char GDC listing UUID from a URL."""
+    if not url:
+        return None
+    if "gensdeconfiance.com" not in url:
+        return None
+    match = re.search(r'([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})', url, re.IGNORECASE)
+    if match:
+        return match.group(1).lower()
+    return None
+
 def extract_address(description, postal_code):
     """Look for street address in description and format it."""
     pattern = r'(?:\b(\d+)\s*(?:bis|ter)?\s+)?\b(rue|avenue|boulevard|place|quai|cours|allée|chemin|passage|route|r\.|av\.|bd\.|pl\.|q\.|crs)\s+([A-Za-zÀ-ÿ0-9\s\'-]+?)(?=\b(?:est|ouest|nord|sud|lyon|dans|avec|au|en|proche|métro|tram|gare|comportant|comprenant|\.|\,|;|\n|\t))'
@@ -1196,6 +1207,8 @@ def scrape_gdc():
                 search_url = url_data.get("search_url", search_url)
         except Exception as e:
             print(f"[WARN] Impossible de lire {URL_FILE}: {e}")
+    # Force use of apex domain to bypass Cloudflare challenges that target www subdomain
+    search_url = search_url.replace("https://www.gensdeconfiance.com", "https://gensdeconfiance.com")
             
     try:
         with sync_playwright() as p:
@@ -1206,6 +1219,8 @@ def scrape_gdc():
                 user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
             )
             page = context.new_page()
+            # Hide webdriver flag to bypass Cloudflare bot detection
+            page.add_init_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
             
             print(f"[INFO] Navigation vers {search_url}...")
             page.goto(search_url, wait_until="domcontentloaded", timeout=30000)
@@ -1239,6 +1254,7 @@ def scrape_gdc():
                         continue
                     
                     ad_url = href if href.startswith("http") else f"https://gensdeconfiance.com{href}"
+                    ad_url = ad_url.replace("https://www.gensdeconfiance.com", "https://gensdeconfiance.com")
                     norm_url = ad_url.split('?')[0]
                     if norm_url in seen_urls:
                         continue
@@ -1298,15 +1314,41 @@ def scrape_gdc():
                     
             print(f"[INFO] {len(candidates)} annonces GDC passent le pré-filtrage. Récupération des détails...")
             
-            for cand in candidates[:10]:
+            import time
+            import random
+            for idx, cand in enumerate(candidates[:10]):
+                detail_context = None
+                detail_page = None
                 try:
-                    page.goto(cand["url"], wait_until="domcontentloaded", timeout=20000)
-                    page.wait_for_timeout(2000)
+                    if idx > 0:
+                        # Add a random delay to prevent Cloudflare blocking on fast consecutive requests
+                        time.sleep(random.uniform(2.5, 5.0))
                     
-                    page_title = page.title()
-                    description = page.locator("body").inner_text()
+                    # Open a fresh context to completely isolate the details request from previous actions
+                    detail_context = browser.new_context(
+                        storage_state=SESSION_FILE,
+                        viewport={"width": 1280, "height": 900},
+                        user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+                    )
+                    detail_page = detail_context.new_page()
+                    # Hide webdriver flag to bypass Cloudflare bot detection
+                    detail_page.add_init_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
                     
-                    if "Just a moment" in page_title or "Verification" in page_title or len(description) < 400:
+                    detail_page.goto(cand["url"], wait_until="domcontentloaded", timeout=20000)
+                    try:
+                        detail_page.wait_for_selector("h2, h3, div[class*='Description_container']", timeout=8000)
+                    except Exception:
+                        detail_page.wait_for_timeout(2000)
+                    
+                    page_title = detail_page.title()
+                    description = detail_page.locator("body").inner_text()
+                    
+                    if "Just a moment" in page_title or "Verification" in page_title or len(description.strip()) < 400:
+                        detail_page.wait_for_timeout(2000)
+                        description = detail_page.locator("body").inner_text()
+                        page_title = detail_page.title()
+                        
+                    if "Just a moment" in page_title or "Verification" in page_title or len(description.strip()) < 400:
                         print(f"[WARN] Impossible de charger les détails pour {cand['url']} (Cloudflare ou bloqué). Utilisation du texte de la carte.")
                         description = cand["card_text"]
                     
@@ -1353,10 +1395,13 @@ def scrape_gdc():
                     suffix = slug.split('-')[-1]
                     ad_id = f"gdc_{suffix}"
                     
+                    # Use the internal SPA URL on the apex domain to avoid Cloudflare challenges and preserve direct SPA routing
+                    spa_url = f"https://gensdeconfiance.com/fr/ui/post/realestate__rent/{slug}"
+                    
                     ad_item = {
                         "source": "Gens de Confiance",
                         "id": ad_id,
-                        "url": cand["url"],
+                        "url": spa_url,
                         "title": cand["title"],
                         "description": description,
                         "price": cand["price"],
@@ -1384,6 +1429,12 @@ def scrape_gdc():
                     
                 except Exception as ex:
                     print(f"[ERREUR] Échec du scraping de {cand['url']}: {ex}")
+                finally:
+                    if detail_context:
+                        try:
+                            detail_context.close()
+                        except:
+                            pass
                     
             browser.close()
     except Exception as e:
@@ -1659,10 +1710,18 @@ def main():
         new_arr = get_arr(quartier + " " + title, postal_code)
         
         is_dupe = False
+        new_gdc_uuid = extract_gdc_uuid(ad_url)
         for item in existing_data:
-            if item.get("lien_annonce") == ad_url:
+            exist_url = item.get("lien_annonce")
+            if exist_url == ad_url:
                 is_dupe = True
                 break
+                
+            if new_gdc_uuid:
+                exist_gdc_uuid = extract_gdc_uuid(exist_url)
+                if exist_gdc_uuid and exist_gdc_uuid == new_gdc_uuid:
+                    is_dupe = True
+                    break
             
             same_price = item.get("prix") == formatted_price
             same_surface = abs(item.get("surface", 0) - surface) < 1.0
