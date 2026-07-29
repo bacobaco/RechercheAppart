@@ -15,6 +15,52 @@ DATA_FILE = "data.json"
 JINKA_SESSION_FILE = "jinka_session.json"
 JINKA_TOKEN_FILE = "jinka_token.json"
 
+# Global system tracking status & errors across all sources
+SCRAPING_STATUS = []
+
+def record_source_error(site_name, error_type, details, action_required=None):
+    """Enregistre et affiche immédiatement un message d'erreur à fort impact visuel (en gros)."""
+    for entry in SCRAPING_STATUS:
+        if entry["site"] == site_name and entry["type"] == error_type:
+            return
+            
+    entry = {
+        "site": site_name,
+        "type": error_type,
+        "details": details,
+        "action": action_required
+    }
+    SCRAPING_STATUS.append(entry)
+    
+    print("\n" + "="*75)
+    print(f" [ATTENTION - SOURCE DÉSACTIVÉE / TOKEN OU SESSION EXPIRÉ] -> {site_name.upper()}")
+    print(f"  - PROBLÈME  : {details}")
+    if action_required:
+        print(f"  - ACTION REQUISE : {action_required}")
+    print("="*75 + "\n")
+
+def print_final_summary_report():
+    """Affiche un grand récapitulatif visible en fin de script si des tokens ou sessions ont manqué."""
+    print("\n" + "="*75)
+    print(" [RÉCAPITULATIF DU SCAN IMMOBILIER & ÉTAT DES ACCÈS SITES]")
+    print("="*75)
+    
+    if not SCRAPING_STATUS:
+        print(" [OK] SUCCÈS TOTAL : Tous les sites ont été interrogés sans aucune erreur de token ni de session.")
+    else:
+        print(f" [ATTENTION] {len(SCRAPING_STATUS)} SOURCE(S) ONT RENCONTRÉ UN PROBLÈME OU UN TOKEN EXPIRÉ !\n")
+        for idx, item in enumerate(SCRAPING_STATUS, 1):
+            print(f" {idx}. [{item['site'].upper()}] - {item['type']}")
+            print(f"    - Détail  : {item['details']}")
+            if item['action']:
+                print(f"    - POUR CORRIGER : {item['action']}")
+            print()
+        print(" [ATTENTION] Ces sources n'ont pas pu être scannées complètement.")
+        print(" Pensez à exécuter les commandes ci-dessus pour ne manquer aucune annonce.")
+    
+    print("="*75 + "\n")
+
+
 # List of Metro and Tram stations in central Lyon (1er, 2e, 3e, 6e)
 METRO_TRAM_STATIONS = [
     # Metro A
@@ -298,6 +344,7 @@ def scrape_bienici():
     try:
         response = requests.get(url, params=params, headers=headers, timeout=15)
         if response.status_code != 200:
+            record_source_error("Bien'ici", "Erreur HTTP", f"Bien'ici a répondu avec le code {response.status_code}.")
             print(f"[ERREUR] Code d'erreur Bien'ici: {response.status_code}")
             return []
         data = response.json()
@@ -308,6 +355,7 @@ def scrape_bienici():
             ad["url"] = f"https://www.bienici.com/annonce/{ad_id}"
         return ads
     except Exception as e:
+        record_source_error("Bien'ici", "Erreur réseau", f"Échec de la requête vers Bien'ici: {e}")
         print(f"[ERREUR] Échec de la requête vers Bien'ici: {e}")
         return []
 
@@ -386,6 +434,7 @@ def scrape_barnes():
                     print(f"[ERREUR] Échec du scraping de {ad_url}: {ex}")
             browser.close()
     except Exception as e:
+        record_source_error("Barnes Lyon", "Erreur de scraping Playwright", f"Échec de la récupération sur Barnes Lyon: {e}")
         print(f"[ERREUR] Échec de la récupération sur Barnes Lyon: {e}")
         
     return ads
@@ -560,6 +609,7 @@ def scrape_jinka():
             print(f"[WARN] Échec de récupération du token via Playwright: {e}")
     
     if not token:
+        record_source_error("Jinka", "Token manquant", "Aucun token d'accès Jinka disponible.", "Relancez la commande: python login_jinka.py")
         print("[ERREUR] Aucun token Jinka disponible. Lancez d'abord: python login_jinka.py")
         return []
     
@@ -575,9 +625,11 @@ def scrape_jinka():
     try:
         r_alerts = requests.get("https://api.jinka.fr/apiv2/alert", headers=headers, timeout=15)
         if r_alerts.status_code == 401:
+            record_source_error("Jinka", "Token expiré", "Le token Jinka a expiré (HTTP 401).", "Relancez la commande: python login_jinka.py")
             print("[ERREUR] Token Jinka expiré. Relancez: python login_jinka.py")
             return []
         if r_alerts.status_code != 200:
+            record_source_error("Jinka", "Erreur API Jinka", f"Échec de récupération des alertes (code {r_alerts.status_code}).")
             print(f"[ERREUR] Échec de récupération des alertes Jinka: {r_alerts.status_code}")
             return []
         
@@ -585,14 +637,21 @@ def scrape_jinka():
         print(f"[INFO] {len(alerts)} alerte(s) Jinka trouvée(s).")
         
     except Exception as e:
+        record_source_error("Jinka", "Erreur réseau / API", f"Impossible de contacter l'API Jinka: {e}", "Relancez la commande: python login_jinka.py")
         print(f"[ERREUR] Impossible de contacter l'API Jinka: {e}")
         return []
     
-    # 3. Pour chaque alerte, récupérer les annonces
+    # 3. Pour chaque alerte, récupérer les annonces (filtre sur 'Meublé Lyon')
     for alert in alerts:
         alert_id = alert.get("id")
+        user_name = alert.get("user_name") or ""
         alert_name = alert.get("name", "Sans nom")
-        print(f"[INFO] Traitement alerte: {alert_name}")
+        
+        # Filtre demandé : uniquement l'alerte "Meublé Lyon"
+        if "meublé lyon" not in user_name.lower() and "meuble lyon" not in user_name.lower() and "meublé lyon" not in alert_name.lower() and "meuble lyon" not in alert_name.lower():
+            continue
+            
+        print(f"[INFO] Traitement alerte Jinka: '{user_name}' ({alert_name})...")
         
         # Récupérer le dashboard (première page)
         try:
@@ -1196,6 +1255,7 @@ def scrape_gdc():
     URL_FILE = "gdc_url.json"
     
     if not os.path.exists(SESSION_FILE):
+        record_source_error("Gens de Confiance", "Session absente", "Session Gens de Confiance introuvable (gdc_session.json).", "Relancez la commande: python login_gdc.py")
         print("[WARN] Session Gens de Confiance absente. Lancez d'abord: python login_gdc.py")
         return []
         
@@ -1237,6 +1297,7 @@ def scrape_gdc():
             try:
                 page.wait_for_selector("a[href*='/ui/post/'], a[href*='/annonce/']", timeout=15000)
             except Exception as e:
+                record_source_error("Gens de Confiance", "Erreur de chargement / Anti-bot", f"Aucune annonce chargée ou délai dépassé: {e}", "Relancez la commande: python login_gdc.py")
                 print(f"[WARN] Aucune annonce trouvée ou chargement trop long sur GDC: {e}")
                 browser.close()
                 return []
@@ -1438,6 +1499,7 @@ def scrape_gdc():
                     
             browser.close()
     except Exception as e:
+        record_source_error("Gens de Confiance", "Erreur de scraping Playwright", f"Échec sur Gens de Confiance: {e}", "Relancez la commande: python login_gdc.py")
         print(f"[ERREUR] Échec de la récupération sur Gens de Confiance: {e}")
         
     print(f"[INFO] Total Gens de Confiance: {len(ads)} annonces récupérées.")
@@ -1831,7 +1893,10 @@ def main():
     else:
         print("[INFO] Scan terminé. Aucune nouvelle annonce trouvée.")
 
-    # 4. Start the server if not already running
+    # 4. Grand récapitulatif des erreurs / tokens expirés
+    print_final_summary_report()
+
+    # 5. Start the server if not already running
     start_server_if_not_running()
     
 if __name__ == "__main__":
