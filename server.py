@@ -94,6 +94,13 @@ class DashboardHandler(http.server.SimpleHTTPRequestHandler):
                 for item in data:
                     if (url and item.get("lien_annonce") == url) or (not url and item.get("titre") == title):
                         item["statut"] = new_status
+                        # Enregistrer la date d'élimination pour permettre la purge automatique après 1 mois
+                        if new_status in ("Éliminer", "Déjà loué"):
+                            if "date_elimination" not in item:
+                                item["date_elimination"] = datetime.now().strftime("%Y-%m-%d")
+                        else:
+                            # Si on remet un autre statut, annuler le compte à rebours de purge
+                            item.pop("date_elimination", None)
                         updated = True
                         break
                 if updated:

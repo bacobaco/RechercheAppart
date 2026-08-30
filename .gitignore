@@ -1,7 +1,9 @@
-# Credentials and Sessions
+# Credentials, Sessions and Data
 *_session.json
 *_token.json
 *_url.json
+cookies_*.json
+cookies.json
 data.json
 
 # Logs
@@ -18,3 +20,25 @@ __pycache__/
 # Local Environment
 .env
 .venv/
+
+# Generated dossiers, temporary scrapes and media
+*.pdf
+*.png
+Dossier_*.html
+annonce_*.html
+scraped_*
+all_photo_keys.json
+photos_*/
+photos_hd/
+photos_ad/
+photos_garibaldi_jardin/
+
+# Ad-hoc one-off scripts
+build_full_pdf.py
+download_all_photos.py
+extract_clean_photos.py
+extract_data.py
+fetch_gdc_ad.py
+generate_full_dossier_pdf.py
+generate_pdf.py
+parse_post_json.py

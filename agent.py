@@ -61,7 +61,7 @@ def print_final_summary_report():
     print("="*75 + "\n")
 
 
-# List of Metro and Tram stations in central Lyon (1er, 2e, 3e, 6e)
+# List of Metro and Tram stations in central Lyon (1er, 2e, 3e, 5e Vieux Lyon, 6e)
 METRO_TRAM_STATIONS = [
     # Metro A
     {"name": "Perrache", "lat": 45.7486, "lon": 4.8258},
@@ -171,6 +171,23 @@ def is_text_furnished(text):
     # Now check for remaining 'meublé' occurrences
     return bool(re.search(r'\bmeublée?\b', cleaned))
 
+def is_text_aircon(text):
+    """Detect if text indicates air conditioning, excluding negations like 'pas de clim', 'sans climatisation', 'non climatisé'."""
+    text_lower = text.lower()
+    # Remove negation patterns first
+    cleaned = re.sub(r'(?:pas de|sans|non[- ]?)\s*(?:climatisation|climatisée?|climatisée?s|clim)(?:\s*(?:ni|et|ou|/|-)\s*(?:de\s*)?(?:climatisation|climatisée?|climatisée?s|clim))?\b', '', text_lower)
+    cleaned = re.sub(r'\b(?:climatisation|clim)\s*:\s*non\b', '', cleaned)
+    # Now check for remaining 'clim'/'climatisation'/'climatisé' occurrences
+    return bool(re.search(r'\b(?:climatisation|climatisée?|climatisé|climatise|clim)\b', cleaned))
+
+def is_text_balcony(text):
+    """Detect if text indicates a balcony or terrace, excluding negations like 'sans balcon', 'pas de balcon', 'sans terrasse', 'sans balcon ni terrasse'."""
+    text_lower = text.lower()
+    cleaned = re.sub(r'(?:pas de|sans|non[- ]?)\s*(?:balcon|terrasse|balcons|terrasses|extérieur|exterieur)(?:\s*(?:ni|et|ou|/|-)\s*(?:de\s*)?(?:balcon|terrasse|balcons|terrasses|extérieur|exterieur))?\b', '', text_lower)
+    cleaned = re.sub(r'\b(?:balcon|terrasse)\s*:\s*non\b', '', cleaned)
+    return bool(re.search(r'\b(?:balcon|balcons|terrasse|terrasses)\b', cleaned))
+
+
 def extract_gdc_uuid(url):
     """Extract 36-char GDC listing UUID from a URL."""
     if not url:
@@ -226,6 +243,8 @@ def get_district_coordinates(text):
         return 45.7675, 4.8356 # Hôtel de Ville
     elif "préfecture" in text_lower or "prefecture" in text_lower or "quais du rhône" in text_lower or "quais du rhone" in text_lower:
         return 45.7619, 4.8436 # Lafayette - Préfecture
+    elif "vieux lyon" in text_lower or "saint-jean" in text_lower or "saint jean" in text_lower or "saint-paul" in text_lower or "saint paul" in text_lower or "saint-georges" in text_lower or "saint georges" in text_lower:
+        return 45.7622, 4.8272 # Vieux Lyon
     elif "lyon 2" in text_lower or "69002" in text_lower or "lyon 2e" in text_lower:
         return 45.7578, 4.8322 # Bellecour
     elif "lyon 6" in text_lower or "69006" in text_lower or "lyon 6e" in text_lower:
@@ -234,6 +253,8 @@ def get_district_coordinates(text):
         return 45.7675, 4.8356 # Hôtel de Ville
     elif "lyon 3" in text_lower or "69003" in text_lower or "lyon 3e" in text_lower:
         return 45.7597, 4.8486 # Place Guichard
+    elif "lyon 5" in text_lower or "69005" in text_lower or "lyon 5e" in text_lower:
+        return 45.7622, 4.8272 # Vieux Lyon
     return 45.7578, 4.8322 # Default Bellecour
 
 def parse_barnes_page(html_text, url):
@@ -311,7 +332,9 @@ def parse_barnes_page(html_text, url):
 def scrape_bienici():
     print("[INFO] Interrogation du site Bien'ici...")
     url = "https://www.bienici.com/realEstateAds.json"
-    filters = {
+    
+    # Filtres de base communs aux deux requêtes
+    base_filters = {
       "size": 50,
       "from": 0,
       "filterType": "rent",
@@ -325,15 +348,9 @@ def scrape_bienici():
       "sortBy": "publicationDate",
       "sortOrder": "desc",
       "onTheMarket": [True],
-      "furnished": [True],
       "zoneIdsByTypes": {
-        "zoneIds": ["-10680", "-10679", "-10690", "-120967"] # Lyon 2, 1, 6, 3
+        "zoneIds": ["-10680", "-10679", "-10690", "-120967", "-10688"] # Lyon 2, 1, 6, 3, 5
       }
-    }
-    
-    params = {
-        "filters": json.dumps(filters),
-        "extensionType": "extendedIfNoResult"
     }
     
     headers = {
@@ -341,23 +358,45 @@ def scrape_bienici():
         "Accept": "application/json, text/plain, */*"
     }
     
-    try:
-        response = requests.get(url, params=params, headers=headers, timeout=15)
-        if response.status_code != 200:
-            record_source_error("Bien'ici", "Erreur HTTP", f"Bien'ici a répondu avec le code {response.status_code}.")
-            print(f"[ERREUR] Code d'erreur Bien'ici: {response.status_code}")
-            return []
-        data = response.json()
-        ads = data.get("realEstateAds", [])
-        for ad in ads:
-            ad["source"] = "Bien'ici"
-            ad_id = ad.get("id")
-            ad["url"] = f"https://www.bienici.com/annonce/{ad_id}"
-        return ads
-    except Exception as e:
-        record_source_error("Bien'ici", "Erreur réseau", f"Échec de la requête vers Bien'ici: {e}")
-        print(f"[ERREUR] Échec de la requête vers Bien'ici: {e}")
-        return []
+    all_ads = {}  # Dédupliqué par ID
+    
+    # Requête 1 : avec filtre meublé explicite
+    # Requête 2 : sans filtre meublé (pour attraper les annonces dont le flag n'est pas renseigné côté API)
+    filter_variants = [
+        {"label": "meublé", "extra": {"furnished": [True]}},
+        {"label": "sans filtre meublé", "extra": {}},
+    ]
+    
+    for variant in filter_variants:
+        filters = {**base_filters, **variant["extra"]}
+        params = {
+            "filters": json.dumps(filters),
+            "extensionType": "extendedIfNoResult"
+        }
+        
+        try:
+            response = requests.get(url, params=params, headers=headers, timeout=15)
+            if response.status_code != 200:
+                record_source_error("Bien'ici", "Erreur HTTP", f"Bien'ici a répondu avec le code {response.status_code} (requête {variant['label']}).")
+                print(f"[ERREUR] Code d'erreur Bien'ici ({variant['label']}): {response.status_code}")
+                continue
+            data = response.json()
+            ads = data.get("realEstateAds", [])
+            new_count = 0
+            for ad in ads:
+                ad_id = ad.get("id")
+                if ad_id not in all_ads:
+                    ad["source"] = "Bien'ici"
+                    ad["url"] = f"https://www.bienici.com/annonce/{ad_id}"
+                    all_ads[ad_id] = ad
+                    new_count += 1
+            print(f"[INFO] Bien'ici ({variant['label']}): {len(ads)} résultats, {new_count} nouveaux.")
+        except Exception as e:
+            record_source_error("Bien'ici", "Erreur réseau", f"Échec de la requête vers Bien'ici ({variant['label']}): {e}")
+            print(f"[ERREUR] Échec de la requête vers Bien'ici ({variant['label']}): {e}")
+    
+    print(f"[INFO] Total Bien'ici (dédupliqué): {len(all_ads)} annonces.")
+    return list(all_ads.values())
 
 def scrape_barnes():
     print("[INFO] Interrogation du site Barnes Lyon...")
@@ -441,7 +480,7 @@ def scrape_barnes():
 
 def scrape_leboncoin():
     print("[INFO] Interrogation du site LeBonCoin...")
-    url = "https://www.leboncoin.fr/recherche?category=10&locations=Lyon_69001__45.76795_4.83438_3586,Lyon_69002__45.75365_4.82888_3765,Lyon_69003__45.75639_4.85558_7254,Lyon_69006__45.7716_4.85352_3618&real_estate_type=2&price=1500-2500&square=75-max&rooms=3-4&furnished=1&sort=time&order=desc"
+    url = "https://www.leboncoin.fr/recherche?category=10&locations=Lyon_69001__45.76795_4.83438_3586,Lyon_69002__45.75365_4.82888_3765,Lyon_69003__45.75639_4.85558_7254,Lyon_69005__45.7583_4.815_3000,Lyon_69006__45.7716_4.85352_3618&real_estate_type=2&price=1500-2500&square=75-max&rooms=3-4&furnished=1&sort=time&order=desc"
     ads = []
     
     if not sync_playwright:
@@ -483,15 +522,16 @@ def scrape_leboncoin():
                     
                     # Extract postal code
                     postal_code = "69002"
-                    for pc in ["69001", "69002", "69003", "69006"]:
+                    for pc in ["69001", "69002", "69003", "69005", "69006"]:
                         if pc in text:
                             postal_code = pc
                             break
-                    for dist in ["Lyon 1e", "Lyon 2e", "Lyon 3e", "Lyon 6e", "Lyon 1er"]:
+                    for dist in ["Lyon 1e", "Lyon 2e", "Lyon 3e", "Lyon 5e", "Lyon 6e", "Lyon 1er", "Lyon 5ème"]:
                         if dist in text:
                             if "1" in dist: postal_code = "69001"
                             elif "2" in dist: postal_code = "69002"
                             elif "3" in dist: postal_code = "69003"
+                            elif "5" in dist: postal_code = "69005"
                             elif "6" in dist: postal_code = "69006"
                             break
                     
@@ -733,14 +773,11 @@ def scrape_jinka():
                         jinka_lat = item["location"].get("lat")
                         jinka_lon = item["location"].get("lng") or item["location"].get("lon")
                     
-                    if not jinka_zip and isinstance(item.get("address"), dict):
-                        jinka_zip = item["address"].get("zipcode", "")
-                    
                     # Déterminer le code postal depuis la ville si manquant
                     if not jinka_zip:
                         city_lower = (jinka_city or "").lower()
                         desc_and_title = (jinka_title + " " + jinka_desc + " " + city_lower).lower()
-                        for pc in ["69001", "69002", "69003", "69006"]:
+                        for pc in ["69001", "69002", "69003", "69005", "69006"]:
                              if pc in desc_and_title:
                                  jinka_zip = pc
                                  break
@@ -753,6 +790,7 @@ def scrape_jinka():
                         "69001": "Lyon 1er",
                         "69002": "Lyon 2e",
                         "69003": "Lyon 3e",
+                        "69005": "Lyon 5e",
                         "69006": "Lyon 6e"
                     }
                     district_name = district_map.get(jinka_zip, f"Lyon {jinka_zip[-1]}e" if jinka_zip.startswith("6900") else "Lyon Centre")
@@ -828,7 +866,7 @@ def scrape_lodgis():
         print("[ERREUR] Playwright n'est pas disponible pour Lodgis.")
         return []
     
-    VALID_ARRONDISSEMENTS = {"1": "69001", "2": "69002", "3": "69003", "6": "69006"}
+    VALID_ARRONDISSEMENTS = {"1": "69001", "2": "69002", "3": "69003", "5": "69005", "6": "69006"}
     
     try:
         with sync_playwright() as p:
@@ -983,6 +1021,7 @@ def scrape_lodgis():
                         "69001": "Lyon 1er",
                         "69002": "Lyon 2e",
                         "69003": "Lyon 3e",
+                        "69005": "Lyon 5e",
                         "69006": "Lyon 6e"
                     }
                     district_name = district_map.get(cand["postal_code"], "Lyon Centre")
@@ -1045,6 +1084,7 @@ def scrape_urbansejour():
         "lyon-1-": "69001",
         "lyon-2-": "69002",
         "lyon-3-": "69003",
+        "lyon-5-": "69005",
         "lyon-6-": "69006",
     }
     
@@ -1066,6 +1106,7 @@ def scrape_urbansejour():
                 "https://www.urbansejour.com/location-meublee/lyon-1/",
                 "https://www.urbansejour.com/location-meublee/lyon-2/",
                 "https://www.urbansejour.com/location-meublee/lyon-3/",
+                "https://www.urbansejour.com/location-meublee/lyon-5/",
                 "https://www.urbansejour.com/location-meublee/lyon-6/",
             ]
             
@@ -1193,6 +1234,7 @@ def scrape_urbansejour():
                         "69001": "Lyon 1er",
                         "69002": "Lyon 2e",
                         "69003": "Lyon 3e",
+                        "69005": "Lyon 5e",
                         "69006": "Lyon 6e"
                     }
                     district_name = district_map.get(cand["postal_code"], "Lyon Centre")
@@ -1339,18 +1381,20 @@ def scrape_gdc():
                         if len(line) > len(title_line) and not any(kw in line for kw in ["€", "minutes", "secondes", "heure", "jour"]):
                             title_line = line
                     
-                    postal_code = "69002"
-                    for pc in ["69001", "69002", "69003", "69006"]:
+                    postal_code = ""
+                    for pc in ["69001", "69002", "69003", "69005", "69006"]:
                         if pc in text:
                             postal_code = pc
                             break
-                    for dist in ["Lyon 1e", "Lyon 2e", "Lyon 3e", "Lyon 6e", "Lyon 1er", "Lyon 2ème", "Lyon 3ème", "Lyon 6ème", "Lyon 1", "Lyon 2", "Lyon 3", "Lyon 6"]:
-                        if dist in text:
-                            if "1" in dist: postal_code = "69001"
-                            elif "2" in dist: postal_code = "69002"
-                            elif "3" in dist: postal_code = "69003"
-                            elif "6" in dist: postal_code = "69006"
-                            break
+                    if not postal_code:
+                        for dist in ["Lyon 1e", "Lyon 2e", "Lyon 3e", "Lyon 5e", "Lyon 6e", "Lyon 1er", "Lyon 2ème", "Lyon 3ème", "Lyon 5ème", "Lyon 6ème", "Lyon 1", "Lyon 2", "Lyon 3", "Lyon 5", "Lyon 6"]:
+                            if dist in text:
+                                if "1" in dist: postal_code = "69001"
+                                elif "2" in dist: postal_code = "69002"
+                                elif "3" in dist: postal_code = "69003"
+                                elif "5" in dist: postal_code = "69005"
+                                elif "6" in dist: postal_code = "69006"
+                                break
                     
                     surface = None
                     m = re.search(r'(\d+(?:[.,]\d+)?)\s*m²', text, re.IGNORECASE)
@@ -1434,7 +1478,7 @@ def scrape_gdc():
                         is_rdc = True
                         
                     postal_code = cand["postal_code"]
-                    for pc in ["69001", "69002", "69003", "69006"]:
+                    for pc in ["69001", "69002", "69003", "69005", "69006"]:
                         if pc in description:
                             postal_code = pc
                             break
@@ -1443,6 +1487,7 @@ def scrape_gdc():
                         "69001": "Lyon 1er",
                         "69002": "Lyon 2e",
                         "69003": "Lyon 3e",
+                        "69005": "Lyon 5e",
                         "69006": "Lyon 6e"
                     }
                     district_name = district_map.get(postal_code, "Lyon Centre")
@@ -1546,8 +1591,82 @@ def start_server_if_not_running():
         except Exception as e:
             print(f"[ERREUR] Impossible de lancer server.py: {e}")
 
+def purge_old_eliminated():
+    """Supprime définitivement de data.json les annonces éliminées depuis plus de 30 jours.
+    Cible les statuts 'Éliminer' et 'Déjà loué'.
+    Utilise le champ 'date_elimination' si présent, sinon 'date_decouverte' comme fallback."""
+    if not os.path.exists(DATA_FILE):
+        return
+
+    try:
+        with open(DATA_FILE, "r", encoding="utf-8") as f:
+            content = f.read().strip()
+            if not content:
+                return
+            data = json.loads(content)
+    except Exception as e:
+        print(f"[ERREUR] Impossible de charger {DATA_FILE} pour la purge: {e}")
+        return
+
+    current_date = datetime.now().date()
+    ELIMINATION_STATUSES = {"Éliminer", "Déjà loué"}
+    kept = []
+    purged_count = 0
+    backfill_count = 0
+
+    for item in data:
+        statut = item.get("statut", "")
+        if statut not in ELIMINATION_STATUSES:
+            kept.append(item)
+            continue
+
+        # Déterminer la date d'élimination
+        date_elim_str = item.get("date_elimination")
+
+        if not date_elim_str:
+            # Rétro-initialiser avec date_decouverte pour les annonces historiques
+            date_elim_str = item.get("date_decouverte")
+            if date_elim_str:
+                item["date_elimination"] = date_elim_str
+                backfill_count += 1
+
+        if not date_elim_str:
+            # Aucune date disponible → on garde par sécurité
+            kept.append(item)
+            continue
+
+        try:
+            date_elim = datetime.strptime(date_elim_str[:10], "%Y-%m-%d").date()
+            days_since = (current_date - date_elim).days
+            if days_since > 30:
+                titre = item.get("titre", "Sans titre")
+                print(f"[PURGE] Suppression définitive : \"{titre}\" (éliminée depuis {days_since} jours)")
+                purged_count += 1
+            else:
+                kept.append(item)
+        except ValueError:
+            # Date invalide → on garde par sécurité
+            kept.append(item)
+
+    if purged_count > 0 or backfill_count > 0:
+        try:
+            with open(DATA_FILE, "w", encoding="utf-8") as f:
+                json.dump(kept, f, ensure_ascii=False, indent=4)
+            if purged_count > 0:
+                print(f"[INFO] Purge terminée : {purged_count} annonce(s) supprimée(s) définitivement.")
+            if backfill_count > 0:
+                print(f"[INFO] {backfill_count} annonce(s) mises à jour avec date_elimination rétro-initialisée.")
+        except Exception as e:
+            print(f"[ERREUR] Impossible de sauvegarder après purge: {e}")
+    else:
+        print("[INFO] Purge : aucune annonce éliminée depuis plus de 30 jours.")
+
+
 def main():
     print("=== Démarrage de l'Agent de Recherche Immobilière ===")
+    
+    # 0. Purge des annonces éliminées depuis plus d'un mois
+    purge_old_eliminated()
     
     # 1. Load existing listings
     existing_data = []
@@ -1675,10 +1794,12 @@ def main():
             print(f"[REJECT] {ad_id}: Logement non meublé.")
             continue
 
-        # 1b. Climatisation check (Mandatory)
-        has_ac = any(kw in (title + " " + description).lower() for kw in ["clim", "climatisation", "climatise", "climatisé"])
-        if not has_ac:
-            print(f"[REJECT] {ad_id}: Pas de climatisation.")
+        # 1b. Climatisation / Balcon check
+        # Climatisation obligatoire OU présence d'un balcon/terrasse (possibilité d'y mettre une clim d'appoint en cas de canicule)
+        has_ac = is_text_aircon(title + " " + description) or bool(ad.get("hasAirConditioning"))
+        has_balcony = bool(ad.get("hasBalcony") or ad.get("hasTerrace") or is_text_balcony(title + " " + description))
+        if not has_ac and not has_balcony:
+            print(f"[REJECT] {ad_id}: Ni climatisation ni balcon/terrasse.")
             continue
 
         # 1c. Duplex check (Forbidden)
@@ -1722,13 +1843,68 @@ def main():
             except Exception:
                 pass
                 
-        # 6. Location check (69001, 69002, 69003, 69006)
-        if postal_code not in ["69001", "69002", "69003", "69006"]:
-            print(f"[REJECT] {ad_id}: Code postal {postal_code} en dehors de Lyon Centre.")
+        # 6. Location check (69001, 69002, 69003, 69005 [Vieux Lyon uniquement], 69006)
+        # 6a. Rejeter les villes proches qui ne sont pas Lyon intra-muros
+        full_text_lower = (title + " " + description + " " + city).lower()
+        excluded_cities = ["villeurbanne", "caluire", "vénissieux", "venissieux", "bron",
+                           "vaulx-en-velin", "vaulx en velin", "oullins", "saint-fons",
+                           "pierre-bénite", "pierre benite", "tassin", "écully", "ecully",
+                           "rillieux", "décines", "decines", "meyzieu", "saint-priest",
+                           "69100", "69120", "69200", "69300", "69500", "69800"]
+        is_excluded_city = any(ec in full_text_lower for ec in excluded_cities)
+        if is_excluded_city:
+            print(f"[REJECT] {ad_id}: Localisation hors Lyon intra-muros (ville limitrophe détectée).")
             continue
+        # 6b. Vérifier le code postal
+        if postal_code not in ["69001", "69002", "69003", "69005", "69006"]:
+            print(f"[REJECT] {ad_id}: Code postal {postal_code} en dehors des zones cibles.")
+            continue
+
+        # 6c. Filtre STRICT pour le 5ème arrondissement : UNIQUEMENT le quartier du Vieux Lyon
+        is_5th = (postal_code == "69005") or ("lyon 5" in full_text_lower) or ("lyon 5e" in full_text_lower) or ("lyon 5ème" in full_text_lower)
+        if is_5th:
+            # Rejeter explicitement les quartiers hauts/périphériques du 5ème
+            excluded_5th_neighborhoods = [
+                "point du jour", "champvert", "ménival", "menival", "saint-just", "st-just", "saint just",
+                "fourvière", "fourviere", "saint-irénée", "saint irenee", "st irenee", "trion", "la favorite",
+                "choulans", "debrousse", "sœur janin", "soeur janin", "sarra", "loyasse"
+            ]
+            if any(en in full_text_lower for en in excluded_5th_neighborhoods):
+                print(f"[REJECT] {ad_id}: Lyon 5ème mais hors Vieux Lyon (quartier exclu détecté).")
+                continue
+
+            # Mots-clés représentatifs du Vieux Lyon (Saint-Jean, Saint-Paul, Saint-Georges, quais de Saône)
+            vieux_lyon_keywords = [
+                "vieux lyon", "vieux-lyon", "vieuxlyon", "saint-jean", "saint jean", "st-jean", "st jean",
+                "saint-paul", "saint paul", "st-paul", "st paul", "saint-georges", "saint georges",
+                "st-georges", "st georges", "gadagne", "quai romain rolland", "romain rolland",
+                "quai fulchiron", "fulchiron", "quai de bondy", "quai pierre-scize", "quai pierre scize",
+                "pierre scize", "place du change", "place du gouvernement", "place de la trinité",
+                "place trinité", "place trinite", "place saint-jean", "place st jean", "place saint jean",
+                "place saint-paul", "place saint paul", "rue saint-jean", "rue saint jean",
+                "rue du bœuf", "rue du boeuf", "rue juiverie", "rue des trois maries", "rue saint-georges",
+                "rue saint georges", "rue lainerie", "rue de gadagne", "tramassac", "bambous",
+                "manécanterie", "manecanterie", "place benoît crépu", "place benoit crepu",
+                "port du temple", "passerelle du palais de justice"
+            ]
+            has_vl_keyword = any(kw in full_text_lower for kw in vieux_lyon_keywords)
+            
+            # Vérification GPS si disponible
+            lat_check = ad.get("blurInfo", {}).get("position", {}).get("lat")
+            lon_check = ad.get("blurInfo", {}).get("position", {}).get("lon")
+            in_vl_geo = False
+            if lat_check and lon_check:
+                dist_to_vl_metro = haversine(lat_check, lon_check, 45.7622, 4.8272)
+                # Station Vieux Lyon à moins de 600m ET longitude dans la bande le long de la Saône
+                if dist_to_vl_metro <= 600 and (4.820 <= lon_check <= 4.832):
+                    in_vl_geo = True
+            
+            if not has_vl_keyword and not in_vl_geo:
+                print(f"[REJECT] {ad_id}: Lyon 5ème mais quartier non identifié comme Vieux Lyon.")
+                continue
             
         # 7. Elevator check (Mandatory unless ground floor RDC)
-        has_elevator = ad.get("hasElevator", False)
+        has_elevator = (ad.get("hasElevator") is True) or ("ascenseur" in (title + " " + description).lower() and "sans ascenseur" not in (title + " " + description).lower())
         floor = ad.get("floor")
         is_rdc = (floor == 0) or ad.get("isGroundFloor", False) or "rez-de-chaussée" in description.lower() or "rdc" in description.lower()
         if not is_rdc and not has_elevator:
@@ -1819,7 +1995,8 @@ def main():
         if floor and floor >= 4:
             advantages_list.append(f"étage élevé ({floor}ème)")
             
-        if ad.get("hasBalcony") or ad.get("hasTerrace") or "balcon" in description.lower() or "terrasse" in description.lower():
+        has_balcony = bool(ad.get("hasBalcony") or ad.get("hasTerrace") or is_text_balcony(title + " " + description))
+        if has_balcony:
             advantages_list.append("balcon/terrasse")
         else:
             inconvenients_list.append("sans balcon/terrasse")
@@ -1827,8 +2004,13 @@ def main():
         if "parking" in description.lower() or "garage" in description.lower() or "box" in description.lower():
             advantages_list.append("parking/garage")
             
-        if "clim" in description.lower() or "climatisation" in description.lower() or "climatise" in description.lower():
+        has_ac = is_text_aircon(title + " " + description) or bool(ad.get("hasAirConditioning"))
+        if has_ac:
             advantages_list.append("climatisation")
+        elif has_balcony:
+            inconvenients_list.append("sans climatisation (clim d'appoint envisageable sur balcon)")
+        else:
+            inconvenients_list.append("sans climatisation")
             
         if any(kw in description.lower() for kw in ["cachet", "ancien", "parquet", "cheminée", "cheminee", "moulure", "hauteur sous plafond"]):
             advantages_list.append("cachet de l'ancien")
