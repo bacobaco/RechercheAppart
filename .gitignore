@@ -1,10 +1,10 @@
-# Credentials, Sessions and Data
+# Credentials and Sessions
 *_session.json
 *_token.json
 *_url.json
 cookies_*.json
 cookies.json
-data.json
+
 
 # Logs
 *.log
