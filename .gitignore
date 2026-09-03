@@ -25,6 +25,8 @@ __pycache__/
 *.pdf
 *.png
 Dossier_*.html
+fiche_appartement_*.html
+gdc_ad_extracted.json
 annonce_*.html
 scraped_*
 all_photo_keys.json
@@ -36,9 +38,11 @@ photos_garibaldi_jardin/
 # Ad-hoc one-off scripts
 build_full_pdf.py
 download_all_photos.py
+download_gdc_photos.py
 extract_clean_photos.py
 extract_data.py
 fetch_gdc_ad.py
+fetch_gdc_details.py
 generate_full_dossier_pdf.py
 generate_pdf.py
 parse_post_json.py

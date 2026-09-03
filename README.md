@@ -19,7 +19,7 @@ Ce projet a été conçu pour automatiser et centraliser la veille immobilière 
   - **Lyon 3e** (Préfecture, Quais du Rhône - secteurs calmes).
   - **Lyon 1er** (Pentes / Terreaux - secteurs calmes).
   - **Lyon 5e** (**Vieux Lyon UNIQUEMENT** : Saint-Jean, Saint-Paul, Saint-Georges).
-- **Surface** : $\ge 75\text{ m}^2$ (Idéal 100 à 150 m²).
+- **Surface** : $\ge 70\text{ m}^2$ (Idéal 100 à 150 m²).
 - **Configuration** : 3 à 4 pièces (Minimum 2 chambres).
 - **Équipements requis** :
   - **Ascenseur obligatoire** (sauf RDC).

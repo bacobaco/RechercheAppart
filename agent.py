@@ -343,7 +343,7 @@ def scrape_bienici():
       "maxPrice": 2500,
       "minRooms": 3,
       "maxRooms": 4,
-      "minArea": 75,
+      "minArea": 70,
       "page": 1,
       "sortBy": "publicationDate",
       "sortOrder": "desc",
@@ -480,7 +480,7 @@ def scrape_barnes():
 
 def scrape_leboncoin():
     print("[INFO] Interrogation du site LeBonCoin...")
-    url = "https://www.leboncoin.fr/recherche?category=10&locations=Lyon_69001__45.76795_4.83438_3586,Lyon_69002__45.75365_4.82888_3765,Lyon_69003__45.75639_4.85558_7254,Lyon_69005__45.7583_4.815_3000,Lyon_69006__45.7716_4.85352_3618&real_estate_type=2&price=1500-2500&square=75-max&rooms=3-4&furnished=1&sort=time&order=desc"
+    url = "https://www.leboncoin.fr/recherche?category=10&locations=Lyon_69001__45.76795_4.83438_3586,Lyon_69002__45.75365_4.82888_3765,Lyon_69003__45.75639_4.85558_7254,Lyon_69005__45.7583_4.815_3000,Lyon_69006__45.7716_4.85352_3618&real_estate_type=2&price=1500-2500&square=70-max&rooms=3-4&furnished=1&sort=time&order=desc"
     ads = []
     
     if not sync_playwright:
@@ -931,8 +931,8 @@ def scrape_lodgis():
                     if s_match:
                         surface = float(s_match.group(1).replace(",", "."))
                 
-                # Quick filter: surface > 75
-                if not surface or surface < 75:
+                # Quick filter: surface > 70
+                if not surface or surface < 70:
                     continue
                 
                 # Extract price
@@ -970,14 +970,33 @@ def scrape_lodgis():
                     page.goto(cand["url"], wait_until="networkidle", timeout=20000)
                     page.wait_for_timeout(1000)
                     
-                    body_text = page.locator("body").inner_text()
                     page_title = ""
                     try:
                         page_title = page.title()
                     except:
                         pass
                     
-                    description = body_text
+                    # Extract official services list from Lodgis dataLayer if present
+                    try:
+                        lodgis_services = page.evaluate("() => (window.dataLayer && window.dataLayer[0] && window.dataLayer[0].bien && window.dataLayer[0].bien.services) || []")
+                    except:
+                        lodgis_services = []
+
+                    # Remove unavailable equipment (.non-avaible) and boilerplate elements before reading text
+                    page.evaluate("""() => {
+                        document.querySelectorAll('.non-avaible, .modal, footer, header, #subscribe_modal').forEach(el => el.remove());
+                    }""")
+                    
+                    # Extract description from official description block
+                    desc_elem = page.locator(".appart__infos__description")
+                    desc_text = desc_elem.inner_text().strip() if desc_elem.count() > 0 else ""
+                    
+                    # Extract active equipments
+                    equip_elems = page.locator("ul.equipement__list li span")
+                    active_equips = [equip_elems.nth(i).inner_text().strip() for i in range(equip_elems.count())]
+                    
+                    # Build clean description for pattern matching (amenities, floor, rooms)
+                    description = desc_text + "\n" + " ".join(active_equips) + "\n" + page.locator("body").inner_text()
                     
                     # Extract rooms from title or description
                     rooms = None
@@ -1005,10 +1024,27 @@ def scrape_lodgis():
                     if floor_match:
                         floor = int(floor_match.group(1))
                     
-                    has_elevator = "ascenseur" in description.lower() and "sans ascenseur" not in description.lower()
+                    has_elevator = (
+                        "ascenseur" in lodgis_services
+                        or ("ascenseur" in description.lower() and "sans ascenseur" not in description.lower())
+                    )
                     is_rdc = "rez-de-chaussée" in description.lower() or "rdc" in description.lower()
                     if floor == 0:
                         is_rdc = True
+                    
+                    # Accurate equipment detection
+                    has_ac = (
+                        any(s in ["airconditionne", "climatisation", "clim"] for s in lodgis_services)
+                        or is_text_aircon(cand["title"] + " " + desc_text + " " + " ".join(active_equips))
+                    )
+                    has_balcony = (
+                        any(s in ["balcon", "terrasse"] for s in lodgis_services)
+                        or is_text_balcony(cand["title"] + " " + desc_text + " " + " ".join(active_equips))
+                    )
+                    has_terrace = (
+                        "terrasse" in lodgis_services
+                        or ("terrasse" in (desc_text + " " + " ".join(active_equips)).lower() and "sans terrasse" not in desc_text.lower())
+                    )
                     
                     # Extract address from URL pattern
                     addr_match = _re.search(r'/LPA\d+-(.+?)-appartement-lyon', cand["url"])
@@ -1055,8 +1091,9 @@ def scrape_lodgis():
                                 "lon": lon
                             }
                         },
-                        "hasBalcony": "balcon" in description.lower() or "terrasse" in description.lower(),
-                        "hasTerrace": "terrasse" in description.lower()
+                        "hasAirConditioning": has_ac,
+                        "hasBalcony": has_balcony,
+                        "hasTerrace": has_terrace
                     }
                     ads.append(ad_item)
                     
@@ -1167,8 +1204,8 @@ def scrape_urbansejour():
                             surface = val
                             break
                     
-                    # Quick filter: surface > 75
-                    if not surface or surface < 75:
+                    # Quick filter: surface > 70
+                    if not surface or surface < 70:
                         continue
                     
                     # Extract price (first €/mois pattern)
@@ -1403,7 +1440,7 @@ def scrape_gdc():
                         
                     if price and (price < 1500 or price > 2500):
                         continue
-                    if surface and surface <= 75:
+                    if surface and surface <= 70:
                         continue
                         
                     candidates.append({
@@ -1808,8 +1845,8 @@ def main():
             print(f"[REJECT] {ad_id}: Logement en duplex.")
             continue
             
-        # 2. Surface check (> 75 m²)
-        if not surface or surface <= 75:
+        # 2. Surface check (> 70 m²)
+        if not surface or surface <= 70:
             print(f"[REJECT] {ad_id}: Surface de {surface} m² insuffisante.")
             continue
             
