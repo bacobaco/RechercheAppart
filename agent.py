@@ -4,6 +4,8 @@ import math
 import re
 import requests
 import urllib.parse
+import subprocess
+import sys
 from datetime import datetime
 
 try:
@@ -1628,6 +1630,30 @@ def start_server_if_not_running():
         except Exception as e:
             print(f"[ERREUR] Impossible de lancer server.py: {e}")
 
+def sync_data_to_github(commit_msg="Mise à jour des annonces (data.json)"):
+    """Synchronise automatiquement data.json vers GitHub pour actualiser le site GitHub Pages."""
+    try:
+        res = subprocess.run(
+            ["git", "status", "--porcelain", DATA_FILE],
+            capture_output=True,
+            text=True,
+            check=False
+        )
+        if res.stdout.strip():
+            print("\n[GITHUB] Nouvelles données détectées dans data.json. Synchronisation vers GitHub Pages...")
+            subprocess.run(["git", "add", DATA_FILE], check=True, capture_output=True)
+            subprocess.run(["git", "commit", "-m", commit_msg], check=True, capture_output=True)
+            push_res = subprocess.run(["git", "push", "origin", "main"], capture_output=True, text=True, check=False)
+            if push_res.returncode == 0:
+                print("[GITHUB] [OK] data.json synchronisé avec succès sur GitHub !")
+                print("[GITHUB] -> Le site https://bacobaco.github.io/RechercheAppart/ sera à jour d'ici ~1 minute.\n")
+            else:
+                print(f"[GITHUB] [ATTENTION] Échec de l'envoi vers GitHub : {push_res.stderr.strip()}")
+        else:
+            print("[GITHUB] Aucun changement dans data.json à synchroniser.")
+    except Exception as e:
+        print(f"[GITHUB] [AVERTISSEMENT] Erreur lors de la synchronisation GitHub : {e}")
+
 def purge_old_eliminated():
     """Supprime définitivement de data.json les annonces éliminées depuis plus de 30 jours.
     Cible les statuts 'Éliminer' et 'Déjà loué'.
@@ -1691,6 +1717,7 @@ def purge_old_eliminated():
                 json.dump(kept, f, ensure_ascii=False, indent=4)
             if purged_count > 0:
                 print(f"[INFO] Purge terminée : {purged_count} annonce(s) supprimée(s) définitivement.")
+                sync_data_to_github(f"chore: purge automatique de {purged_count} annonce(s) expiree(s)")
             if backfill_count > 0:
                 print(f"[INFO] {backfill_count} annonce(s) mises à jour avec date_elimination rétro-initialisée.")
         except Exception as e:
@@ -2107,6 +2134,8 @@ def main():
             with open(DATA_FILE, "w", encoding="utf-8") as f:
                 json.dump(existing_data, f, ensure_ascii=False, indent=4)
             print(f"[INFO] Scan terminé. {new_listings_count} nouvelles annonces ajoutées à {DATA_FILE}.")
+            # Synchronisation automatique sur GitHub Pages
+            sync_data_to_github(f"feat: ajout de {new_listings_count} nouvelle(s) annonce(s) via scan agent")
         except Exception as e:
             print(f"[ERREUR] Impossible de sauvegarder dans {DATA_FILE}: {e}")
     else:
