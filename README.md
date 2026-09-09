@@ -1,6 +1,8 @@
-# 🏠 RechercheAppart - Lyon (v1.3.0)
+# 🏠 RechercheAppart - Lyon (v1.4.0)
 
 Agent intelligent et automatisé de recherche, filtrage et suivi d'annonces de location d'appartements meublés haut standing à Lyon.
+
+🌐 **Tableau de bord accessible en ligne** : **[https://bacobaco.github.io/RechercheAppart/](https://bacobaco.github.io/RechercheAppart/)**
 
 ---
 
@@ -97,6 +99,10 @@ python agent.py
 
 ## 📋 Historique des Versions
 
+- **v1.4.0** *(2026-09-09)* :
+  - Déploiement du tableau de bord sur GitHub Pages pour consultation en ligne permanente.
+  - Compatibilité du dashboard en mode statique (chargement direct de `data.json`, persistance locale via `localStorage`).
+  - Ajout d'indicateurs de statut (en ligne vs serveur local) et bouton d'actualisation rapide.
 - **v1.3.0** *(2026-08-30)* :
   - Intégration du secteur Lyon 5e (Vieux Lyon exclusivement).
   - Assouplissement du critère climatisation (acceptation des balcons/terrasses pour climatisation d'appoint).
