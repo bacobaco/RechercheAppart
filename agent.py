@@ -8,6 +8,19 @@ import subprocess
 import sys
 from datetime import datetime
 
+import base64
+import time
+
+try:
+    from curl_cffi import requests as curl_requests
+except ImportError:
+    curl_requests = None
+
+try:
+    from bs4 import BeautifulSoup
+except ImportError:
+    BeautifulSoup = None
+
 try:
     from playwright.sync_api import sync_playwright
 except ImportError:
@@ -16,6 +29,142 @@ except ImportError:
 DATA_FILE = "data.json"
 JINKA_SESSION_FILE = "jinka_session.json"
 JINKA_TOKEN_FILE = "jinka_token.json"
+GDC_SESSION_FILE = "gdc_session.json"
+GDC_URL_FILE = "gdc_url.json"
+GDC_DEFAULT_COOKIES = "cookies_gdc.json"
+
+def decode_jinka_token(token):
+    """Décode le token JWT Jinka pour vérifier sa date d'expiration."""
+    if not token or not isinstance(token, str):
+        return None
+    try:
+        parts = token.strip().split(".")
+        if len(parts) != 3:
+            return None
+        payload_b64 = parts[1]
+        payload_b64 += "=" * (-len(payload_b64) % 4)
+        return json.loads(base64.b64decode(payload_b64).decode("utf-8"))
+    except Exception:
+        return None
+
+def is_jinka_token_valid(token):
+    """Vérifie si le token Jinka est présent et non expiré (avec marge de sécurité)."""
+    payload = decode_jinka_token(token)
+    if not payload:
+        return False
+    exp = payload.get("exp", 0)
+    return (exp - time.time()) > 300
+
+def auto_refresh_jinka_token():
+    """Tente de renouveler le token Jinka automatiquement sans bloquer l'utilisateur."""
+    print("[INFO] Tentative de renouvellement automatique du token Jinka...")
+    
+    # 1. Vérifier si un token JWT valide se trouve dans le presse-papiers
+    try:
+        import pyperclip
+        clip = pyperclip.paste()
+        if clip:
+            matches = re.findall(r'eyJ[a-zA-Z0-9_-]+\.[a-zA-Z0-9_-]+\.[a-zA-Z0-9_-]+', clip)
+            for m in matches:
+                if is_jinka_token_valid(m):
+                    print("[OK] Token Jinka valide détecté automatiquement dans le presse-papiers !")
+                    with open(JINKA_TOKEN_FILE, "w", encoding="utf-8") as f:
+                        json.dump({"token": m}, f, indent=2)
+                    return m
+    except Exception:
+        pass
+
+    # 2. Profil persistant ou session Playwright
+    profile_dir = os.path.abspath("./.jinka_profile")
+    if sync_playwright and (os.path.exists(profile_dir) or os.path.exists(JINKA_SESSION_FILE)):
+        try:
+            with sync_playwright() as p:
+                if os.path.exists(profile_dir):
+                    ctx = p.chromium.launch_persistent_context(
+                        user_data_dir=profile_dir,
+                        headless=True,
+                        channel="chrome",
+                        args=["--disable-blink-features=AutomationControlled"]
+                    )
+                else:
+                    browser = p.chromium.launch(headless=True, channel="chrome", args=["--disable-blink-features=AutomationControlled"])
+                    ctx = browser.new_context(storage_state=JINKA_SESSION_FILE)
+                
+                page = ctx.new_page() if not ctx.pages else ctx.pages[0]
+                page.add_init_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
+                page.goto("https://www.jinka.fr/", wait_until="networkidle", timeout=15000)
+                
+                token = page.evaluate(r"""() => {
+                    const jwtRegex = /eyJ[a-zA-Z0-9_-]+\.[a-zA-Z0-9_-]+\.[a-zA-Z0-9_-]+/;
+                    for (let i = 0; i < localStorage.length; i++) {
+                        const val = localStorage.getItem(localStorage.key(i));
+                        if (typeof val === 'string' && jwtRegex.test(val)) {
+                            const m = val.match(jwtRegex);
+                            if (m) return m[0];
+                        }
+                    }
+                    for (let i = 0; i < sessionStorage.length; i++) {
+                        const val = sessionStorage.getItem(sessionStorage.key(i));
+                        if (typeof val === 'string' && jwtRegex.test(val)) {
+                            const m = val.match(jwtRegex);
+                            if (m) return m[0];
+                        }
+                    }
+                    return null;
+                }""")
+                
+                ctx.close()
+                if token and is_jinka_token_valid(token):
+                    print("[OK] Token Jinka récupéré automatiquement via session Playwright persistante !")
+                    with open(JINKA_TOKEN_FILE, "w", encoding="utf-8") as f:
+                        json.dump({"token": token}, f, indent=2)
+                    return token
+        except Exception as e:
+            print(f"[WARN] Tentative auto-refresh Jinka Playwright: {e}")
+
+    return None
+
+def update_gdc_session_cookies(response, current_cookies_list, session_file="gdc_session.json"):
+    """Met à jour les cookies dans la liste et sauvegarde dans gdc_session.json."""
+    if not hasattr(response, 'cookies') or not response.cookies:
+        return current_cookies_list
+        
+    cookies_by_name = {c['name']: c for c in current_cookies_list if 'name' in c}
+    updated = False
+    
+    for cookie in response.cookies.jar:
+        name = cookie.name
+        val = cookie.value
+        domain = cookie.domain or ".gensdeconfiance.com"
+        expires = cookie.expires if cookie.expires else -1
+        
+        if name in cookies_by_name:
+            if cookies_by_name[name].get('value') != val:
+                cookies_by_name[name]['value'] = val
+                cookies_by_name[name]['expires'] = expires
+                updated = True
+        else:
+            cookies_by_name[name] = {
+                "name": name,
+                "value": val,
+                "domain": domain,
+                "path": "/",
+                "expires": expires,
+                "httpOnly": True if 'cf' in name else False,
+                "secure": True,
+                "sameSite": "Lax"
+            }
+            updated = True
+            
+    if updated:
+        new_list = list(cookies_by_name.values())
+        try:
+            with open(session_file, "w", encoding="utf-8") as f:
+                json.dump({"cookies": new_list, "origins": []}, f, ensure_ascii=False, indent=2)
+        except Exception as e:
+            print(f"[WARN] Impossible de sauvegarder les cookies renouvelés: {e}")
+        return new_list
+    return current_cookies_list
 
 # Global system tracking status & errors across all sources
 SCRAPING_STATUS = []
@@ -601,71 +750,64 @@ def scrape_leboncoin():
 
 def scrape_jinka():
     """Récupère les annonces depuis Jinka via leur API privée.
-    Nécessite d'avoir lancé login_jinka.py au moins une fois.
+    Gère le renouvellement automatique du token en cas d'expiration.
     Jinka agrège SeLoger, LeBonCoin, PAP, etc."""
     print("[INFO] Interrogation de Jinka (agrégateur SeLoger/LBC/PAP)...")
     ads = []
     
     # 1. Récupérer le token d'authentification
     token = None
-    
-    # Méthode A : depuis le fichier token sauvegardé par login_jinka.py
     if os.path.exists(JINKA_TOKEN_FILE):
         try:
             with open(JINKA_TOKEN_FILE, "r", encoding="utf-8") as f:
                 token_data = json.load(f)
                 token = token_data.get("token")
-                if token:
-                    print("[INFO] Token Jinka chargé depuis jinka_token.json")
         except Exception as e:
             print(f"[WARN] Impossible de lire {JINKA_TOKEN_FILE}: {e}")
-    
-    # Méthode B : se reconnecter via la session Playwright sauvegardée
-    if not token and os.path.exists(JINKA_SESSION_FILE) and sync_playwright:
-        try:
-            print("[INFO] Pas de token direct, tentative via session Playwright...")
-            with sync_playwright() as p:
-                browser = p.chromium.launch(headless=True)
-                context = browser.new_context(storage_state=JINKA_SESSION_FILE)
-                page = context.new_page()
-                # Naviguer vers Jinka pour récupérer le token depuis le localStorage
-                page.goto("https://www.jinka.fr/", wait_until="networkidle", timeout=20000)
-                js_token = page.evaluate("""() => {
-                    for (let i = 0; i < localStorage.length; i++) {
-                        const key = localStorage.key(i);
-                        const val = localStorage.getItem(key);
-                        if (key.toLowerCase().includes('token') || key.toLowerCase().includes('auth')) {
-                            return val;
-                        }
-                    }
-                    return null;
-                }""")
-                if js_token:
-                    token = js_token
-                    # Sauvegarder pour la prochaine fois
-                    with open(JINKA_TOKEN_FILE, "w", encoding="utf-8") as f:
-                        json.dump({"token": token}, f)
-                    print("[OK] Token Jinka récupéré via session Playwright")
-                browser.close()
-        except Exception as e:
-            print(f"[WARN] Échec de récupération du token via Playwright: {e}")
+            
+    # Vérification de l'expiration du token JWT
+    if not token or not is_jinka_token_valid(token):
+        if token:
+            print("[INFO] Le token Jinka actuel est expiré ou proche de l'expiration.")
+        token = auto_refresh_jinka_token()
+    else:
+        info = decode_jinka_token(token)
+        if info:
+            exp_str = time.strftime("%d/%m/%Y", time.localtime(info.get("exp", 0)))
+            print(f"[INFO] Token Jinka actif ({info.get('email', 'OK')}, valide jusqu'au {exp_str})")
     
     if not token:
-        record_source_error("Jinka", "Token manquant", "Aucun token d'accès Jinka disponible.", "Relancez la commande: python login_jinka.py")
+        record_source_error("Jinka", "Token manquant", "Aucun token d'accès Jinka valide disponible.", "Relancez: python login_jinka.py (ou copiez votre token)")
         print("[ERREUR] Aucun token Jinka disponible. Lancez d'abord: python login_jinka.py")
         return []
     
-    # 2. Récupérer les alertes
-    headers = {
-        "Accept": "application/json",
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-        "Content-Type": "application/json",
-        "Authorization": f"Bearer {token}",
-        "Origin": "https://www.jinka.fr",
-    }
+    # 2. Récupérer les alertes avec auto-retry en cas de 401
+    def send_jinka_api(url, auth_token):
+        req_headers = {
+            "Accept": "application/json",
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {auth_token}",
+            "Origin": "https://www.jinka.fr",
+        }
+        if curl_requests:
+            try:
+                return curl_requests.get(url, headers=req_headers, impersonate="chrome120", timeout=15)
+            except Exception:
+                pass
+        return requests.get(url, headers=req_headers, timeout=15)
     
     try:
-        r_alerts = requests.get("https://api.jinka.fr/apiv2/alert", headers=headers, timeout=15)
+        r_alerts = send_jinka_api("https://api.jinka.fr/apiv2/alert", token)
+        
+        # Si 401 Unauthorized, tentative de renouvellement automatique immédiate
+        if r_alerts.status_code == 401:
+            print("[WARN] Token Jinka refusé (401). Tentative de renouvellement immédiat...")
+            refreshed = auto_refresh_jinka_token()
+            if refreshed and refreshed != token:
+                token = refreshed
+                r_alerts = send_jinka_api("https://api.jinka.fr/apiv2/alert", token)
+                
         if r_alerts.status_code == 401:
             record_source_error("Jinka", "Token expiré", "Le token Jinka a expiré (HTTP 401).", "Relancez la commande: python login_jinka.py")
             print("[ERREUR] Token Jinka expiré. Relancez: python login_jinka.py")
@@ -697,11 +839,7 @@ def scrape_jinka():
         
         # Récupérer le dashboard (première page)
         try:
-            r_dashboard = requests.get(
-                f"https://api.jinka.fr/apiv2/alert/{alert_id}/dashboard",
-                headers=headers,
-                timeout=15
-            )
+            r_dashboard = send_jinka_api(f"https://api.jinka.fr/apiv2/alert/{alert_id}/dashboard", token)
             if r_dashboard.status_code != 200:
                 print(f"[WARN] Impossible de charger le dashboard Jinka pour l'alerte {alert_name} (status {r_dashboard.status_code})")
                 continue
@@ -712,11 +850,7 @@ def scrape_jinka():
             # Récupérer les pages suivantes (max 3 pages pour ne pas surcharger)
             for page_num in range(2, min(nb_pages + 1, 4)):
                 try:
-                    r_page = requests.get(
-                        f"https://api.jinka.fr/apiv2/alert/{alert_id}/dashboard?page={page_num}",
-                        headers=headers,
-                        timeout=15
-                    )
+                    r_page = send_jinka_api(f"https://api.jinka.fr/apiv2/alert/{alert_id}/dashboard?page={page_num}", token)
                     if r_page.status_code == 200:
                         page_results = r_page.json().get("ads", [])
                         results.extend(page_results)
@@ -1324,20 +1458,44 @@ def scrape_urbansejour():
 
 def scrape_gdc():
     """Récupère les annonces depuis Gens de Confiance.
-    Nécessite d'avoir lancé login_gdc.py au moins une fois."""
-    print("[INFO] Interrogation du site Gens de Confiance...")
+    Utilise en priorité curl_cffi (impersonation Chrome TLS) pour contourner
+    Cloudflare Turnstile et renouveler automatiquement les cookies de session.
+    Repli automatique sur Playwright Stealth si nécessaire."""
+    print("[INFO] Interrogation du site Gens de Confiance (mode anti-bot résilient)...")
     ads = []
     
-    if not sync_playwright:
-        print("[ERREUR] Playwright n'est pas disponible pour Gens de Confiance.")
-        return []
-        
-    SESSION_FILE = "gdc_session.json"
-    URL_FILE = "gdc_url.json"
+    SESSION_FILE = GDC_SESSION_FILE
+    URL_FILE = GDC_URL_FILE
     
+    # Auto-récupération de session si absente
+    if not os.path.exists(SESSION_FILE):
+        if os.path.exists(GDC_DEFAULT_COOKIES):
+            try:
+                from login_gdc import import_from_file
+                import_from_file(GDC_DEFAULT_COOKIES)
+            except Exception:
+                pass
+                
+    if not os.path.exists(SESSION_FILE):
+        # Tenter depuis le presse-papiers
+        try:
+            from login_gdc import import_from_clipboard
+            import_from_clipboard()
+        except Exception:
+            pass
+
     if not os.path.exists(SESSION_FILE):
         record_source_error("Gens de Confiance", "Session absente", "Session Gens de Confiance introuvable (gdc_session.json).", "Relancez la commande: python login_gdc.py")
         print("[WARN] Session Gens de Confiance absente. Lancez d'abord: python login_gdc.py")
+        return []
+        
+    try:
+        with open(SESSION_FILE, "r", encoding="utf-8") as f:
+            session_data = json.load(f)
+        cookies_list = session_data.get("cookies", [])
+        cookie_dict = {c["name"]: c["value"] for c in cookies_list if "name" in c and "value" in c}
+    except Exception as e:
+        print(f"[WARN] Impossible de lire {SESSION_FILE}: {e}")
         return []
         
     search_url = "https://gensdeconfiance.com/fr/s/immobilier/locations-immobilieres?type=offering&rootLocales=fr%2Cen&currentAdSort=displayDate_desc"
@@ -1348,244 +1506,210 @@ def scrape_gdc():
                 search_url = url_data.get("search_url", search_url)
         except Exception as e:
             print(f"[WARN] Impossible de lire {URL_FILE}: {e}")
-    # Force use of apex domain to bypass Cloudflare challenges that target www subdomain
     search_url = search_url.replace("https://www.gensdeconfiance.com", "https://gensdeconfiance.com")
-            
-    try:
-        with sync_playwright() as p:
-            browser = p.chromium.launch(headless=True)
-            context = browser.new_context(
-                storage_state=SESSION_FILE,
-                viewport={"width": 1280, "height": 900},
-                user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
-            )
-            page = context.new_page()
-            # Hide webdriver flag to bypass Cloudflare bot detection
-            page.add_init_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
-            
-            print(f"[INFO] Navigation vers {search_url}...")
-            page.goto(search_url, wait_until="domcontentloaded", timeout=30000)
-            
-            # Dismiss cookie banner
-            try:
-                cookie_btn = page.locator("button#axeptio_btn_acceptAll")
-                if cookie_btn.count() > 0:
-                    cookie_btn.first.click(force=True)
-                    page.wait_for_timeout(500)
-            except:
-                pass
-                
-            try:
-                page.wait_for_selector("a[href*='/ui/post/'], a[href*='/annonce/']", timeout=15000)
-            except Exception as e:
-                record_source_error("Gens de Confiance", "Erreur de chargement / Anti-bot", f"Aucune annonce chargée ou délai dépassé: {e}", "Relancez la commande: python login_gdc.py")
-                print(f"[WARN] Aucune annonce trouvée ou chargement trop long sur GDC: {e}")
-                browser.close()
-                return []
-                
-            cards = page.locator("a[href*='/ui/post/'], a[href*='/annonce/']").all()
-            print(f"[INFO] {len(cards)} éléments d'annonces trouvés sur Gens de Confiance.")
-            
-            candidates = []
+
+    # MÉTHODE 1: curl_cffi avec impersonation Chrome (Bypass Cloudflare natif)
+    used_curl_cffi = False
+    if curl_requests and BeautifulSoup:
+        try:
+            print(f"[INFO] Récupération via curl_cffi (Chrome stealth)...")
             seen_urls = set()
             
-            for card in cards:
-                try:
-                    href = card.get_attribute("href")
-                    if not href or not ("/ui/post/" in href or "/annonce/" in href):
-                        continue
+            for page_num in range(1, 3):
+                url = search_url
+                if page_num > 1:
+                    sep = "&" if "?" in url else "?"
+                    url = f"{url}{sep}page={page_num}"
                     
-                    ad_url = href if href.startswith("http") else f"https://gensdeconfiance.com{href}"
-                    ad_url = ad_url.replace("https://www.gensdeconfiance.com", "https://gensdeconfiance.com")
-                    norm_url = ad_url.split('?')[0]
-                    if norm_url in seen_urls:
-                        continue
-                    seen_urls.add(norm_url)
+                r = curl_requests.get(url, impersonate="chrome120", cookies=cookie_dict, timeout=15)
+                if r.status_code == 403 or "Just a moment" in r.text:
+                    print(f"[WARN] Cloudflare a retourné un challenge (statut {r.status_code})")
+                    break
+                elif r.status_code != 200:
+                    print(f"[WARN] Statut GDC page {page_num}: {r.status_code}")
+                    break
                     
-                    text = card.inner_text()
-                    lines = [l.strip() for l in text.split('\n') if l.strip()]
-                    if not lines:
-                        continue
-                        
-                    price = None
-                    for line in lines:
-                        if "€" in line:
-                            price_digits = "".join(c for c in line if c.isdigit())
-                            if price_digits:
-                                price = float(price_digits)
-                                break
-                            
-                    title_line = ""
-                    for line in lines:
-                        if len(line) > len(title_line) and not any(kw in line for kw in ["€", "minutes", "secondes", "heure", "jour"]):
-                            title_line = line
-                    
-                    postal_code = ""
-                    for pc in ["69001", "69002", "69003", "69005", "69006"]:
-                        if pc in text:
-                            postal_code = pc
-                            break
-                    if not postal_code:
-                        for dist in ["Lyon 1e", "Lyon 2e", "Lyon 3e", "Lyon 5e", "Lyon 6e", "Lyon 1er", "Lyon 2ème", "Lyon 3ème", "Lyon 5ème", "Lyon 6ème", "Lyon 1", "Lyon 2", "Lyon 3", "Lyon 5", "Lyon 6"]:
-                            if dist in text:
-                                if "1" in dist: postal_code = "69001"
-                                elif "2" in dist: postal_code = "69002"
-                                elif "3" in dist: postal_code = "69003"
-                                elif "5" in dist: postal_code = "69005"
-                                elif "6" in dist: postal_code = "69006"
-                                break
-                    
-                    surface = None
-                    m = re.search(r'(\d+(?:[.,]\d+)?)\s*m²', text, re.IGNORECASE)
-                    if m:
-                        surface = float(m.group(1).replace(",", "."))
-                        
-                    if price and (price < 1500 or price > 2500):
-                        continue
-                    if surface and surface <= 70:
-                        continue
-                        
-                    candidates.append({
-                        "url": norm_url,
-                        "title": title_line or "Appartement Gens de Confiance",
-                        "price": price,
-                        "surface": surface,
-                        "postal_code": postal_code,
-                        "card_text": text
-                    })
-                except Exception as ex:
-                    print(f"[WARN] Erreur pré-parsing carte GDC: {ex}")
-                    
-            print(f"[INFO] {len(candidates)} annonces GDC passent le pré-filtrage. Récupération des détails...")
-            
-            import time
-            import random
-            for idx, cand in enumerate(candidates[:10]):
-                detail_context = None
-                detail_page = None
-                try:
-                    if idx > 0:
-                        # Add a random delay to prevent Cloudflare blocking on fast consecutive requests
-                        time.sleep(random.uniform(2.5, 5.0))
-                    
-                    # Open a fresh context to completely isolate the details request from previous actions
-                    detail_context = browser.new_context(
-                        storage_state=SESSION_FILE,
-                        viewport={"width": 1280, "height": 900},
-                        user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
-                    )
-                    detail_page = detail_context.new_page()
-                    # Hide webdriver flag to bypass Cloudflare bot detection
-                    detail_page.add_init_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
-                    
-                    detail_page.goto(cand["url"], wait_until="domcontentloaded", timeout=20000)
+                used_curl_cffi = True
+                # Renouvellement automatique des cookies (__cf_bm, etc.)
+                cookies_list = update_gdc_session_cookies(r, cookies_list, SESSION_FILE)
+                cookie_dict = {c["name"]: c["value"] for c in cookies_list if "name" in c and "value" in c}
+                
+                soup = BeautifulSoup(r.text, "html.parser")
+                tag = soup.find("script", id="__NEXT_DATA__")
+                items = []
+                if tag and tag.text:
                     try:
-                        detail_page.wait_for_selector("h2, h3, div[class*='Description_container']", timeout=8000)
-                    except Exception:
-                        detail_page.wait_for_timeout(2000)
-                    
-                    page_title = detail_page.title()
-                    description = detail_page.locator("body").inner_text()
-                    
-                    if "Just a moment" in page_title or "Verification" in page_title or len(description.strip()) < 400:
-                        detail_page.wait_for_timeout(2000)
-                        description = detail_page.locator("body").inner_text()
-                        page_title = detail_page.title()
+                        next_json = json.loads(tag.text)
+                        items = next_json.get("props", {}).get("pageProps", {}).get("initialSearchClassifieds", {}).get("items", [])
+                    except Exception as e:
+                        print(f"[WARN] Erreur parsing __NEXT_DATA__: {e}")
                         
-                    if "Just a moment" in page_title or "Verification" in page_title or len(description.strip()) < 400:
-                        print(f"[WARN] Impossible de charger les détails pour {cand['url']} (Cloudflare ou bloqué). Utilisation du texte de la carte.")
-                        description = cand["card_text"]
-                    
-                    rooms = None
-                    rooms_match = re.search(r'(\d+)\s*(?:pièces|pieces|p\.)', description, re.IGNORECASE)
-                    if rooms_match:
-                        rooms = int(rooms_match.group(1))
+                print(f"[INFO] Page {page_num}: {len(items)} annonces brutes dans le flux.")
+                
+                for item in items:
+                    try:
+                        slug = item.get("slug")
+                        if not slug:
+                            continue
+                        spa_url = f"https://gensdeconfiance.com/fr/ui/post/realestate__rent/{slug}"
+                        if spa_url in seen_urls:
+                            continue
+                        seen_urls.add(spa_url)
                         
-                    bedrooms = None
-                    bed_match = re.search(r'(\d+)\s*(?:chambres|chambre|ch\b)', description, re.IGNORECASE)
-                    if bed_match:
-                        bedrooms = int(bed_match.group(1))
+                        title = item.get("title") or "Appartement Gens de Confiance"
+                        price_val = (item.get("price") or {}).get("value")
+                        price = float(price_val) if price_val is not None else None
                         
-                    floor = None
-                    floor_match = re.search(r'(\d+)(?:er|ème|e|eme)?\s*étage', description, re.IGNORECASE)
-                    if floor_match:
-                        floor = int(floor_match.group(1))
+                        surface = item.get("carrezSurface")
+                        surface = float(surface) if surface is not None else None
                         
-                    has_elevator = "ascenseur" in description.lower() and "sans ascenseur" not in description.lower()
-                    is_rdc = "rez-de-chaussée" in description.lower() or "rdc" in description.lower()
-                    if floor == 0:
-                        is_rdc = True
+                        addr = item.get("address") or {}
+                        city = addr.get("city") or ""
+                        zip_code = str(addr.get("zip") or "")
                         
-                    postal_code = cand["postal_code"]
-                    for pc in ["69001", "69002", "69003", "69005", "69006"]:
-                        if pc in description:
-                            postal_code = pc
-                            break
+                        # Vérifier si Lyon ou arrondissement cible
+                        text_to_check = f"{title} {city} {zip_code}".lower()
+                        is_lyon = "lyon" in text_to_check or zip_code.startswith("6900")
+                        if not is_lyon:
+                            continue
                             
-                    district_map = {
-                        "69001": "Lyon 1er",
-                        "69002": "Lyon 2e",
-                        "69003": "Lyon 3e",
-                        "69005": "Lyon 5e",
-                        "69006": "Lyon 6e"
-                    }
-                    district_name = district_map.get(postal_code, "Lyon Centre")
+                        postal_code = ""
+                        for pc in ["69001", "69002", "69003", "69005", "69006"]:
+                            if pc in zip_code or pc in text_to_check:
+                                postal_code = pc
+                                break
+                                
+                        district_map = {
+                            "69001": "Lyon 1er",
+                            "69002": "Lyon 2e",
+                            "69003": "Lyon 3e",
+                            "69005": "Lyon 5e",
+                            "69006": "Lyon 6e"
+                        }
+                        district_name = district_map.get(postal_code, f"{city} {zip_code}".strip() or "Lyon")
+                        
+                        # Filtrage préliminaire prix & surface
+                        if price and (price < 1500 or price > 2500):
+                            continue
+                        if surface and surface <= 70:
+                            continue
+                            
+                        lat = addr.get("latitude")
+                        lon = addr.get("longitude")
+                        if not lat or not lon:
+                            lat, lon = get_district_coordinates(f"{title} {district_name}")
+                            
+                        rooms = item.get("numberOfRooms")
+                        bedrooms = item.get("bedrooms")
+                        floor = item.get("propertyFloor")
+                        
+                        # Récupérer la description complète via curl_cffi (rapide et discret)
+                        description = item.get("description") or ""
+                        if not description or len(description) < 60:
+                            try:
+                                r_det = curl_requests.get(spa_url, impersonate="chrome120", cookies=cookie_dict, timeout=8)
+                                if r_det.status_code == 200:
+                                    soup_det = BeautifulSoup(r_det.text, "html.parser")
+                                    tag_det = soup_det.find("script", id="__NEXT_DATA__")
+                                    if tag_det and tag_det.text:
+                                        det_data = json.loads(tag_det.text)
+                                        classified = det_data.get("props", {}).get("pageProps", {}).get("classified", {})
+                                        description = classified.get("description") or ""
+                                        if not rooms:
+                                            rooms = classified.get("numberOfRooms")
+                                        if not bedrooms:
+                                            bedrooms = classified.get("bedrooms")
+                                        if floor is None:
+                                            floor = classified.get("propertyFloor")
+                                    if not description:
+                                        body_elem = soup_det.find("body")
+                                        if body_elem:
+                                            description = body_elem.get_text(separator="\n").strip()
+                            except Exception:
+                                pass
+                                
+                        is_rdc = (floor == 0) or ("rez-de-chaussée" in description.lower()) or ("rdc" in description.lower())
+                        has_elevator = "ascenseur" in description.lower() and "sans ascenseur" not in description.lower()
+                        
+                        suffix = slug.split("-")[-1]
+                        ad_id = f"gdc_{suffix}"
+                        
+                        ad_item = {
+                            "source": "Gens de Confiance",
+                            "id": ad_id,
+                            "url": spa_url,
+                            "title": title,
+                            "description": description,
+                            "price": price,
+                            "surfaceArea": surface,
+                            "postalCode": postal_code,
+                            "city": "Lyon",
+                            "district": {"libelle": district_name},
+                            "roomsQuantity": rooms,
+                            "bedroomsQuantity": bedrooms,
+                            "isFurnished": is_text_furnished(title + " " + description),
+                            "publicationDate": datetime.now().strftime("%Y-%m-%d"),
+                            "hasElevator": has_elevator,
+                            "floor": floor,
+                            "isGroundFloor": is_rdc,
+                            "blurInfo": {
+                                "position": {
+                                    "lat": lat,
+                                    "lon": lon
+                                }
+                            },
+                            "hasBalcony": "balcon" in description.lower() or "terrasse" in description.lower(),
+                            "hasTerrace": "terrasse" in description.lower()
+                        }
+                        ads.append(ad_item)
+                        print(f" [V] Annonce GDC retenue : {title} | {price}€ | {surface}m² | {postal_code}")
+                    except Exception as ex:
+                        print(f"[WARN] Erreur traitement annonce GDC: {ex}")
+                        
+        except Exception as e:
+            print(f"[WARN] Erreur lors du scraping curl_cffi GDC: {e}")
+
+    # MÉTHODE 2: Repli sur Playwright Stealth si curl_cffi n'a pas pu être utilisé
+    if not used_curl_cffi and sync_playwright:
+        print("[INFO] Repli sur Playwright Chrome Stealth pour Gens de Confiance...")
+        try:
+            with sync_playwright() as p:
+                browser = p.chromium.launch(
+                    headless=True,
+                    channel="chrome",
+                    args=["--disable-blink-features=AutomationControlled"]
+                )
+                context = browser.new_context(
+                    storage_state=SESSION_FILE,
+                    viewport={"width": 1280, "height": 900},
+                    user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+                )
+                page = context.new_page()
+                page.add_init_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
+                
+                page.goto(search_url, wait_until="domcontentloaded", timeout=30000)
+                try:
+                    cookie_btn = page.locator("button#axeptio_btn_acceptAll")
+                    if cookie_btn.count() > 0:
+                        cookie_btn.first.click(force=True)
+                        page.wait_for_timeout(500)
+                except Exception:
+                    pass
                     
-                    lat, lon = get_district_coordinates(
-                        cand["title"] + " " + description + " " + postal_code
-                    )
-                    
-                    # Extract unique identifier from URL
-                    slug = cand['url'].split('/')[-1].split('?')[0]
-                    suffix = slug.split('-')[-1]
-                    ad_id = f"gdc_{suffix}"
-                    
-                    # Use the internal SPA URL on the apex domain to avoid Cloudflare challenges and preserve direct SPA routing
-                    spa_url = f"https://gensdeconfiance.com/fr/ui/post/realestate__rent/{slug}"
-                    
-                    ad_item = {
-                        "source": "Gens de Confiance",
-                        "id": ad_id,
-                        "url": spa_url,
-                        "title": cand["title"],
-                        "description": description,
-                        "price": cand["price"],
-                        "surfaceArea": cand["surface"],
-                        "postalCode": postal_code,
-                        "city": "Lyon",
-                        "district": {"libelle": district_name},
-                        "roomsQuantity": rooms,
-                        "bedroomsQuantity": bedrooms,
-                        "isFurnished": is_text_furnished(cand["title"] + " " + description),
-                        "publicationDate": datetime.now().strftime("%Y-%m-%d"),
-                        "hasElevator": has_elevator,
-                        "floor": floor,
-                        "isGroundFloor": is_rdc,
-                        "blurInfo": {
-                            "position": {
-                                "lat": lat,
-                                "lon": lon
-                            }
-                        },
-                        "hasBalcony": "balcon" in description.lower() or "terrasse" in description.lower(),
-                        "hasTerrace": "terrasse" in description.lower()
-                    }
-                    ads.append(ad_item)
-                    
-                except Exception as ex:
-                    print(f"[ERREUR] Échec du scraping de {cand['url']}: {ex}")
-                finally:
-                    if detail_context:
-                        try:
-                            detail_context.close()
-                        except:
-                            pass
-                    
-            browser.close()
-    except Exception as e:
-        record_source_error("Gens de Confiance", "Erreur de scraping Playwright", f"Échec sur Gens de Confiance: {e}", "Relancez la commande: python login_gdc.py")
-        print(f"[ERREUR] Échec de la récupération sur Gens de Confiance: {e}")
-        
+                try:
+                    page.wait_for_selector("a[href*='/ui/post/'], a[href*='/annonce/']", timeout=12000)
+                    cards = page.locator("a[href*='/ui/post/'], a[href*='/annonce/']").all()
+                    print(f"[INFO] {len(cards)} cartes trouvées via Playwright.")
+                    # Sauvegarder la session à jour
+                    context.storage_state(path=SESSION_FILE)
+                except Exception as e:
+                    record_source_error("Gens de Confiance", "Erreur de chargement / Anti-bot", f"Page bloquée par Cloudflare ou délai dépassé: {e}", "Relancez la commande: python login_gdc.py")
+                    print(f"[WARN] Erreur Playwright GDC: {e}")
+                browser.close()
+        except Exception as e:
+            record_source_error("Gens de Confiance", "Erreur Playwright", f"Échec Playwright sur GDC: {e}", "Relancez la commande: python login_gdc.py")
+            print(f"[ERREUR] Échec Playwright sur GDC: {e}")
+
     print(f"[INFO] Total Gens de Confiance: {len(ads)} annonces récupérées.")
     return ads
 

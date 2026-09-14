@@ -1,6 +1,4 @@
-# 🏠 RechercheAppart - Lyon (v1.4.0)
-
-Agent intelligent et automatisé de recherche, filtrage et suivi d'annonces de location d'appartements meublés haut standing à Lyon.
+# 🏠 RechercheAppart - Lyon (v1.5.0)
 
 🌐 **Tableau de bord accessible en ligne** : **[https://bacobaco.github.io/RechercheAppart/](https://bacobaco.github.io/RechercheAppart/)**
 
@@ -33,10 +31,11 @@ Ce projet a été conçu pour automatiser et centraliser la veille immobilière 
 
 ## 🚀 Fonctionnalités Principales
 
-1. **Multi-sources de scraping** :
-   - **Jinka API** : Récupération des alertes agrégées avec gestion des tokens.
-   - **Gens de Confiance** : Scraping avec support de session Playwright & contournement Cloudflare.
-   - **Urban Séjour & Agences locales** : Scraping dédié aux spécialistes de la location meublée lyonnaise.
+1. **Multi-sources de scraping résilient** :
+   - **Gens de Confiance** : Contournement Cloudflare transparent via `curl_cffi` (impersonation TLS Chrome) et auto-renouvellement permanent des cookies de session. Repli automatique sur Playwright Stealth.
+   - **Jinka API** : Suivi proactif de la validité du token JWT avec auto-récupération sur 401 et agrégation SeLoger/LBC/PAP.
+   - **Bien'ici** : API JSON directe très stable.
+   - **Barnes, Lodgis, Urban Séjour** : Scraping dédié aux spécialistes de la location meublée de standing.
 2. **Filtrage et Scoring Intelligent** :
    - Détection automatique des doublons inter-plateformes.
    - Analyse sémantique des descriptions (détection d'ascenseur, climatisation, balcon, étage élevé, cachet, parking).
@@ -57,8 +56,8 @@ Ce projet a été conçu pour automatiser et centraliser la veille immobilière 
 ├── server.py         # Serveur HTTP local (API REST et service des fichiers statiques)
 ├── dashboard.html    # Interface web du tableau de bord
 ├── data.json         # Base de données locale des annonces et statuts
-├── login_gdc.py      # Assistant de connexion pour Gens de Confiance (Playwright / Cookies)
-├── login_jinka.py    # Assistant d'authentification pour Jinka
+├── login_gdc.py      # Assistant de connexion GDC (test live, auto-détection presse-papiers, diagnostic)
+├── login_jinka.py    # Assistant d'authentification Jinka (profil persistant, bypass Google, auto-capture)
 ├── prompt agent      # Spécifications détaillées des critères et consignes pour l'agent
 ├── .gitignore        # Exclusion des tokens de session, logs et fichiers temporaires
 └── README.md         # Documentation et version du projet
@@ -74,7 +73,7 @@ Ce projet a été conçu pour automatiser et centraliser la veille immobilière 
 
 ### 2. Dépendances
 ```bash
-pip install requests playwright
+pip install requests playwright curl_cffi beautifulsoup4 pyperclip
 playwright install chromium
 ```
 
@@ -91,14 +90,35 @@ Ouvrez ensuite votre navigateur à l'adresse suivante :
 python agent.py
 ```
 
-### 5. Gérer les connexions (si nécessaire)
-- Pour Gens de Confiance : `python login_gdc.py`
-- Pour Jinka : `python login_jinka.py`
+### 5. Gérer les connexions et statuts anti-bot
+Les sessions sont désormais gérées et renouvelées de façon autonome :
+- **Gens de Confiance** :
+  - Contournement Cloudflare transparent via `curl_cffi` (impersonation TLS Chrome 120).
+  - Renouvellement automatique continu des cookies de session (`__cf_bm`).
+  - Vérifier l'état de la session : `python login_gdc.py --status`
+  - Importer de nouveaux cookies : `python login_gdc.py` (détection automatique dans le presse-papiers ou via fichier).
+- **Jinka** :
+  - Vérification préventive de la validité du token JWT avec auto-récupération sur 401.
+  - Vérifier l'état du token : `python login_jinka.py --status`
+  - Renouveler le token : `python login_jinka.py` (navigateur Chrome avec profil persistant débloquant Google Sign-In, détection automatique du token sans passer par la console F12, ou détection immédiate dans le presse-papiers).
 
 ---
 
 ## 📋 Historique des Versions
 
+- **v1.5.0** *(2026-09-14)* :
+  - **Automatisation anti-bot et résilience Gens de Confiance** :
+    - Intégration de `curl_cffi` avec émulation d'empreinte Chrome TLS (JA3/JA4) pour contourner nativement les challenges Cloudflare Turnstile sans ouvrir de navigateur.
+    - Renouvellement automatique et persistance des cookies Cloudflare (`__cf_bm`) à chaque requête.
+    - Extraction directe des annonces structurées via le flux Next.js (`__NEXT_DATA__`) accélérant le scan de 30s à ~2s.
+    - Repli automatique sur Playwright Chrome Stealth avec masquage anti-détection.
+  - **Automatisation et fiabilisation Jinka** :
+    - Détection proactive de l'expiration du token JWT dans `agent.py`.
+    - Mécanisme d'auto-récupération sur 401 via presse-papiers ou profil persistant.
+    - Refonte de `login_jinka.py` : masquage anti-bot pour débloquer Google Sign-in, profil persistant et capture automatique du token sans passer par la console DevTools F12.
+    - Détection automatique du token depuis le presse-papiers au lancement.
+  - **Outils de diagnostic & statuts** :
+    - Ajout de commandes d'état rapide : `python login_gdc.py --status` et `python login_jinka.py --status`.
 - **v1.4.0** *(2026-09-09)* :
   - Déploiement du tableau de bord sur GitHub Pages pour consultation en ligne permanente.
   - Compatibilité du dashboard en mode statique (chargement direct de `data.json`, persistance locale via `localStorage`).
@@ -115,3 +135,4 @@ python agent.py
   - Refonte du tableau de bord interactif avec filtres et statut temps réel.
 - **v1.0.0** :
   - Version initiale : Scraper Jinka, calcul du prix/m², filtrage selon cahier des charges.
+
