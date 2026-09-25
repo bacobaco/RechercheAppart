@@ -817,7 +817,7 @@
                 // 2. Fallback to static data.json (GitHub Pages)
                 if (!dataFetched) {
                     isLocalServer = false;
-                    const staticRes = await fetch('./data.json?t=' + Date.now());
+                    const staticRes = await fetch('./data.json?t=' + Date.now(), { cache: 'no-store' });
                     if (!staticRes.ok) {
                         throw new Error("Impossible de charger data.json (" + staticRes.status + ")");
                     }
