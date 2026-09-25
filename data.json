@@ -308,9 +308,10 @@
         "lien_annonce": "https://www.bienici.com/annonce/ics-tar_TARGE_loc-GES03810199-807",
         "google_street_view": "https://www.google.com/maps/search/?api=1&query=6%20QUAI%20SAINT%20ANTOINE%2C%2069002%20Lyon",
         "date_decouverte": "2026-09-25",
-        "statut": "Nouveau",
+        "statut": "Éliminer",
         "remarques_visite": "",
         "questions_visite": "",
-        "notes": "Avantages: ascenseur, balcon/terrasse, parking/garage, climatisation, cuisine équipée, proche métro/tram (Cordeliers à 269m), trajet Framatome Gerland ~36 min\nInconvénients: "
+        "notes": "Avantages: ascenseur, balcon/terrasse, parking/garage, climatisation, cuisine équipée, proche métro/tram (Cordeliers à 269m), trajet Framatome Gerland ~36 min\nInconvénients: ",
+        "date_elimination": "2026-09-25"
     }
 ]
