@@ -199,6 +199,25 @@
         "notes": "Avantages: ascenseur, balcon/terrasse, parking/garage, proche métro/tram (Foch à 0m), trajet Framatome Gerland ~29 min\nInconvénients: sans climatisation (clim d'appoint envisageable sur balcon), cuisine non équipée ou non mentionnée"
     },
     {
+        "titre": "T3 meublé de 83 m² au Brotteaux avec balcon",
+        "prix": "1 700,00 €",
+        "surface": 83,
+        "nb_pieces": 4,
+        "quartier": "Les Brotteaux, Lyon 6e",
+        "adresse_estimee": "Quartier Les Brotteaux",
+        "avantages": "ascenseur, étage élevé (7ème), balcon/terrasse, climatisation, proche métro/tram (Brotteaux à 213m), trajet Framatome Gerland ~23 min",
+        "inconvenients": "cuisine non équipée ou non mentionnée",
+        "prix_m2": 20.48,
+        "source": "Bien'ici",
+        "lien_annonce": "https://www.bienici.com/annonce/apimo-87402969",
+        "google_street_view": "",
+        "date_decouverte": "2026-09-22",
+        "statut": "À visiter",
+        "remarques_visite": "",
+        "questions_visite": "",
+        "notes": "Avantages: ascenseur, étage élevé (7ème), balcon/terrasse, climatisation, proche métro/tram (Brotteaux à 213m), trajet Framatome Gerland ~23 min\nInconvénients: cuisine non équipée ou non mentionnée"
+    },
+    {
         "titre": "Appartement 4 pièces meublé avec ascenseur et stationnement Dauphiné - Lyon 3e",
         "prix": "1 500,00 €",
         "surface": 85.27,
@@ -236,25 +255,6 @@
         "questions_visite": "",
         "notes": "PAS BEAU ET TROP EXCENTRE\nAvantages: ascenseur, balcon/terrasse, parking/garage, cuisine équipée, calme, proche métro/tram (Sans Souci à 502m), trajet Framatome Gerland ~29 min\nInconvénients: sans climatisation (clim d'appoint envisageable sur balcon)",
         "date_elimination": "2026-09-08"
-    },
-    {
-        "titre": "T3 meublé de 83 m² au Brotteaux avec balcon",
-        "prix": "1 700,00 €",
-        "surface": 83,
-        "nb_pieces": 4,
-        "quartier": "Les Brotteaux, Lyon 6e",
-        "adresse_estimee": "Quartier Les Brotteaux",
-        "avantages": "ascenseur, étage élevé (7ème), balcon/terrasse, climatisation, proche métro/tram (Brotteaux à 213m), trajet Framatome Gerland ~23 min",
-        "inconvenients": "cuisine non équipée ou non mentionnée",
-        "prix_m2": 20.48,
-        "source": "Bien'ici",
-        "lien_annonce": "https://www.bienici.com/annonce/apimo-87402969",
-        "google_street_view": "",
-        "date_decouverte": "2026-09-22",
-        "statut": "À visiter",
-        "remarques_visite": "",
-        "questions_visite": "",
-        "notes": "Avantages: ascenseur, étage élevé (7ème), balcon/terrasse, climatisation, proche métro/tram (Brotteaux à 213m), trajet Framatome Gerland ~23 min\nInconvénients: cuisine non équipée ou non mentionnée"
     },
     {
         "titre": "Lyon 69003 Beau meublé T3 de 79m² entre Part Dieu et Préfecture",
