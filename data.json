@@ -179,6 +179,25 @@
         "notes": "Avantages: ascenseur, balcon/terrasse, climatisation, cuisine équipée, proche métro/tram (Perrache à 260m), trajet Framatome Gerland ~26 min\nInconvénients: "
     },
     {
+        "titre": "Appartement",
+        "prix": "1 690,00 €",
+        "surface": 99,
+        "nb_pieces": 4,
+        "quartier": "Lyon 3e, Lyon 3e",
+        "adresse_estimee": "63 rue de la Villette, 69003 Lyon",
+        "avantages": "ascenseur, balcon/terrasse, parking/garage, proche métro/tram (Foch à 0m), trajet Framatome Gerland ~29 min",
+        "inconvenients": "sans climatisation (clim d'appoint envisageable sur balcon), cuisine non équipée ou non mentionnée",
+        "prix_m2": 17.07,
+        "source": "Jinka (plusse)",
+        "lien_annonce": "https://www.jinka.fr/ad/107351502",
+        "google_street_view": "https://www.google.com/maps/search/?api=1&query=63%20rue%20de%20la%20Villette%2C%2069003%20Lyon",
+        "date_decouverte": "2026-09-22",
+        "statut": "Demande d'infos",
+        "remarques_visite": "",
+        "questions_visite": "",
+        "notes": "Avantages: ascenseur, balcon/terrasse, parking/garage, proche métro/tram (Foch à 0m), trajet Framatome Gerland ~29 min\nInconvénients: sans climatisation (clim d'appoint envisageable sur balcon), cuisine non équipée ou non mentionnée"
+    },
+    {
         "titre": "Appartement 4 pièces meublé avec ascenseur et stationnement Dauphiné - Lyon 3e",
         "prix": "1 500,00 €",
         "surface": 85.27,
@@ -254,25 +273,6 @@
         "remarques_visite": "",
         "questions_visite": "",
         "notes": "Avantages: ascenseur, étage élevé (4ème), balcon/terrasse, parking/garage, calme, proche métro/tram (Place Guichard - Bourse du Travail à 148m), trajet Framatome Gerland ~16 min\nInconvénients: sans climatisation (clim d'appoint envisageable sur balcon), cuisine non équipée ou non mentionnée"
-    },
-    {
-        "titre": "Appartement",
-        "prix": "1 690,00 €",
-        "surface": 99,
-        "nb_pieces": 4,
-        "quartier": "Lyon 3e, Lyon 3e",
-        "adresse_estimee": "63 rue de la Villette, 69003 Lyon",
-        "avantages": "ascenseur, balcon/terrasse, parking/garage, proche métro/tram (Foch à 0m), trajet Framatome Gerland ~29 min",
-        "inconvenients": "sans climatisation (clim d'appoint envisageable sur balcon), cuisine non équipée ou non mentionnée",
-        "prix_m2": 17.07,
-        "source": "Jinka (plusse)",
-        "lien_annonce": "https://www.jinka.fr/ad/107351502",
-        "google_street_view": "https://www.google.com/maps/search/?api=1&query=63%20rue%20de%20la%20Villette%2C%2069003%20Lyon",
-        "date_decouverte": "2026-09-22",
-        "statut": "Demande d'infos",
-        "remarques_visite": "",
-        "questions_visite": "",
-        "notes": "Avantages: ascenseur, balcon/terrasse, parking/garage, proche métro/tram (Foch à 0m), trajet Framatome Gerland ~29 min\nInconvénients: sans climatisation (clim d'appoint envisageable sur balcon), cuisine non équipée ou non mentionnée"
     },
     {
         "titre": "Appartement · Logement entier · 106 m² · 6 pièces",
