@@ -62,7 +62,7 @@
     {
         "titre": "Appartement",
         "prix": "1 550,00 €",
-        "surface": 91.0,
+        "surface": 91,
         "nb_pieces": 3,
         "quartier": "Lyon 6e, Lyon 6e",
         "adresse_estimee": "116 RUE TÊTE D'OR -, 69006 Lyon",
@@ -82,7 +82,7 @@
     {
         "titre": "Appartement · Logement entier · 83 m² · 3 pièces · Meublé",
         "prix": "2 200,00 €",
-        "surface": 83.0,
+        "surface": 83,
         "nb_pieces": 3,
         "quartier": "Lyon 6e, Lyon",
         "adresse_estimee": "Quartier Lyon 6e",
@@ -102,7 +102,7 @@
     {
         "titre": "Appartement · Logement entier · 100 m² · 4 pièces · Meublé",
         "prix": "1 925,00 €",
-        "surface": 100.0,
+        "surface": 100,
         "nb_pieces": 4,
         "quartier": "Lyon 3e, Lyon",
         "adresse_estimee": "Quartier Lyon 3e",
@@ -122,7 +122,7 @@
     {
         "titre": "Appartement meublé 2 chambres",
         "prix": "1 780,00 €",
-        "surface": 71.0,
+        "surface": 71,
         "nb_pieces": 3,
         "quartier": "Lyon 6e, Lyon",
         "adresse_estimee": "Quartier Lyon 6e",
@@ -142,7 +142,7 @@
     {
         "titre": "Appartement meublé 2 chambres",
         "prix": "1 795,00 €",
-        "surface": 73.0,
+        "surface": 73,
         "nb_pieces": 3,
         "quartier": "Lyon 3e, Lyon",
         "adresse_estimee": "Quartier Lyon 3e",
@@ -158,6 +158,25 @@
         "questions_visite": "",
         "notes": "Avantages: climatisation, ascenseur, étage élevé (7ème), balcon/terrasse, parking/garage, calme\nInconvénients: cuisine non équipée ou non mentionnée",
         "date_elimination": "2026-09-03"
+    },
+    {
+        "titre": "T4 MEUBLE - LYON 2",
+        "prix": "1 800,00 €",
+        "surface": 91.85,
+        "nb_pieces": 4,
+        "quartier": "Perrache - Confluence, Lyon 2e",
+        "adresse_estimee": "Quartier Perrache - Confluence",
+        "avantages": "ascenseur, balcon/terrasse, climatisation, cuisine équipée, proche métro/tram (Perrache à 260m), trajet Framatome Gerland ~26 min",
+        "inconvenients": "",
+        "prix_m2": 19.6,
+        "source": "Bien'ici",
+        "lien_annonce": "https://www.bienici.com/annonce/hektor-pericles-martin-immobilier-net-2583",
+        "google_street_view": "",
+        "date_decouverte": "2026-09-18",
+        "statut": "Nouveau",
+        "remarques_visite": "",
+        "questions_visite": "",
+        "notes": "Avantages: ascenseur, balcon/terrasse, climatisation, cuisine équipée, proche métro/tram (Perrache à 260m), trajet Framatome Gerland ~26 min\nInconvénients: "
     },
     {
         "titre": "Appartement 4 pièces meublé avec ascenseur et stationnement Dauphiné - Lyon 3e",
@@ -181,7 +200,7 @@
     {
         "titre": "Luxueux et calme T4 de 90 m2 avec 2 chambres proximité Monpl",
         "prix": "1 586,00 €",
-        "surface": 90.0,
+        "surface": 90,
         "nb_pieces": 4,
         "quartier": "Sans Souci - Dauphiné, Lyon 3e",
         "adresse_estimee": "Quartier Sans Souci - Dauphiné",
@@ -197,25 +216,6 @@
         "questions_visite": "",
         "notes": "PAS BEAU ET TROP EXCENTRE\nAvantages: ascenseur, balcon/terrasse, parking/garage, cuisine équipée, calme, proche métro/tram (Sans Souci à 502m), trajet Framatome Gerland ~29 min\nInconvénients: sans climatisation (clim d'appoint envisageable sur balcon)",
         "date_elimination": "2026-09-08"
-    },
-    {
-        "titre": "T4 MEUBLE - LYON 2",
-        "prix": "1 800,00 €",
-        "surface": 91.85,
-        "nb_pieces": 4,
-        "quartier": "Perrache - Confluence, Lyon 2e",
-        "adresse_estimee": "Quartier Perrache - Confluence",
-        "avantages": "ascenseur, balcon/terrasse, climatisation, cuisine équipée, proche métro/tram (Perrache à 260m), trajet Framatome Gerland ~26 min",
-        "inconvenients": "",
-        "prix_m2": 19.6,
-        "source": "Bien'ici",
-        "lien_annonce": "https://www.bienici.com/annonce/hektor-pericles-martin-immobilier-net-2583",
-        "google_street_view": "",
-        "date_decouverte": "2026-09-18",
-        "statut": "Nouveau",
-        "remarques_visite": "",
-        "questions_visite": "",
-        "notes": "Avantages: ascenseur, balcon/terrasse, climatisation, cuisine équipée, proche métro/tram (Perrache à 260m), trajet Framatome Gerland ~26 min\nInconvénients: "
     },
     {
         "titre": "Lyon 69003 Beau meublé T3 de 79m² entre Part Dieu et Préfecture",
@@ -239,7 +239,7 @@
     {
         "titre": "Appartement",
         "prix": "1 690,00 €",
-        "surface": 99.0,
+        "surface": 99,
         "nb_pieces": 4,
         "quartier": "Lyon 3e, Lyon 3e",
         "adresse_estimee": "63 rue de la Villette, 69003 Lyon",
@@ -258,7 +258,7 @@
     {
         "titre": "Appartement · Logement entier · 106 m² · 6 pièces",
         "prix": "2 390,00 €",
-        "surface": 106.0,
+        "surface": 106,
         "nb_pieces": 3,
         "quartier": "Lyon 6e, Lyon",
         "adresse_estimee": "Quartier Lyon 6e",
@@ -278,7 +278,7 @@
     {
         "titre": "T3 meublé de 83 m² au Brotteaux avec balcon",
         "prix": "1 700,00 €",
-        "surface": 83.0,
+        "surface": 83,
         "nb_pieces": 4,
         "quartier": "Les Brotteaux, Lyon 6e",
         "adresse_estimee": "Quartier Les Brotteaux",
