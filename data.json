@@ -315,5 +315,24 @@
         "questions_visite": "",
         "notes": "Avantages: ascenseur, balcon/terrasse, parking/garage, climatisation, cuisine équipée, proche métro/tram (Cordeliers à 269m), trajet Framatome Gerland ~36 min\nInconvénients: ",
         "date_elimination": "2026-09-25"
+    },
+    {
+        "titre": "Location appartement T4 garibaldi",
+        "prix": "1 750,00 €",
+        "surface": 100.0,
+        "nb_pieces": 4,
+        "quartier": "Lyon 3e, Lyon",
+        "adresse_estimee": "Quartier Lyon 3e",
+        "avantages": "ascenseur, balcon/terrasse, proche métro/tram (Garibaldi à 199m), trajet Framatome Gerland ~21 min",
+        "inconvenients": "sans climatisation (clim d'appoint envisageable sur balcon), cuisine non équipée ou non mentionnée",
+        "prix_m2": 17.5,
+        "source": "Gens de Confiance",
+        "lien_annonce": "https://gensdeconfiance.com/fr/ui/post/realestate__rent/location-appartement-t4-garibaldi-38d6f0b",
+        "google_street_view": "",
+        "date_decouverte": "2026-09-25",
+        "statut": "Nouveau",
+        "remarques_visite": "",
+        "questions_visite": "",
+        "notes": "Avantages: ascenseur, balcon/terrasse, proche métro/tram (Garibaldi à 199m), trajet Framatome Gerland ~21 min\nInconvénients: sans climatisation (clim d'appoint envisageable sur balcon), cuisine non équipée ou non mentionnée"
     }
 ]
