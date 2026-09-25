@@ -173,10 +173,11 @@
         "lien_annonce": "https://www.bienici.com/annonce/hektor-pericles-martin-immobilier-net-2583",
         "google_street_view": "",
         "date_decouverte": "2026-09-18",
-        "statut": "Nouveau",
+        "statut": "Déjà loué",
         "remarques_visite": "",
         "questions_visite": "",
-        "notes": "Avantages: ascenseur, balcon/terrasse, climatisation, cuisine équipée, proche métro/tram (Perrache à 260m), trajet Framatome Gerland ~26 min\nInconvénients: "
+        "notes": "Avantages: ascenseur, balcon/terrasse, climatisation, cuisine équipée, proche métro/tram (Perrache à 260m), trajet Framatome Gerland ~26 min\nInconvénients: ",
+        "date_elimination": "2026-09-25"
     },
     {
         "titre": "Appartement",
