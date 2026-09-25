@@ -1548,12 +1548,14 @@ def scrape_gdc():
                 
                 for item in items:
                     try:
-                        slug = item.get("slug")
                         uuid = item.get("uuid")
-                        if not slug and not uuid:
+                        slug = item.get("slug")
+                        if not uuid and not slug:
                             continue
-                        target_slug = slug or uuid
-                        spa_url = f"https://gensdeconfiance.com/fr/ui/post/realestate__rent/{target_slug}"
+                        if uuid:
+                            spa_url = f"https://gensdeconfiance.com/fr/ui/post/realestate__rent/{uuid}"
+                        else:
+                            spa_url = f"https://gensdeconfiance.com/fr/annonce/{slug}"
                         if spa_url in seen_urls:
                             continue
                         seen_urls.add(spa_url)
