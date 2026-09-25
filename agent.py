@@ -2270,6 +2270,13 @@ def main():
 
     # 5. Start the server if not already running
     start_server_if_not_running()
+
+    # 6. Affichage final des liens d'accès
+    print("\n" + "="*75)
+    print(" 🌐 ACCÈS AU TABLEAU DE BORD :")
+    print("   👉 Serveur Local   : http://localhost:8000/dashboard.html (ou http://localhost:8000)")
+    print("   👉 GitHub Pages    : https://bacobaco.github.io/RechercheAppart/")
+    print("="*75 + "\n")
     
 if __name__ == "__main__":
     main()

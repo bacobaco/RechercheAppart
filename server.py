@@ -204,6 +204,8 @@ if __name__ == "__main__":
     socketserver.TCPServer.allow_reuse_address = True
     with socketserver.TCPServer(("", PORT), DashboardHandler) as httpd:
         print(f"Serveur démarré sur http://localhost:{PORT}")
+        print(f"Tableau de bord local : http://localhost:{PORT}/dashboard.html")
+        print(f"Tableau de bord en ligne (GitHub Pages) : https://bacobaco.github.io/RechercheAppart/")
         try:
             httpd.serve_forever()
         except KeyboardInterrupt:
