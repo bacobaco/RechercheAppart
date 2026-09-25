@@ -313,14 +313,119 @@
             box-shadow: 0 0 20px var(--accent-glow), var(--card-shadow);
         }
 
-        /* Drag and Drop visual feedback */
+        /* Drag and Drop visual feedback & Reorder Controls */
         .listing-card.dragging {
-            opacity: 0.4;
-            border: 2px dashed var(--accent);
+            opacity: 0.35;
+            border: 2px dashed var(--accent) !important;
+            cursor: grabbing;
         }
-        .listing-card.drag-over {
-            border-top: 3px solid var(--accent);
-            transform: scale(0.99);
+        .listing-card.drag-over-top {
+            border-top: 4px solid var(--accent) !important;
+            box-shadow: 0 -4px 15px var(--accent-glow);
+        }
+        .listing-card.drag-over-bottom {
+            border-bottom: 4px solid var(--accent) !important;
+            box-shadow: 0 4px 15px var(--accent-glow);
+        }
+
+        .card-header-left {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            flex: 1;
+            min-width: 0;
+        }
+
+        .card-reorder-controls {
+            display: inline-flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 0.15rem 0.2rem;
+            flex-shrink: 0;
+            user-select: none;
+            gap: 0.1rem;
+        }
+
+        .card-drag-handle {
+            cursor: grab;
+            color: var(--text-muted);
+            padding: 0.15rem 0.3rem;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: color 0.2s;
+        }
+        .card-drag-handle:hover {
+            color: var(--accent);
+        }
+        .card-drag-handle:active {
+            cursor: grabbing;
+        }
+
+        .btn-reorder {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            padding: 0.15rem 0.3rem;
+            font-size: 0.7rem;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+        .btn-reorder:hover:not(:disabled) {
+            background: rgba(99, 102, 241, 0.25);
+            color: var(--accent);
+        }
+        .btn-reorder:disabled {
+            opacity: 0.2;
+            cursor: default;
+        }
+
+        /* Toast notifications */
+        .toast-container {
+            position: fixed;
+            bottom: 1.5rem;
+            right: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            z-index: 9999;
+            pointer-events: none;
+        }
+        .toast {
+            background: rgba(15, 23, 42, 0.95);
+            border: 1px solid var(--accent);
+            color: var(--text-main);
+            padding: 0.75rem 1.25rem;
+            border-radius: 10px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5), 0 0 15px var(--accent-glow);
+            display: flex;
+            align-items: center;
+            gap: 0.65rem;
+            animation: toastIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            pointer-events: auto;
+            backdrop-filter: blur(8px);
+        }
+        .toast.toast-info {
+            border-color: var(--info);
+        }
+        @keyframes toastIn {
+            from { opacity: 0; transform: translateY(12px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        @keyframes toastOut {
+            from { opacity: 1; transform: translateY(0) scale(1); }
+            to { opacity: 0; transform: translateY(12px) scale(0.95); }
         }
 
         /* Card Status color indicator vertical border */
@@ -719,7 +824,39 @@
                     dataFetched = await staticRes.json();
                 }
 
+                // Restauration de l'ordre personnalisé depuis localStorage (sur GitHub Pages ou offline)
+                const savedOrderRaw = localStorage.getItem('listings_order');
+                if (savedOrderRaw) {
+                    try {
+                        const savedOrder = JSON.parse(savedOrderRaw);
+                        if (Array.isArray(savedOrder) && savedOrder.length > 0) {
+                            const orderMap = new Map();
+                            savedOrder.forEach((url, i) => orderMap.set(url, i));
+                            
+                            // Si nous ne sommes pas sur le serveur local, restaurer l'ordre
+                            if (!isLocalServer) {
+                                dataFetched.sort((a, b) => {
+                                    const hasA = orderMap.has(a.lien_annonce);
+                                    const hasB = orderMap.has(b.lien_annonce);
+                                    if (hasA && hasB) return orderMap.get(a.lien_annonce) - orderMap.get(b.lien_annonce);
+                                    if (!hasA && hasB) return -1;
+                                    if (hasA && !hasB) return 1;
+                                    return 0;
+                                });
+                            }
+                        }
+                    } catch (e) {
+                        console.warn("Erreur lecture listings_order:", e);
+                    }
+                }
+
                 allListings = dataFetched;
+
+                // Synchroniser localStorage avec l'ordre courant
+                try {
+                    const currentOrderUrls = allListings.map(i => i.lien_annonce).filter(Boolean);
+                    localStorage.setItem('listings_order', JSON.stringify(currentOrderUrls));
+                } catch (e) {}
 
                 // On static hosting (GitHub Pages), restore any status/notes saved locally in browser
                 if (!isLocalServer) {
@@ -901,14 +1038,16 @@
             filterAndRender();
         }
 
-        // Filter search input results and render matching cards
-        function filterAndRender() {
-            const searchVal = document.getElementById('search-input').value.toLowerCase().trim();
-            const sourceVal = document.getElementById('filter-source').value;
-            const quartierVal = document.getElementById('filter-quartier').value;
-            const grid = document.getElementById('listings-grid');
+        // Helper: retrieve listings matching current filter & search values
+        function getFilteredListings() {
+            const searchInput = document.getElementById('search-input');
+            const searchVal = searchInput ? searchInput.value.toLowerCase().trim() : "";
+            const sourceSelect = document.getElementById('filter-source');
+            const sourceVal = sourceSelect ? sourceSelect.value : "";
+            const quartierSelect = document.getElementById('filter-quartier');
+            const quartierVal = quartierSelect ? quartierSelect.value : "";
             
-            let filtered = allListings.filter(item => {
+            return allListings.filter(item => {
                 const isEliminated = (item.statut === "Éliminer" || item.statut === "Déjà loué");
                 if (isEliminated && !showEliminated) return false;
                 if (sourceVal && item.source !== sourceVal) return false;
@@ -925,6 +1064,92 @@
                 
                 return true;
             });
+        }
+
+        // Show non-blocking toast notifications
+        function showToast(message, type = "success") {
+            let container = document.getElementById('toast-container');
+            if (!container) {
+                container = document.createElement('div');
+                container.id = 'toast-container';
+                container.className = 'toast-container';
+                document.body.appendChild(container);
+            }
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${type}`;
+            const icon = type === 'success' ? 'fa-check-circle' : 'fa-circle-info';
+            toast.innerHTML = `<i class="fa-solid ${icon}" style="color: ${type === 'success' ? 'var(--success)' : 'var(--info)'}"></i> <span>${message}</span>`;
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.style.animation = 'toastOut 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards';
+                setTimeout(() => toast.remove(), 300);
+            }, 2500);
+        }
+
+        // Persist order both in localStorage and on server
+        async function persistOrder() {
+            // 1. Sauvegarde synchrone dans localStorage (garantit la persistance immédiate même en cas de F5 instantané)
+            try {
+                const orderUrls = allListings.map(i => i.lien_annonce).filter(Boolean);
+                localStorage.setItem('listings_order', JSON.stringify(orderUrls));
+            } catch (e) {
+                console.warn("Erreur stockage ordre local:", e);
+            }
+
+            // 2. Sauvegarde sur serveur local si connecté
+            if (isLocalServer) {
+                try {
+                    const response = await fetch('/api/update_order', {
+                        method: 'POST',
+                        keepalive: true,
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(allListings)
+                    });
+                    if (response.ok) {
+                        showToast("Ordre sauvegardé sur le serveur", "success");
+                        return;
+                    } else {
+                        console.error("Erreur serveur lors de la sauvegarde de l'ordre:", response.status);
+                    }
+                } catch (err) {
+                    console.warn("Erreur réseau sauvegarde ordre:", err);
+                }
+            }
+            showToast("Ordre sauvegardé dans le navigateur", "info");
+        }
+
+        // Reorder listing by clicking Move Up / Move Down buttons
+        function reorderListing(url, direction) {
+            // direction: -1 (monter), +1 (descendre)
+            const filtered = getFilteredListings();
+            const visIdx = filtered.findIndex(i => i.lien_annonce === url);
+            if (visIdx === -1) return;
+
+            const targetVisIdx = visIdx + direction;
+            if (targetVisIdx < 0 || targetVisIdx >= filtered.length) return;
+
+            const targetItem = filtered[targetVisIdx];
+            const currentIdx = allListings.findIndex(i => i.lien_annonce === url);
+            if (currentIdx === -1) return;
+
+            const [draggedItem] = allListings.splice(currentIdx, 1);
+            const targetIdxInAll = allListings.findIndex(i => i.lien_annonce === targetItem.lien_annonce);
+
+            if (targetIdxInAll === -1) {
+                allListings.push(draggedItem);
+            } else {
+                const insertIdx = (direction > 0) ? targetIdxInAll + 1 : targetIdxInAll;
+                allListings.splice(insertIdx, 0, draggedItem);
+            }
+
+            filterAndRender();
+            persistOrder();
+        }
+
+        // Filter search input results and render matching cards
+        function filterAndRender() {
+            const grid = document.getElementById('listings-grid');
+            const filtered = getFilteredListings();
             
             if (filtered.length === 0) {
                 grid.innerHTML = `
@@ -963,10 +1188,26 @@
                         </a>
                     `;
                 }
+
+                const isFirst = (idx === 0);
+                const isLast = (idx === filtered.length - 1);
                 
                 card.innerHTML = `
                     <div class="card-header">
-                        <h3 class="card-title">${item.titre}</h3>
+                        <div class="card-header-left">
+                            <div class="card-reorder-controls">
+                                <button type="button" class="btn-reorder" onclick="reorderListing('${item.lien_annonce.replace(/'/g, "\\'")}', -1)" title="Monter cette annonce" ${isFirst ? 'disabled' : ''}>
+                                    <i class="fa-solid fa-chevron-up"></i>
+                                </button>
+                                <span class="card-drag-handle" title="Glisser-déposer pour réordonner">
+                                    <i class="fa-solid fa-grip-vertical"></i>
+                                </span>
+                                <button type="button" class="btn-reorder" onclick="reorderListing('${item.lien_annonce.replace(/'/g, "\\'")}', 1)" title="Descendre cette annonce" ${isLast ? 'disabled' : ''}>
+                                    <i class="fa-solid fa-chevron-down"></i>
+                                </button>
+                            </div>
+                            <h3 class="card-title">${item.titre || "Appartement"}</h3>
+                        </div>
                         <div class="card-price">${item.prix}</div>
                     </div>
                     
@@ -1021,60 +1262,69 @@
                 
                 // Drag & Drop events
                 card.addEventListener('dragstart', (e) => {
+                    if (['TEXTAREA', 'SELECT', 'INPUT', 'A'].includes(e.target.tagName)) {
+                        e.preventDefault();
+                        return;
+                    }
+                    currentDraggedUrl = item.lien_annonce;
                     e.dataTransfer.effectAllowed = 'move';
                     e.dataTransfer.setData('text/plain', item.lien_annonce);
                     card.classList.add('dragging');
                 });
                 
                 card.addEventListener('dragend', () => {
+                    currentDraggedUrl = null;
                     card.classList.remove('dragging');
-                    document.querySelectorAll('.listing-card').forEach(c => c.classList.remove('drag-over'));
+                    document.querySelectorAll('.listing-card').forEach(c => {
+                        c.classList.remove('drag-over-top', 'drag-over-bottom');
+                    });
                 });
                 
                 card.addEventListener('dragover', (e) => {
                     e.preventDefault();
                     e.dataTransfer.dropEffect = 'move';
-                });
-                
-                card.addEventListener('dragenter', (e) => {
-                    e.preventDefault();
-                    if (!card.classList.contains('dragging')) {
-                        card.classList.add('drag-over');
+                    const rect = card.getBoundingClientRect();
+                    const midY = rect.top + rect.height / 2;
+                    if (e.clientY < midY) {
+                        card.classList.add('drag-over-top');
+                        card.classList.remove('drag-over-bottom');
+                        card.dataset.dropPos = 'top';
+                    } else {
+                        card.classList.add('drag-over-bottom');
+                        card.classList.remove('drag-over-top');
+                        card.dataset.dropPos = 'bottom';
                     }
                 });
                 
-                card.addEventListener('dragleave', () => {
-                    card.classList.remove('drag-over');
+                card.addEventListener('dragleave', (e) => {
+                    if (!card.contains(e.relatedTarget)) {
+                        card.classList.remove('drag-over-top', 'drag-over-bottom');
+                    }
                 });
                 
                 card.addEventListener('drop', async (e) => {
                     e.preventDefault();
-                    card.classList.remove('drag-over');
-                    const draggedUrl = e.dataTransfer.getData('text/plain');
-                    if (draggedUrl === item.lien_annonce) return;
+                    const dropPos = card.dataset.dropPos || 'top';
+                    card.classList.remove('drag-over-top', 'drag-over-bottom');
+                    
+                    const draggedUrl = currentDraggedUrl || e.dataTransfer.getData('text/plain');
+                    if (!draggedUrl || draggedUrl === item.lien_annonce) return;
                     
                     const draggedIdx = allListings.findIndex(i => i.lien_annonce === draggedUrl);
+                    if (draggedIdx === -1) return;
+                    
+                    const [draggedItem] = allListings.splice(draggedIdx, 1);
                     const targetIdx = allListings.findIndex(i => i.lien_annonce === item.lien_annonce);
                     
-                    if (draggedIdx !== -1 && targetIdx !== -1) {
-                        const [draggedItem] = allListings.splice(draggedIdx, 1);
-                        allListings.splice(targetIdx, 0, draggedItem);
-                        
-                        filterAndRender();
-                        
-                        try {
-                            const response = await fetch('/api/update_order', {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify(allListings)
-                            });
-                            if (!response.ok) {
-                                console.error("Error saving new order");
-                            }
-                        } catch (err) {
-                            console.error("Network error saving order:", err);
-                        }
+                    if (targetIdx === -1) {
+                        allListings.push(draggedItem);
+                    } else {
+                        const insertIdx = (dropPos === 'bottom') ? targetIdx + 1 : targetIdx;
+                        allListings.splice(insertIdx, 0, draggedItem);
                     }
+                    
+                    filterAndRender();
+                    persistOrder();
                 });
                 
                 grid.appendChild(card);

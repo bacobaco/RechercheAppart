@@ -9,8 +9,26 @@ import time
 from datetime import datetime
 
 PORT = 8000
-DATA_FILE = "data.json"
-LOG_FILE = "agent.log"
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DATA_FILE = os.path.join(BASE_DIR, "data.json")
+LOG_FILE = os.path.join(BASE_DIR, "agent.log")
+
+def sync_github_background(commit_msg="Mise à jour des annonces"):
+    """Synchronise data.json en arrière-plan sans bloquer la requête HTTP."""
+    def _sync():
+        try:
+            res = subprocess.run(["git", "status", "--porcelain", DATA_FILE], capture_output=True, text=True, cwd=BASE_DIR)
+            if res.stdout.strip():
+                subprocess.run(["git", "add", DATA_FILE], cwd=BASE_DIR, check=True, capture_output=True)
+                subprocess.run(["git", "commit", "-m", commit_msg], cwd=BASE_DIR, check=True, capture_output=True)
+                push_res = subprocess.run(["git", "push", "origin", "main"], cwd=BASE_DIR, capture_output=True, text=True)
+                if push_res.returncode == 0:
+                    print(f"[GITHUB SYNC] Synchronisé sur GitHub : {commit_msg}")
+                else:
+                    print(f"[GITHUB SYNC] Erreur push : {push_res.stderr.strip()}")
+        except Exception as e:
+            print(f"[GITHUB SYNC] Exception : {e}")
+    threading.Thread(target=_sync, daemon=True).start()
 
 agent_status = {
     "running": False,
@@ -28,7 +46,8 @@ def run_agent_task():
         # Ouvrir le fichier de log en mode écriture (écrase le précédent)
         with open(LOG_FILE, "w", encoding="utf-8") as f_log:
             result = subprocess.run(
-                [sys.executable, "-u", "agent.py"], # Utilise le même interpréteur Python
+                [sys.executable, "-u", os.path.join(BASE_DIR, "agent.py")], # Utilise le même interpréteur Python
+                cwd=BASE_DIR,
                 stdout=f_log,
                 stderr=subprocess.STDOUT,
                 text=True
@@ -45,12 +64,18 @@ def run_agent_task():
         agent_status["running"] = False
 
 class DashboardHandler(http.server.SimpleHTTPRequestHandler):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, directory=BASE_DIR, **kwargs)
+
     def do_GET(self):
         if self.path == "/" or self.path == "/index.html":
-            self.path = "dashboard.html"
+            self.path = "/dashboard.html"
         elif self.path == "/api/data":
             self.send_response(200)
             self.send_header("Content-type", "application/json")
+            self.send_header("Cache-Control", "no-cache, no-store, must-revalidate")
+            self.send_header("Pragma", "no-cache")
+            self.send_header("Expires", "0")
             self.end_headers()
             if os.path.exists(DATA_FILE):
                 with open(DATA_FILE, "r", encoding="utf-8") as f:
@@ -61,12 +86,14 @@ class DashboardHandler(http.server.SimpleHTTPRequestHandler):
         elif self.path == "/api/agent_status":
             self.send_response(200)
             self.send_header("Content-type", "application/json")
+            self.send_header("Cache-Control", "no-cache, no-store, must-revalidate")
             self.end_headers()
             self.wfile.write(json.dumps(agent_status).encode())
             return
         elif self.path == "/api/agent_log":
             self.send_response(200)
-            self.send_header("Content-type", "text/plain")
+            self.send_header("Content-type", "text/plain; charset=utf-8")
+            self.send_header("Cache-Control", "no-cache, no-store, must-revalidate")
             self.end_headers()
             if os.path.exists(LOG_FILE):
                 with open(LOG_FILE, "r", encoding="utf-8") as f:
@@ -108,8 +135,10 @@ class DashboardHandler(http.server.SimpleHTTPRequestHandler):
                         json.dump(data, f, ensure_ascii=False, indent=4)
                     self.send_response(200)
                     self.send_header("Content-type", "application/json")
+                    self.send_header("Cache-Control", "no-cache, no-store, must-revalidate")
                     self.end_headers()
                     self.wfile.write(json.dumps({"status": "success"}).encode())
+                    sync_github_background(f"chore: mise à jour statut '{new_status}'")
                     return
         
         elif self.path == "/api/update_notes":
@@ -134,8 +163,10 @@ class DashboardHandler(http.server.SimpleHTTPRequestHandler):
                         json.dump(data, f, ensure_ascii=False, indent=4)
                     self.send_response(200)
                     self.send_header("Content-type", "application/json")
+                    self.send_header("Cache-Control", "no-cache, no-store, must-revalidate")
                     self.end_headers()
                     self.wfile.write(json.dumps({"status": "success"}).encode())
+                    sync_github_background("chore: mise à jour des notes d'annonce")
                     return
         
         elif self.path == "/api/update_order":
@@ -148,8 +179,10 @@ class DashboardHandler(http.server.SimpleHTTPRequestHandler):
             
             self.send_response(200)
             self.send_header("Content-type", "application/json")
+            self.send_header("Cache-Control", "no-cache, no-store, must-revalidate")
             self.end_headers()
             self.wfile.write(json.dumps({"status": "success"}).encode())
+            sync_github_background("feat: réorganisation manuelle de l'ordre des annonces")
             return
         
         elif self.path == "/api/run_agent":
@@ -159,6 +192,7 @@ class DashboardHandler(http.server.SimpleHTTPRequestHandler):
                 thread.start()
                 self.send_response(202)
                 self.send_header("Content-type", "application/json")
+                self.send_header("Cache-Control", "no-cache, no-store, must-revalidate")
                 self.end_headers()
                 self.wfile.write(json.dumps({"status": "started"}).encode())
             else:
