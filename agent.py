@@ -1515,7 +1515,7 @@ def scrape_gdc():
             print(f"[INFO] Récupération via curl_cffi (Chrome stealth)...")
             seen_urls = set()
             
-            for page_num in range(1, 3):
+            for page_num in range(1, 7):
                 url = search_url
                 if page_num > 1:
                     sep = "&" if "?" in url else "?"
@@ -1549,16 +1549,19 @@ def scrape_gdc():
                 for item in items:
                     try:
                         slug = item.get("slug")
-                        if not slug:
+                        uuid = item.get("uuid")
+                        if not slug and not uuid:
                             continue
-                        spa_url = f"https://gensdeconfiance.com/fr/ui/post/realestate__rent/{slug}"
+                        target_slug = slug or uuid
+                        spa_url = f"https://gensdeconfiance.com/fr/ui/post/realestate__rent/{target_slug}"
                         if spa_url in seen_urls:
                             continue
                         seen_urls.add(spa_url)
                         
                         title = item.get("title") or "Appartement Gens de Confiance"
                         price_val = (item.get("price") or {}).get("value")
-                        price = float(price_val) if price_val is not None else None
+                        charge_val = (item.get("rentalCharge") or {}).get("value") or 0
+                        price = (float(price_val) + float(charge_val)) if price_val is not None else None
                         
                         surface = item.get("carrezSurface")
                         surface = float(surface) if surface is not None else None
@@ -1591,7 +1594,7 @@ def scrape_gdc():
                         # Filtrage préliminaire prix & surface
                         if price and (price < 1500 or price > 2500):
                             continue
-                        if surface and surface <= 70:
+                        if surface and surface < 70:
                             continue
                             
                         lat = addr.get("latitude")
@@ -1629,9 +1632,13 @@ def scrape_gdc():
                                 pass
                                 
                         is_rdc = (floor == 0) or ("rez-de-chaussée" in description.lower()) or ("rdc" in description.lower())
-                        has_elevator = "ascenseur" in description.lower() and "sans ascenseur" not in description.lower()
+                        has_elevator = bool(item.get("elevator")) or ("ascenseur" in description.lower() and "sans ascenseur" not in description.lower())
+                        equipments = item.get("realEstateEquipments") or []
+                        has_balcony = ("balcony" in equipments) or ("balcon" in description.lower()) or ("terrasse" in description.lower())
+                        has_terrace = ("terrasse" in description.lower())
+                        is_furnished = (item.get("realEstate", {}).get("rentalFurnishings") == "furnished") or is_text_furnished(title + " " + description)
                         
-                        suffix = slug.split("-")[-1]
+                        suffix = (slug or uuid).split("-")[-1]
                         ad_id = f"gdc_{suffix}"
                         
                         ad_item = {
@@ -1647,7 +1654,7 @@ def scrape_gdc():
                             "district": {"libelle": district_name},
                             "roomsQuantity": rooms,
                             "bedroomsQuantity": bedrooms,
-                            "isFurnished": is_text_furnished(title + " " + description),
+                            "isFurnished": is_furnished,
                             "publicationDate": datetime.now().strftime("%Y-%m-%d"),
                             "hasElevator": has_elevator,
                             "floor": floor,
@@ -1658,8 +1665,8 @@ def scrape_gdc():
                                     "lon": lon
                                 }
                             },
-                            "hasBalcony": "balcon" in description.lower() or "terrasse" in description.lower(),
-                            "hasTerrace": "terrasse" in description.lower()
+                            "hasBalcony": has_balcony,
+                            "hasTerrace": has_terrace
                         }
                         ads.append(ad_item)
                         print(f" [V] Annonce GDC retenue : {title} | {price}€ | {surface}m² | {postal_code}")
@@ -2273,9 +2280,9 @@ def main():
 
     # 6. Affichage final des liens d'accès
     print("\n" + "="*75)
-    print(" 🌐 ACCÈS AU TABLEAU DE BORD :")
-    print("   👉 Serveur Local   : http://localhost:8000/dashboard.html (ou http://localhost:8000)")
-    print("   👉 GitHub Pages    : https://bacobaco.github.io/RechercheAppart/")
+    print(" [ACCES AU TABLEAU DE BORD]")
+    print("   * Serveur Local   : http://localhost:8000/dashboard.html (ou http://localhost:8000)")
+    print("   * GitHub Pages    : https://bacobaco.github.io/RechercheAppart/")
     print("="*75 + "\n")
     
 if __name__ == "__main__":
