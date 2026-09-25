@@ -270,10 +270,11 @@
         "lien_annonce": "https://www.bienici.com/annonce/immo-facile-60994736",
         "google_street_view": "",
         "date_decouverte": "2026-09-22",
-        "statut": "Nouveau",
+        "statut": "Éliminer",
         "remarques_visite": "",
         "questions_visite": "",
-        "notes": "Avantages: ascenseur, étage élevé (4ème), balcon/terrasse, parking/garage, calme, proche métro/tram (Place Guichard - Bourse du Travail à 148m), trajet Framatome Gerland ~16 min\nInconvénients: sans climatisation (clim d'appoint envisageable sur balcon), cuisine non équipée ou non mentionnée"
+        "notes": "Avantages: ascenseur, étage élevé (4ème), balcon/terrasse, parking/garage, calme, proche métro/tram (Place Guichard - Bourse du Travail à 148m), trajet Framatome Gerland ~16 min\nInconvénients: sans climatisation (clim d'appoint envisageable sur balcon), cuisine non équipée ou non mentionnée",
+        "date_elimination": "2026-09-25"
     },
     {
         "titre": "Appartement · Logement entier · 106 m² · 6 pièces",
