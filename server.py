@@ -13,21 +13,41 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_FILE = os.path.join(BASE_DIR, "data.json")
 LOG_FILE = os.path.join(BASE_DIR, "agent.log")
 
+import shutil
+
+sync_lock = threading.Lock()
+
 def sync_github_background(commit_msg="Mise à jour des annonces"):
-    """Synchronise data.json en arrière-plan sans bloquer la requête HTTP."""
+    """Synchronise data.json (et fichiers html si modifiés) en arrière-plan sans bloquer la requête HTTP."""
     def _sync():
-        try:
-            res = subprocess.run(["git", "status", "--porcelain", DATA_FILE], capture_output=True, text=True, cwd=BASE_DIR)
-            if res.stdout.strip():
-                subprocess.run(["git", "add", DATA_FILE], cwd=BASE_DIR, check=True, capture_output=True)
-                subprocess.run(["git", "commit", "-m", commit_msg], cwd=BASE_DIR, check=True, capture_output=True)
-                push_res = subprocess.run(["git", "push", "origin", "main"], cwd=BASE_DIR, capture_output=True, text=True)
-                if push_res.returncode == 0:
-                    print(f"[GITHUB SYNC] Synchronisé sur GitHub : {commit_msg}")
-                else:
-                    print(f"[GITHUB SYNC] Erreur push : {push_res.stderr.strip()}")
-        except Exception as e:
-            print(f"[GITHUB SYNC] Exception : {e}")
+        with sync_lock:
+            try:
+                # Assurer la stricte parité entre dashboard.html et index.html
+                dash_path = os.path.join(BASE_DIR, "dashboard.html")
+                idx_path = os.path.join(BASE_DIR, "index.html")
+                if os.path.exists(dash_path) and os.path.exists(idx_path):
+                    with open(dash_path, "rb") as f1, open(idx_path, "rb") as f2:
+                        if f1.read() != f2.read():
+                            shutil.copyfile(dash_path, idx_path)
+
+                files_to_check = [DATA_FILE, dash_path, idx_path]
+                res = subprocess.run(["git", "status", "--porcelain"] + files_to_check, capture_output=True, text=True, cwd=BASE_DIR)
+                if res.stdout.strip():
+                    subprocess.run(["git", "add"] + files_to_check, cwd=BASE_DIR, check=True, capture_output=True)
+                    subprocess.run(["git", "commit", "-m", commit_msg], cwd=BASE_DIR, check=True, capture_output=True)
+                    push_res = subprocess.run(["git", "push", "origin", "main"], cwd=BASE_DIR, capture_output=True, text=True)
+                    if push_res.returncode == 0:
+                        print(f"[GITHUB SYNC] Synchronisé sur GitHub : {commit_msg}")
+                    else:
+                        print(f"[GITHUB SYNC] Rebase et nouvel essai push ({push_res.stderr.strip()})...")
+                        subprocess.run(["git", "pull", "--rebase", "origin", "main"], cwd=BASE_DIR, capture_output=True, text=True)
+                        push_retry = subprocess.run(["git", "push", "origin", "main"], cwd=BASE_DIR, capture_output=True, text=True)
+                        if push_retry.returncode == 0:
+                            print(f"[GITHUB SYNC] Synchronisé après rebase : {commit_msg}")
+                        else:
+                            print(f"[GITHUB SYNC] Erreur push persistante : {push_retry.stderr.strip()}")
+            except Exception as e:
+                print(f"[GITHUB SYNC] Exception : {e}")
     threading.Thread(target=_sync, daemon=True).start()
 
 agent_status = {
@@ -183,6 +203,134 @@ class DashboardHandler(http.server.SimpleHTTPRequestHandler):
             self.end_headers()
             self.wfile.write(json.dumps({"status": "success"}).encode())
             sync_github_background("feat: réorganisation manuelle de l'ordre des annonces")
+            return
+        
+        elif self.path == "/api/add_listing":
+            content_length = int(self.headers['Content-Length'])
+            post_data = self.rfile.read(content_length)
+            params = json.loads(post_data.decode('utf-8'))
+            
+            titre = params.get("titre", "").strip()
+            if not titre:
+                self.send_response(400)
+                self.send_header("Content-type", "application/json")
+                self.end_headers()
+                self.wfile.write(json.dumps({"error": "Le titre est obligatoire"}).encode())
+                return
+            
+            prix = params.get("prix", "").strip()
+            try:
+                surface = float(params.get("surface") or 0)
+            except (ValueError, TypeError):
+                surface = 0.0
+                
+            try:
+                nb_pieces = int(params.get("nb_pieces") or 0)
+            except (ValueError, TypeError):
+                nb_pieces = 0
+                
+            quartier = params.get("quartier", "").strip()
+            adresse = params.get("adresse_estimee", "").strip()
+            lien = params.get("lien_annonce", "").strip()
+            source = params.get("source", "Manuel").strip()
+            notes = params.get("notes", "").strip()
+            statut = params.get("statut", "Nouveau").strip()
+            avantages = params.get("avantages", "").strip()
+            inconvenients = params.get("inconvenients", "").strip()
+            
+            # Calcul du prix / m²
+            prix_m2 = 0.0
+            if surface > 0 and prix:
+                clean_p = "".join(c for c in prix.split(",")[0] if c.isdigit())
+                if clean_p:
+                    try:
+                        prix_m2 = round(float(clean_p) / surface, 2)
+                    except ZeroDivisionError:
+                        pass
+            
+            # Formatage prix
+            formatted_prix = prix
+            if formatted_prix and "€" not in formatted_prix:
+                formatted_prix = f"{formatted_prix} €"
+                
+            # Google Street View
+            gsv = f"https://www.google.com/maps/search/?api=1&query={urllib.parse.quote(adresse)}" if adresse else ""
+            
+            new_item = {
+                "titre": titre,
+                "prix": formatted_prix,
+                "surface": surface,
+                "nb_pieces": nb_pieces,
+                "quartier": quartier,
+                "adresse_estimee": adresse,
+                "avantages": avantages,
+                "inconvenients": inconvenients,
+                "prix_m2": prix_m2,
+                "source": source or "Manuel",
+                "lien_annonce": lien,
+                "google_street_view": gsv,
+                "date_decouverte": datetime.now().strftime("%Y-%m-%d"),
+                "statut": statut,
+                "remarques_visite": "",
+                "questions_visite": "",
+                "notes": notes
+            }
+            
+            data = []
+            if os.path.exists(DATA_FILE):
+                with open(DATA_FILE, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+            
+            # Vérifier si l'annonce existe déjà
+            existing_idx = -1
+            if lien:
+                for idx, it in enumerate(data):
+                    if it.get("lien_annonce") == lien:
+                        existing_idx = idx
+                        break
+            
+            if existing_idx >= 0:
+                data[existing_idx].update(new_item)
+            else:
+                data.insert(0, new_item)
+                
+            with open(DATA_FILE, "w", encoding="utf-8") as f:
+                json.dump(data, f, ensure_ascii=False, indent=4)
+                
+            self.send_response(200)
+            self.send_header("Content-type", "application/json")
+            self.send_header("Cache-Control", "no-cache, no-store, must-revalidate")
+            self.end_headers()
+            self.wfile.write(json.dumps({"status": "success", "listing": new_item}).encode())
+            sync_github_background(f"feat: ajout manuel de l'annonce '{titre}'")
+            return
+
+        elif self.path == "/api/sync_github":
+            def _force_sync():
+                with sync_lock:
+                    try:
+                        dash_path = os.path.join(BASE_DIR, "dashboard.html")
+                        idx_path = os.path.join(BASE_DIR, "index.html")
+                        if os.path.exists(dash_path) and os.path.exists(idx_path):
+                            with open(dash_path, "rb") as f1, open(idx_path, "rb") as f2:
+                                if f1.read() != f2.read():
+                                    shutil.copyfile(dash_path, idx_path)
+
+                        files_to_sync = [DATA_FILE, dash_path, idx_path]
+                        subprocess.run(["git", "add"] + files_to_sync, cwd=BASE_DIR, check=True, capture_output=True)
+                        subprocess.run(["git", "commit", "-m", "chore: synchronisation manuelle vers GitHub Pages"], cwd=BASE_DIR, capture_output=True)
+                        subprocess.run(["git", "pull", "--rebase", "origin", "main"], cwd=BASE_DIR, capture_output=True)
+                        push_res = subprocess.run(["git", "push", "origin", "main"], cwd=BASE_DIR, capture_output=True, text=True)
+                        print(f"[GITHUB SYNC] Push manuel : {push_res.stdout} {push_res.stderr}")
+                    except Exception as e:
+                        print(f"[GITHUB SYNC] Erreur push manuel : {e}")
+
+            t = threading.Thread(target=_force_sync, daemon=True)
+            t.start()
+            self.send_response(200)
+            self.send_header("Content-type", "application/json")
+            self.end_headers()
+            self.wfile.write(json.dumps({"status": "success", "message": "Synchronisation lancée"}).encode())
             return
         
         elif self.path == "/api/run_agent":

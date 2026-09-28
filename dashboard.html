@@ -3,6 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title>Chasseur d'Appartement Lyon</title>
     <!-- Google Fonts & FontAwesome Icons -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -688,6 +691,135 @@
             color: var(--text-main);
             margin-bottom: 0.5rem;
         }
+
+        /* Modal styling */
+        .modal-backdrop {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(11, 15, 25, 0.75);
+            backdrop-filter: blur(8px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+        }
+
+        .modal-backdrop.open {
+            display: flex;
+        }
+
+        .modal-content {
+            background: rgba(30, 41, 59, 0.95);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 16px;
+            width: 100%;
+            max-width: 650px;
+            max-height: 90vh;
+            overflow-y: auto;
+            padding: 2rem;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 0.75rem;
+        }
+
+        .modal-header h3 {
+            font-size: 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-main);
+        }
+
+        .btn-close {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1.75rem;
+            cursor: pointer;
+            line-height: 1;
+        }
+        .btn-close:hover {
+            color: var(--danger);
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .form-group.full {
+            grid-column: 1 / -1;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-bottom: 0.35rem;
+            font-weight: 500;
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 0.6rem 0.8rem;
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-main);
+            outline: none;
+            font-size: 0.9rem;
+        }
+
+        .form-group input:focus, .form-group select:focus {
+            border-color: var(--accent);
+        }
+
+        .modal-footer {
+            margin-top: 1.5rem;
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+            border-top: 1px solid var(--border-color);
+            padding-top: 1rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #6366f1, #4f46e5);
+            color: white;
+            border: none;
+        }
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #4f46e5, #4338ca);
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
+        }
+
+        .btn-sync {
+            background: rgba(16, 185, 129, 0.15);
+            color: #34d399;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+        .btn-sync:hover {
+            background: rgba(16, 185, 129, 0.3);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+        }
+
+        .last-sync-time {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            align-self: center;
+        }
     </style>
 </head>
 <body>
@@ -706,11 +838,83 @@
                 <div id="mode-badge" class="mode-badge">
                     <i class="fa-solid fa-spinner fa-spin"></i> <span id="mode-text">Connexion...</span>
                 </div>
-                <button class="btn btn-secondary" onclick="fetchData(true)" title="Actualiser les annonces">
-                    <i class="fa-solid fa-rotate-right"></i> Actualiser
+                <span class="last-sync-time" id="last-sync-time"></span>
+                <button class="btn btn-primary" onclick="openAddModal()" title="Ajouter une annonce manuellement">
+                    <i class="fa-solid fa-plus"></i> Ajouter une annonce
+                </button>
+                <button class="btn btn-sync" id="btn-sync-github" onclick="syncToGitHub()" style="display:none;" title="Forcer la synchronisation vers GitHub Pages">
+                    <i class="fa-brands fa-github"></i> Sync GitHub
+                </button>
+                <button class="btn btn-secondary" onclick="forceRefresh()" title="Actualiser les annonces">
+                    <i class="fa-solid fa-rotate-right" id="refresh-icon"></i> Actualiser
                 </button>
             </div>
         </header>
+
+        <!-- Modal Ajouter une annonce -->
+        <div id="add-modal" class="modal-backdrop" onclick="if(event.target === this) closeAddModal()">
+            <div class="modal-content glass-panel">
+                <div class="modal-header">
+                    <h3><i class="fa-solid fa-plus-circle" style="color: var(--accent);"></i> Ajouter un appartement</h3>
+                    <button type="button" class="btn-close" onclick="closeAddModal()">&times;</button>
+                </div>
+                <form id="add-form" onsubmit="submitAddModal(event)">
+                    <div class="form-grid">
+                        <div class="form-group full">
+                            <label for="add-titre">Titre de l'annonce *</label>
+                            <input type="text" id="add-titre" required placeholder="ex: T3 meublé de standing 85m² avec terrasse">
+                        </div>
+                        <div class="form-group full">
+                            <label for="add-lien">Lien web de l'annonce (URL)</label>
+                            <input type="url" id="add-lien" placeholder="https://www.seloger.com/... ou leboncoin.fr/...">
+                        </div>
+                        <div class="form-group">
+                            <label for="add-prix">Loyer CC (€)</label>
+                            <input type="text" id="add-prix" placeholder="ex: 1 850 €">
+                        </div>
+                        <div class="form-group">
+                            <label for="add-surface">Surface (m²)</label>
+                            <input type="number" step="0.1" id="add-surface" placeholder="ex: 85">
+                        </div>
+                        <div class="form-group">
+                            <label for="add-pieces">Nombre de pièces</label>
+                            <input type="number" id="add-pieces" placeholder="ex: 3">
+                        </div>
+                        <div class="form-group">
+                            <label for="add-quartier">Quartier</label>
+                            <input type="text" id="add-quartier" placeholder="ex: Lyon 6e, Brotteaux">
+                        </div>
+                        <div class="form-group full">
+                            <label for="add-adresse">Adresse estimée / Rue</label>
+                            <input type="text" id="add-adresse" placeholder="ex: Cours Franklin Roosevelt, 69006 Lyon">
+                        </div>
+                        <div class="form-group">
+                            <label for="add-statut">Statut initial</label>
+                            <select id="add-statut" class="status-dropdown">
+                                <option value="Nouveau" selected>Nouveau</option>
+                                <option value="Demande d'infos">Demande d'infos</option>
+                                <option value="À visiter">À visiter</option>
+                                <option value="En attente">En attente</option>
+                                <option value="Déjà loué">Déjà loué</option>
+                                <option value="Éliminer">Éliminer</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="add-avantages">Avantages clés</label>
+                            <input type="text" id="add-avantages" placeholder="ex: ascenseur, clim, terrasse, calme">
+                        </div>
+                        <div class="form-group full">
+                            <label for="add-notes">Notes &amp; Observations</label>
+                            <textarea id="add-notes" class="notes-textarea" placeholder="Remarques, contact agence, disponibilité..."></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" onclick="closeAddModal()">Annuler</button>
+                        <button type="submit" class="btn btn-primary"><i class="fa-solid fa-check"></i> Enregistrer et Synchroniser</button>
+                    </div>
+                </form>
+            </div>
+        </div>
 
         <!-- Dashboard Stats Grid -->
         <div class="stats-grid" id="stats-grid">
@@ -824,60 +1028,41 @@
                     dataFetched = await staticRes.json();
                 }
 
-                // Restauration de l'ordre personnalisé depuis localStorage (sur GitHub Pages ou offline)
-                const savedOrderRaw = localStorage.getItem('listings_order');
-                if (savedOrderRaw) {
-                    try {
-                        const savedOrder = JSON.parse(savedOrderRaw);
-                        if (Array.isArray(savedOrder) && savedOrder.length > 0) {
-                            const orderMap = new Map();
-                            savedOrder.forEach((url, i) => orderMap.set(url, i));
-                            
-                            // Si nous ne sommes pas sur le serveur local, restaurer l'ordre
-                            if (!isLocalServer) {
-                                dataFetched.sort((a, b) => {
-                                    const hasA = orderMap.has(a.lien_annonce);
-                                    const hasB = orderMap.has(b.lien_annonce);
-                                    if (hasA && hasB) return orderMap.get(a.lien_annonce) - orderMap.get(b.lien_annonce);
-                                    if (!hasA && hasB) return -1;
-                                    if (hasA && !hasB) return 1;
-                                    return 0;
-                                });
-                            }
-                        }
-                    } catch (e) {
-                        console.warn("Erreur lecture listings_order:", e);
-                    }
-                }
-
+                // data.json est la source de vérité absolue
                 allListings = dataFetched;
 
-                // Synchroniser localStorage avec l'ordre courant
+                // Nettoyage proactif de tout vestige localStorage susceptible de corrompre l'ordre ou les statuts
                 try {
-                    const currentOrderUrls = allListings.map(i => i.lien_annonce).filter(Boolean);
-                    localStorage.setItem('listings_order', JSON.stringify(currentOrderUrls));
+                    localStorage.removeItem('listings_order');
+                    for (let i = localStorage.length - 1; i >= 0; i--) {
+                        const key = localStorage.key(i);
+                        if (key && (key.startsWith('status_') || key.startsWith('notes_'))) {
+                            localStorage.removeItem(key);
+                        }
+                    }
                 } catch (e) {}
 
-                // On static hosting (GitHub Pages), restore any status/notes saved locally in browser
-                if (!isLocalServer) {
-                    allListings.forEach(item => {
-                        const localStatus = localStorage.getItem('status_' + item.lien_annonce);
-                        if (localStatus) item.statut = localStatus;
-                        const localNotes = localStorage.getItem('notes_' + item.lien_annonce);
-                        if (localNotes !== null) item.notes = localNotes;
-                    });
-                }
-
-                // Update badge indicator
+                // Update badge indicator & controls
                 const badge = document.getElementById('mode-badge');
                 const modeText = document.getElementById('mode-text');
+                const syncBtn = document.getElementById('btn-sync-github');
+                const lastSyncEl = document.getElementById('last-sync-time');
+                
+                const now = new Date();
+                const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+                if (lastSyncEl) {
+                    lastSyncEl.textContent = `Mis à jour à ${timeStr}`;
+                }
+
                 if (badge && modeText) {
                     if (isLocalServer) {
                         badge.className = "mode-badge local";
                         modeText.innerHTML = '<i class="fa-solid fa-server"></i> Serveur local actif';
+                        if (syncBtn) syncBtn.style.display = "inline-flex";
                     } else {
                         badge.className = "mode-badge online";
                         modeText.innerHTML = '<i class="fa-solid fa-globe"></i> En ligne (GitHub Pages)';
+                        if (syncBtn) syncBtn.style.display = "none";
                     }
                 }
 
@@ -964,7 +1149,7 @@
             filterAndRender();
         }
 
-        // Save updated notes (local backend or localStorage fallback)
+        // Save updated notes (local backend with automatic GitHub sync)
         let saveTimeouts = {};
         function saveNotes(url, notes, indicatorElId) {
             const indicator = document.getElementById(indicatorElId);
@@ -985,31 +1170,28 @@
                         });
                         if (response.ok) {
                             saved = true;
-                            indicator.textContent = "Enregistré";
+                            indicator.textContent = "Enregistré & Sync GitHub";
+                            showToast("Notes sauvegardées et synchronisées vers GitHub Pages !", "success");
                         }
                     } catch (err) {
                         console.warn("API save error:", err);
                     }
                 }
 
-                // Fallback / mirror in localStorage for static hosting
                 if (!saved) {
-                    try {
-                        localStorage.setItem('notes_' + url, notes);
-                        indicator.textContent = isLocalServer ? "Erreur serveur" : "Enregistré (local)";
-                        saved = true;
-                    } catch (e) {
-                        indicator.textContent = "Erreur stockage";
+                    indicator.textContent = isLocalServer ? "Erreur serveur" : "Session (en ligne)";
+                    if (!isLocalServer) {
+                        showToast("Note modifiée en session. Utilisez le serveur local pour enregistrer sur GitHub Pages.", "info");
                     }
                 }
 
-                setTimeout(() => indicator.classList.remove('active'), 1800);
+                setTimeout(() => indicator.classList.remove('active'), 2500);
                 const item = allListings.find(i => i.lien_annonce === url);
                 if (item) item.notes = notes;
             }, 1000);
         }
 
-        // Save updated status (local backend or localStorage fallback)
+        // Save updated status (local backend with automatic GitHub sync)
         async function saveStatus(url, newStatus) {
             let saved = false;
             if (isLocalServer) {
@@ -1019,16 +1201,17 @@
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ lien_annonce: url, statut: newStatus })
                     });
-                    if (response.ok) saved = true;
+                    if (response.ok) {
+                        saved = true;
+                        showToast(`Statut '${newStatus}' enregistré et synchronisé vers GitHub Pages !`, "success");
+                    }
                 } catch (err) {
                     console.warn("Error saving status to server:", err);
                 }
             }
 
-            if (!saved) {
-                try {
-                    localStorage.setItem('status_' + url, newStatus);
-                } catch (e) {}
+            if (!saved && !isLocalServer) {
+                showToast(`Statut '${newStatus}' mis à jour pour cette session. (Pour enregistrer sur GitHub, utilisez le serveur local)`, "info");
             }
 
             // Update locally and re-render
@@ -1086,17 +1269,8 @@
             }, 2500);
         }
 
-        // Persist order both in localStorage and on server
+        // Persist order on server and trigger GitHub Pages sync
         async function persistOrder() {
-            // 1. Sauvegarde synchrone dans localStorage (garantit la persistance immédiate même en cas de F5 instantané)
-            try {
-                const orderUrls = allListings.map(i => i.lien_annonce).filter(Boolean);
-                localStorage.setItem('listings_order', JSON.stringify(orderUrls));
-            } catch (e) {
-                console.warn("Erreur stockage ordre local:", e);
-            }
-
-            // 2. Sauvegarde sur serveur local si connecté
             if (isLocalServer) {
                 try {
                     const response = await fetch('/api/update_order', {
@@ -1106,16 +1280,131 @@
                         body: JSON.stringify(allListings)
                     });
                     if (response.ok) {
-                        showToast("Ordre sauvegardé sur le serveur", "success");
+                        showToast("Nouvel ordre enregistré et synchronisé vers GitHub Pages !", "success");
                         return;
                     } else {
-                        console.error("Erreur serveur lors de la sauvegarde de l'ordre:", response.status);
+                        showToast("Erreur lors de la sauvegarde de l'ordre sur le serveur", "danger");
                     }
                 } catch (err) {
                     console.warn("Erreur réseau sauvegarde ordre:", err);
+                    showToast("Erreur de connexion au serveur local", "danger");
                 }
+            } else {
+                showToast("Ordre réorganisé pour cette session. (Note : Pour enregistrer définitivement sur GitHub, utilisez le serveur local)", "info");
             }
-            showToast("Ordre sauvegardé dans le navigateur", "info");
+        }
+
+        // Force refresh data
+        async function forceRefresh() {
+            const icon = document.getElementById('refresh-icon');
+            if (icon) icon.classList.add('fa-spin');
+            await fetchData(true);
+            setTimeout(() => {
+                if (icon) icon.classList.remove('fa-spin');
+            }, 600);
+            showToast(isLocalServer ? "Données actualisées depuis le serveur local" : "Données actualisées depuis GitHub Pages", "success");
+        }
+
+        // Force manual push to GitHub
+        async function syncToGitHub() {
+            const btn = document.getElementById('btn-sync-github');
+            if (!btn) return;
+            const originalHtml = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Synchronisation...';
+            try {
+                const res = await fetch('/api/sync_github', { method: 'POST' });
+                if (res.ok) {
+                    showToast("Synchronisation vers GitHub Pages lancée avec succès ! (Déploiement d'ici ~15-30s)", "success");
+                } else {
+                    showToast("Erreur lors de la synchronisation GitHub", "danger");
+                }
+            } catch (e) {
+                showToast("Erreur de connexion au serveur", "danger");
+            } finally {
+                setTimeout(() => {
+                    btn.disabled = false;
+                    btn.innerHTML = originalHtml;
+                }, 1500);
+            }
+        }
+
+        // Modal management for adding an apartment manually
+        function openAddModal() {
+            const modal = document.getElementById('add-modal');
+            if (modal) {
+                modal.classList.add('open');
+                const titreInput = document.getElementById('add-titre');
+                if (titreInput) titreInput.focus();
+            }
+        }
+
+        function closeAddModal() {
+            const modal = document.getElementById('add-modal');
+            if (modal) modal.classList.remove('open');
+        }
+
+        async function submitAddModal(e) {
+            e.preventDefault();
+            const titre = document.getElementById('add-titre').value.trim();
+            const lien = document.getElementById('add-lien').value.trim();
+            const prix = document.getElementById('add-prix').value.trim();
+            const surface = document.getElementById('add-surface').value.trim();
+            const pieces = document.getElementById('add-pieces').value.trim();
+            const quartier = document.getElementById('add-quartier').value.trim();
+            const adresse = document.getElementById('add-adresse').value.trim();
+            const statut = document.getElementById('add-statut').value;
+            const avantages = document.getElementById('add-avantages').value.trim();
+            const inconvenients = document.getElementById('add-inconvenients').value.trim();
+            const notes = document.getElementById('add-notes').value.trim();
+
+            if (!titre) {
+                showToast("Le titre de l'annonce est obligatoire", "danger");
+                return;
+            }
+
+            const payload = {
+                titre,
+                lien_annonce: lien || ("https://recherche-appart.local/" + Date.now()),
+                prix,
+                surface: parseFloat(surface) || 0,
+                nb_pieces: parseInt(pieces, 10) || 0,
+                quartier,
+                adresse_estimee: adresse,
+                source: "Manuel",
+                statut,
+                avantages,
+                inconvenients,
+                notes: notes || (avantages ? `Avantages: ${avantages}` : "")
+            };
+
+            if (isLocalServer) {
+                try {
+                    const res = await fetch('/api/add_listing', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    if (res.ok) {
+                        closeAddModal();
+                        document.getElementById('add-form').reset();
+                        showToast(`Annonce '${titre}' ajoutée et synchronisée avec GitHub Pages !`, "success");
+                        await fetchData(true);
+                        return;
+                    } else {
+                        showToast("Erreur serveur lors de l'ajout", "danger");
+                    }
+                } catch (err) {
+                    showToast("Erreur réseau lors de l'ajout", "danger");
+                }
+            } else {
+                closeAddModal();
+                allListings.unshift(payload);
+                populateFilters();
+                updateStats();
+                filterAndRender();
+                showToast("Annonce ajoutée pour votre session en cours. (Pour enregistrer définitivement sur GitHub Pages, utilisez le serveur local)", "info");
+            }
         }
 
         // Reorder listing by clicking Move Up / Move Down buttons

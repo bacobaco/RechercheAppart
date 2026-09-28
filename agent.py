@@ -1781,7 +1781,14 @@ def sync_data_to_github(commit_msg="Mise à jour des annonces (data.json)"):
                 print("[GITHUB] [OK] data.json synchronisé avec succès sur GitHub !")
                 print("[GITHUB] -> Le site https://bacobaco.github.io/RechercheAppart/ sera à jour d'ici ~1 minute.\n")
             else:
-                print(f"[GITHUB] [ATTENTION] Échec de l'envoi vers GitHub : {push_res.stderr.strip()}")
+                print(f"[GITHUB] [ATTENTION] Échec initial push ({push_res.stderr.strip()}). Tentative de rebase...")
+                subprocess.run(["git", "pull", "--rebase", "origin", "main"], capture_output=True, text=True, check=False)
+                push_retry = subprocess.run(["git", "push", "origin", "main"], capture_output=True, text=True, check=False)
+                if push_retry.returncode == 0:
+                    print("[GITHUB] [OK] data.json synchronisé avec succès après rebase !")
+                    print("[GITHUB] -> Le site https://bacobaco.github.io/RechercheAppart/ sera à jour d'ici ~1 minute.\n")
+                else:
+                    print(f"[GITHUB] [ATTENTION] Échec persistant du push : {push_retry.stderr.strip()}")
         else:
             print("[GITHUB] Aucun changement dans data.json à synchroniser.")
     except Exception as e:
