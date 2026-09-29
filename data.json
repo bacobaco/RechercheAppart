@@ -254,5 +254,24 @@
         "questions_visite": "",
         "notes": "Avantages: ascenseur, balcon/terrasse, parking/garage, climatisation, cuisine équipée, proche métro/tram (Cordeliers à 269m), trajet Framatome Gerland ~36 min\nInconvénients: ",
         "date_elimination": "2026-09-25"
+    },
+    {
+        "titre": "T4 meublé Standing rue Duquesne, Lyon 6ème",
+        "prix": "1 990,00 €",
+        "surface": 76.0,
+        "nb_pieces": 4,
+        "quartier": "Tête d'Or - Vitton, Lyon 6e",
+        "adresse_estimee": "35 rue Duquesne, 69006 Lyon",
+        "avantages": "ascenseur, balcon/terrasse, cachet de l'ancien, cuisine équipée, proche métro/tram (Masséna à 180m), trajet Framatome Gerland ~29 min",
+        "inconvenients": "sans climatisation (clim d'appoint envisageable sur balcon)",
+        "prix_m2": 26.18,
+        "source": "Bien'ici",
+        "lien_annonce": "https://www.bienici.com/annonce/hektor-469_EXPERTIMO22-320480",
+        "google_street_view": "https://www.google.com/maps/search/?api=1&query=35%20rue%20Duquesne%2C%2069006%20Lyon",
+        "date_decouverte": "2026-09-29",
+        "statut": "Nouveau",
+        "remarques_visite": "",
+        "questions_visite": "",
+        "notes": "Avantages: ascenseur, balcon/terrasse, cachet de l'ancien, cuisine équipée, proche métro/tram (Masséna à 180m), trajet Framatome Gerland ~29 min\nInconvénients: sans climatisation (clim d'appoint envisageable sur balcon)"
     }
 ]
