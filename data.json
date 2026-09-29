@@ -100,25 +100,6 @@
         "date_elimination": "2026-09-25"
     },
     {
-        "titre": "Location appartement T4 garibaldi",
-        "prix": "1 750,00 €",
-        "surface": 100,
-        "nb_pieces": 4,
-        "quartier": "Lyon 3e, Lyon",
-        "adresse_estimee": "Métro Garibaldi, 69003 Lyon",
-        "avantages": "ascenseur, balcon/terrasse, cachet de l'ancien (parquet chevrons, cheminées, moulures), cuisine équipée avec verrière, 3 chambres, séjour 33m², calme (sans vis-à-vis, double vitrage), proche métro/tram (Garibaldi à 199m), trajet Framatome Gerland ~21 min",
-        "inconvenients": "sans climatisation (clim d'appoint envisageable sur balcon)",
-        "prix_m2": 17.5,
-        "source": "Gens de Confiance",
-        "lien_annonce": "https://gensdeconfiance.com/fr/ui/post/realestate__rent/8e1abc46-5c9e-42cb-b5cd-e3ee37ce33f9",
-        "google_street_view": "https://www.google.com/maps/search/?api=1&query=M%C3%A9tro%20Garibaldi%2C%2069003%20Lyon",
-        "date_decouverte": "2026-09-25",
-        "statut": "Demande d'infos",
-        "remarques_visite": "",
-        "questions_visite": "",
-        "notes": "56 Av. Félix Faure lyon\nenvoyer message\nSuperbe T4 meublé de 100m² avec cachet de l'ancien (hauteur sous plafond 3,10m, parquet chevrons, cheminées, moulures), entièrement rénové il y a 6 ans. 3 chambres (18m², 11m², 10m² avec dressing). Séjour 33m² avec accès à un balcon, sans vis-à-vis, expo Nord-Est. Cuisine équipée semi-ouverte avec verrière. 3ème étage sur 4 avec ascenseur. Double vitrage. Au pied du métro Garibaldi.\nAvantages: ascenseur, balcon/terrasse, cachet de l'ancien, cuisine équipée, calme, proche métro/tram (Garibaldi à 199m), trajet Framatome Gerland ~21 min\nInconvénients: sans climatisation (clim d'appoint envisageable sur balcon)"
-    },
-    {
         "titre": "T3 meublé de 83 m² au Brotteaux avec balcon",
         "prix": "1 700,00 €",
         "surface": 83,
@@ -136,6 +117,25 @@
         "remarques_visite": "",
         "questions_visite": "",
         "notes": "Contact direct avec l'agence, cherche un créneau de visite...\nAvantages: ascenseur, étage élevé (7ème), balcon/terrasse, climatisation, proche métro/tram (Brotteaux à 213m), trajet Framatome Gerland ~23 min\nInconvénients: cuisine non équipée ou non mentionnée"
+    },
+    {
+        "titre": "Location appartement T4 garibaldi",
+        "prix": "1 750,00 €",
+        "surface": 100,
+        "nb_pieces": 4,
+        "quartier": "Lyon 3e, Lyon",
+        "adresse_estimee": "Métro Garibaldi, 69003 Lyon",
+        "avantages": "ascenseur, balcon/terrasse, cachet de l'ancien (parquet chevrons, cheminées, moulures), cuisine équipée avec verrière, 3 chambres, séjour 33m², calme (sans vis-à-vis, double vitrage), proche métro/tram (Garibaldi à 199m), trajet Framatome Gerland ~21 min",
+        "inconvenients": "sans climatisation (clim d'appoint envisageable sur balcon)",
+        "prix_m2": 17.5,
+        "source": "Gens de Confiance",
+        "lien_annonce": "https://gensdeconfiance.com/fr/ui/post/realestate__rent/8e1abc46-5c9e-42cb-b5cd-e3ee37ce33f9",
+        "google_street_view": "https://www.google.com/maps/search/?api=1&query=M%C3%A9tro%20Garibaldi%2C%2069003%20Lyon",
+        "date_decouverte": "2026-09-25",
+        "statut": "Demande d'infos",
+        "remarques_visite": "",
+        "questions_visite": "",
+        "notes": "56 Av. Félix Faure lyon\nenvoyer message\nSuperbe T4 meublé de 100m² avec cachet de l'ancien (hauteur sous plafond 3,10m, parquet chevrons, cheminées, moulures), entièrement rénové il y a 6 ans. 3 chambres (18m², 11m², 10m² avec dressing). Séjour 33m² avec accès à un balcon, sans vis-à-vis, expo Nord-Est. Cuisine équipée semi-ouverte avec verrière. 3ème étage sur 4 avec ascenseur. Double vitrage. Au pied du métro Garibaldi.\nAvantages: ascenseur, balcon/terrasse, cachet de l'ancien, cuisine équipée, calme, proche métro/tram (Garibaldi à 199m), trajet Framatome Gerland ~21 min\nInconvénients: sans climatisation (clim d'appoint envisageable sur balcon)"
     },
     {
         "titre": "Appartement",
