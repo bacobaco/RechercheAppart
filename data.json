@@ -269,9 +269,10 @@
         "lien_annonce": "https://www.bienici.com/annonce/hektor-469_EXPERTIMO22-320480",
         "google_street_view": "https://www.google.com/maps/search/?api=1&query=35%20rue%20Duquesne%2C%2069006%20Lyon",
         "date_decouverte": "2026-09-29",
-        "statut": "Nouveau",
+        "statut": "Éliminer",
         "remarques_visite": "",
         "questions_visite": "",
-        "notes": "Avantages: ascenseur, balcon/terrasse, cachet de l'ancien, cuisine équipée, proche métro/tram (Masséna à 180m), trajet Framatome Gerland ~29 min\nInconvénients: sans climatisation (clim d'appoint envisageable sur balcon)"
+        "notes": "tropcher pour la taille pas terrible et pas de photos de totes les chambres...\nAvantages: ascenseur, balcon/terrasse, cachet de l'ancien, cuisine équipée, proche métro/tram (Masséna à 180m), trajet Framatome Gerland ~29 min\nInconvénients: sans climatisation (clim d'appoint envisageable sur balcon)",
+        "date_elimination": "2026-09-29"
     }
 ]
