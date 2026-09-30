@@ -1,25 +1,5 @@
 [
     {
-        "titre": "Appartement · Logement entier · 83 m² · 3 pièces · Meublé",
-        "prix": "2 200,00 €",
-        "surface": 83,
-        "nb_pieces": 3,
-        "quartier": "Lyon 6e, Lyon",
-        "adresse_estimee": "Quartier Lyon 6e",
-        "avantages": "ascenseur, balcon/terrasse, proche métro/tram (Masséna à 0m), trajet Framatome Gerland ~27 min",
-        "inconvenients": "sans climatisation (clim d'appoint envisageable sur balcon), cuisine non équipée ou non mentionnée",
-        "prix_m2": 26.51,
-        "source": "Gens de Confiance",
-        "lien_annonce": "https://gensdeconfiance.com/fr/ui/post/realestate__rent/daa87b58-ed28-4298-b8e9-b54f734069d0",
-        "google_street_view": "",
-        "date_decouverte": "2026-08-30",
-        "statut": "Éliminer",
-        "remarques_visite": "",
-        "questions_visite": "",
-        "notes": "Avantages: ascenseur, balcon/terrasse, proche métro/tram (Masséna à 0m), trajet Framatome Gerland ~27 min\nInconvénients: sans climatisation (clim d'appoint envisageable sur balcon), cuisine non équipée ou non mentionnée",
-        "date_elimination": "2026-08-30"
-    },
-    {
         "titre": "Appartement · Logement entier · 100 m² · 4 pièces · Meublé",
         "prix": "1 925,00 €",
         "surface": 100,
