@@ -74,7 +74,24 @@ def auto_refresh_jinka_token():
     except Exception:
         pass
 
-    # 2. Profil persistant ou session Playwright
+    # 2. Vérifier directement dans jinka_session.json (cookie LA_API_TOKEN)
+    if os.path.exists(JINKA_SESSION_FILE):
+        try:
+            with open(JINKA_SESSION_FILE, "r", encoding="utf-8") as f:
+                s_data = json.load(f)
+            for c in s_data.get("cookies", []):
+                val = c.get("value", "")
+                name = c.get("name", "")
+                if name == "LA_API_TOKEN" or (val and val.startswith("eyJ") and len(val) > 50):
+                    if is_jinka_token_valid(val):
+                        print("[OK] Token Jinka valide récupéré depuis jinka_session.json !")
+                        with open(JINKA_TOKEN_FILE, "w", encoding="utf-8") as f:
+                            json.dump({"token": val}, f, indent=2)
+                        return val
+        except Exception:
+            pass
+
+    # 3. Profil persistant ou session Playwright
     profile_dir = os.path.abspath("./.jinka_profile")
     if sync_playwright and (os.path.exists(profile_dir) or os.path.exists(JINKA_SESSION_FILE)):
         try:
@@ -90,12 +107,52 @@ def auto_refresh_jinka_token():
                     browser = p.chromium.launch(headless=True, channel="chrome", args=["--disable-blink-features=AutomationControlled"])
                     ctx = browser.new_context(storage_state=JINKA_SESSION_FILE)
                 
+                # Vérification directe des cookies du contexte Playwright
+                for c in ctx.cookies():
+                    val = c.get("value", "")
+                    name = c.get("name", "")
+                    if name == "LA_API_TOKEN" or (val and val.startswith("eyJ") and len(val) > 50):
+                        if is_jinka_token_valid(val):
+                            ctx.close()
+                            print("[OK] Token Jinka récupéré depuis les cookies du profil Playwright !")
+                            with open(JINKA_TOKEN_FILE, "w", encoding="utf-8") as f:
+                                json.dump({"token": val}, f, indent=2)
+                            return val
+
                 page = ctx.new_page() if not ctx.pages else ctx.pages[0]
                 page.add_init_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
-                page.goto("https://www.jinka.fr/", wait_until="networkidle", timeout=15000)
+                page.goto("https://www.jinka.fr/alerts", wait_until="networkidle", timeout=15000)
                 
+                # Vérifier à nouveau les cookies après chargement de la page
+                for c in ctx.cookies():
+                    val = c.get("value", "")
+                    name = c.get("name", "")
+                    if name == "LA_API_TOKEN" or (val and val.startswith("eyJ") and len(val) > 50):
+                        if is_jinka_token_valid(val):
+                            ctx.close()
+                            print("[OK] Token Jinka récupéré depuis les cookies après chargement !")
+                            with open(JINKA_TOKEN_FILE, "w", encoding="utf-8") as f:
+                                json.dump({"token": val}, f, indent=2)
+                            return val
+
                 token = page.evaluate(r"""() => {
                     const jwtRegex = /eyJ[a-zA-Z0-9_-]+\.[a-zA-Z0-9_-]+\.[a-zA-Z0-9_-]+/;
+                    // document.cookie
+                    try {
+                        const cookies = document.cookie.split(';');
+                        for (let c of cookies) {
+                            const idx = c.indexOf('=');
+                            if (idx > -1) {
+                                const name = c.substring(0, idx).trim();
+                                const val = c.substring(idx + 1).trim();
+                                if (name === 'LA_API_TOKEN' || jwtRegex.test(val)) {
+                                    const match = val.match(jwtRegex);
+                                    if (match) return match[0];
+                                }
+                            }
+                        }
+                    } catch(e) {}
+                    // localStorage
                     for (let i = 0; i < localStorage.length; i++) {
                         const val = localStorage.getItem(localStorage.key(i));
                         if (typeof val === 'string' && jwtRegex.test(val)) {
@@ -103,6 +160,7 @@ def auto_refresh_jinka_token():
                             if (m) return m[0];
                         }
                     }
+                    // sessionStorage
                     for (let i = 0; i < sessionStorage.length; i++) {
                         const val = sessionStorage.getItem(sessionStorage.key(i));
                         if (typeof val === 'string' && jwtRegex.test(val)) {

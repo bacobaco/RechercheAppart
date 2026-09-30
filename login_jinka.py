@@ -1,11 +1,13 @@
 """
 Script de connexion Jinka perfectionné et automatisé.
+- Correction de l'URL de connexion : https://www.jinka.fr/sign/in
+- Détection multi-sources du Token : Cookies (LA_API_TOKEN), Requêtes/Réponses réseau, LocalStorage, SessionStorage.
 - Détection automatique du Token dans le presse-papiers Windows au lancement.
+- Récupération instantanée depuis la session Chrome persistante si déjà connecté.
 - Connexion via Chrome réel avec profil persistant et contournement anti-détection Google.
-- Détection automatique du token dès la connexion réussie (sans avoir besoin d'ouvrir F12).
 - Saisie manuelle directe comme alternative.
 
-Usage: python login_jinka.py [--clipboard] [--status]
+Usage: python login_jinka.py [--clipboard] [--status] [--session]
 """
 import json
 import os
@@ -19,7 +21,32 @@ TOKEN_FILE = "jinka_token.json"
 PROFILE_DIR = os.path.abspath("./.jinka_profile")
 
 def get_clipboard_text():
-    """Récupère le texte du presse-papiers sous Windows."""
+    """Récupère le texte du presse-papiers sous Windows de manière robuste."""
+    # 1. Via ctypes Windows API (direct, pas de dépendance externe)
+    try:
+        import ctypes
+        CF_UNICODETEXT = 13
+        user32 = ctypes.windll.user32
+        kernel32 = ctypes.windll.kernel32
+        if user32.OpenClipboard(None):
+            try:
+                handle = user32.GetClipboardData(CF_UNICODETEXT)
+                if handle:
+                    kernel32.GlobalLock.restype = ctypes.c_void_p
+                    ptr = kernel32.GlobalLock(handle)
+                    if ptr:
+                        try:
+                            val = ctypes.c_wchar_p(ptr).value
+                            if val and val.strip():
+                                return val.strip()
+                        finally:
+                            kernel32.GlobalUnlock(handle)
+            finally:
+                user32.CloseClipboard()
+    except Exception:
+        pass
+
+    # 2. Via pyperclip
     try:
         import pyperclip
         text = pyperclip.paste()
@@ -28,6 +55,7 @@ def get_clipboard_text():
     except Exception:
         pass
 
+    # 3. Via tkinter
     try:
         import tkinter as tk
         root = tk.Tk()
@@ -39,6 +67,7 @@ def get_clipboard_text():
     except Exception:
         pass
 
+    # 4. Via PowerShell
     try:
         import subprocess
         res = subprocess.run(
@@ -54,6 +83,8 @@ def get_clipboard_text():
 
 def decode_jwt_info(token):
     """Décode les informations d'expiration et d'utilisateur d'un JWT Jinka."""
+    if not token or not isinstance(token, str):
+        return None
     try:
         parts = token.strip().split(".")
         if len(parts) != 3:
@@ -88,6 +119,50 @@ def extract_jwt_from_text(text):
         info = decode_jwt_info(m)
         if info and info["valid"]:
             return m, info
+    return None
+
+def extract_token_from_session_file(session_file=SESSION_FILE):
+    """Extrait le token JWT du fichier de session jinka_session.json (cookie LA_API_TOKEN)."""
+    if not os.path.exists(session_file):
+        return None
+    try:
+        with open(session_file, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        for c in data.get("cookies", []):
+            val = c.get("value", "")
+            name = c.get("name", "")
+            if name == "LA_API_TOKEN" or (val and val.startswith("eyJ") and len(val) > 50):
+                info = decode_jwt_info(val)
+                if info and info["valid"]:
+                    return val, info
+    except Exception:
+        pass
+    return None
+
+def extract_token_from_profile_cookies(profile_dir=PROFILE_DIR):
+    """Tente de lire directement le cookie LA_API_TOKEN depuis le profil Chrome persistant."""
+    if not os.path.exists(profile_dir):
+        return None
+    try:
+        from playwright.sync_api import sync_playwright
+        with sync_playwright() as p:
+            ctx = p.chromium.launch_persistent_context(
+                user_data_dir=profile_dir,
+                headless=True,
+                channel="chrome",
+                args=["--disable-blink-features=AutomationControlled"]
+            )
+            cookies = ctx.cookies()
+            ctx.close()
+            for c in cookies:
+                val = c.get("value", "")
+                name = c.get("name", "")
+                if name == "LA_API_TOKEN" or (val and val.startswith("eyJ") and len(val) > 50):
+                    info = decode_jwt_info(val)
+                    if info and info["valid"]:
+                        return val, info
+    except Exception:
+        pass
     return None
 
 def save_manual_token(token):
@@ -151,48 +226,63 @@ def test_jinka_api(token):
         return False
 
 def show_status():
-    """Affiche l'état actuel du token Jinka."""
+    """Affiche l'état actuel du token Jinka avec vérification et auto-récupération."""
     print("=" * 65)
     print("           État de la connexion Jinka")
     print("=" * 65)
-    if not os.path.exists(TOKEN_FILE):
+    
+    current_token_valid = False
+    if os.path.exists(TOKEN_FILE):
+        try:
+            with open(TOKEN_FILE, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            token = data.get("token")
+            if token:
+                info = decode_jwt_info(token)
+                if not info:
+                    print("[ÉTAT] Token présent mais format JWT non reconnu.")
+                elif info["valid"]:
+                    print(f"[ÉTAT] ACTIF - Connecté avec : {info['email']}")
+                    print(f"[EXPIRATION] Le {info['exp_date_str']} (dans {info['days_left']} jours)")
+                    test_jinka_api(token)
+                    current_token_valid = True
+                else:
+                    print(f"[ÉTAT] EXPIRÉ depuis le {info['exp_date_str']}")
+            else:
+                print("[ÉTAT] Fichier jinka_token.json présent mais sans token.")
+        except Exception as e:
+            print(f"[ERREUR] Lecture de {TOKEN_FILE} impossible : {e}")
+    else:
         print("[ÉTAT] Aucun token Jinka n'est configuré (jinka_token.json introuvable).")
-        return
-        
-    try:
-        with open(TOKEN_FILE, "r", encoding="utf-8") as f:
-            data = json.load(f)
-        token = data.get("token")
-        if not token:
-            print("[ÉTAT] Fichier présent mais token vide.")
+
+    if not current_token_valid:
+        # Vérifier si un token valide existe dans jinka_session.json ou le profil
+        session_res = extract_token_from_session_file()
+        if session_res:
+            s_token, s_info = session_res
+            print("\n[RÉCUPÉRATION POSSIBLE] Un token valide a été trouvé dans 'jinka_session.json' !")
+            print(f"  - Compte    : {s_info['email']}")
+            print(f"  - Expire le : {s_info['exp_date_str']} (dans {s_info['days_left']} jours)")
+            print("[ACTION] Sauvegarde automatique du token récupéré...")
+            save_manual_token(s_token)
             return
-            
-        info = decode_jwt_info(token)
-        if not info:
-            print("[ÉTAT] Token présent mais format JWT non reconnu.")
-        elif info["valid"]:
-            print(f"[ÉTAT] ACTIF - Connecté avec : {info['email']}")
-            print(f"[EXPIRATION] Le {info['exp_date_str']} (dans {info['days_left']} jours)")
-            test_jinka_api(token)
-        else:
-            print(f"[ÉTAT] EXPIRÉ depuis le {info['exp_date_str']}")
-            print("[ACTION] Renouvelez votre token en relançant: python login_jinka.py")
-    except Exception as e:
-        print(f"[ERREUR] Lecture impossible : {e}")
+
+        print("\n[ACTION] Renouvelez votre token en relançant : python login_jinka.py")
 
 def run_playwright_stealth():
-    """Lance un navigateur Chrome avec profil persistant et contournement anti-détection Google."""
+    """Lance un navigateur Chrome avec profil persistant et interception multi-sources du token."""
     try:
         from playwright.sync_api import sync_playwright
     except ImportError:
-        print("[ERREUR] Playwright n'est pas installé. Lancez: pip install playwright")
+        print("[ERREUR] Playwright n'est pas installé. Lancez : pip install playwright")
         return False
 
     print("\nLancement du navigateur Chrome réel avec profil persistant...")
-    print("Avantages de ce mode :")
-    print("  1. Google Sign-In n'est PAS bloqué (détection anti-bot désactivée).")
-    print("  2. Dès que vous vous connectez, le token est DÉTECTÉ AUTOMATIQUEMENT !")
-    print("  3. La session est mémorisée sur votre disque pour les futurs renouvellements.")
+    print("Points forts :")
+    print("  1. URL correcte : https://www.jinka.fr/sign/in")
+    print("  2. Google Sign-In débloqué (détection anti-bot désactivée).")
+    print("  3. Interception multi-sources du token (Cookies LA_API_TOKEN, Réseau, LocalStorage).")
+    print("  4. Capture instantanée dès que la connexion réussit.")
     print()
 
     try:
@@ -209,52 +299,152 @@ def run_playwright_stealth():
                 viewport=None
             )
             
+            detected_token = None
+
+            def check_and_set_token(text):
+                nonlocal detected_token
+                if detected_token or not text or not isinstance(text, str):
+                    return
+                matches = re.findall(r'eyJ[a-zA-Z0-9_-]+\.[a-zA-Z0-9_-]+\.[a-zA-Z0-9_-]+', text)
+                for m in matches:
+                    info = decode_jwt_info(m)
+                    if info and info["valid"]:
+                        detected_token = m
+                        print(f"\n[INTERCEPTION RÉSEAU RÉUSSIE] Token JWT capturé pour : {info['email']} !")
+                        return
+
+            # Écoute des requêtes réseau pour intercepter les headers Authorization
+            def on_request(request):
+                nonlocal detected_token
+                if detected_token:
+                    return
+                try:
+                    auth = request.headers.get("authorization", "")
+                    if auth:
+                        check_and_set_token(auth)
+                    cookie_header = request.headers.get("cookie", "")
+                    if "LA_API_TOKEN" in cookie_header:
+                        check_and_set_token(cookie_header)
+                except Exception:
+                    pass
+
+            # Écoute des réponses réseau pour intercepter Set-Cookie ou payload JSON
+            def on_response(response):
+                nonlocal detected_token
+                if detected_token:
+                    return
+                try:
+                    set_cookie = response.headers.get("set-cookie", "")
+                    if "LA_API_TOKEN" in set_cookie:
+                        check_and_set_token(set_cookie)
+                except Exception:
+                    pass
+
+            context.on("request", on_request)
+            context.on("response", on_response)
+
+            def inspect_all_cookies():
+                try:
+                    for c in context.cookies():
+                        val = c.get("value", "")
+                        name = c.get("name", "")
+                        if name == "LA_API_TOKEN" or (val and val.startswith("eyJ") and len(val) > 50):
+                            info = decode_jwt_info(val)
+                            if info and info["valid"]:
+                                return val, info
+                except Exception:
+                    pass
+                return None
+
+            # Vérification préalable : est-on déjà connecté dans le profil ?
+            pre_check = inspect_all_cookies()
+            if pre_check:
+                val, info = pre_check
+                detected_token = val
+                print(f"[DÉTECTION IMMÉDIATE] Session déjà active pour : {info['email']} (expire le {info['exp_date_str']}) !")
+            
             page = context.new_page() if not context.pages else context.pages[0]
             page.add_init_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
             
-            print("[INFO] Navigation vers Jinka...")
-            page.goto("https://www.jinka.fr/connexion", wait_until="domcontentloaded", timeout=30000)
-            print("[ATTENTE] Connectez-vous à votre compte Jinka dans la fenêtre ouverte...")
-            print("[INFO] Le script vérifie automatiquement la connexion toutes les secondes...\n")
-            
-            # Boucle de surveillance automatique du token
-            detected_token = None
-            max_seconds = 180
-            start_time = time.time()
-            
-            while time.time() - start_time < max_seconds:
+            if not detected_token:
+                # URL de connexion officielle Jinka (et non /connexion qui est un 404)
+                login_url = "https://www.jinka.fr/sign/in"
+                print(f"[INFO] Navigation vers Jinka ({login_url})...")
                 try:
-                    js_token = page.evaluate(r"""() => {
-                        const jwtRegex = /eyJ[a-zA-Z0-9_-]+\.[a-zA-Z0-9_-]+\.[a-zA-Z0-9_-]+/;
-                        // 1. localStorage
-                        for (let i = 0; i < localStorage.length; i++) {
-                            const val = localStorage.getItem(localStorage.key(i));
-                            if (typeof val === 'string' && jwtRegex.test(val)) {
-                                const match = val.match(jwtRegex);
-                                if (match) return match[0];
-                            }
-                        }
-                        // 2. sessionStorage
-                        for (let i = 0; i < sessionStorage.length; i++) {
-                            const val = sessionStorage.getItem(sessionStorage.key(i));
-                            if (typeof val === 'string' && jwtRegex.test(val)) {
-                                const match = val.match(jwtRegex);
-                                if (match) return match[0];
-                            }
-                        }
-                        return null;
-                    }""")
+                    page.goto(login_url, wait_until="domcontentloaded", timeout=30000)
+                except Exception as e:
+                    print(f"[WARN] Chargement de la page : {e}")
                     
-                    if js_token:
-                        info = decode_jwt_info(js_token)
-                        if info and info["valid"]:
-                            detected_token = js_token
-                            print(f"\n[DÉTECTION AUTOMATIQUE RÉUSSIE] Token trouvé pour : {info['email']} !")
-                            break
-                except Exception:
-                    pass
-                    
-                time.sleep(1.5)
+                print("[ATTENTE] Connectez-vous à votre compte Jinka dans la fenêtre Chrome...")
+                print("[INFO] Détection automatique en cours (Cookies, Stockage local, Requêtes)...\n")
+                
+                # Boucle de surveillance automatique du token
+                max_seconds = 180
+                start_time = time.time()
+                
+                while time.time() - start_time < max_seconds:
+                    if detected_token:
+                        break
+                        
+                    # 1. Vérifier les cookies du contexte (tous onglets / popups confondus)
+                    cookie_res = inspect_all_cookies()
+                    if cookie_res:
+                        detected_token = cookie_res[0]
+                        print(f"\n[DÉTECTION COOKIE RÉUSSIE] Cookie 'LA_API_TOKEN' détecté pour : {cookie_res[1]['email']} !")
+                        break
+
+                    # 2. Vérifier document.cookie et le localStorage / sessionStorage
+                    try:
+                        js_token = page.evaluate(r"""() => {
+                            const jwtRegex = /eyJ[a-zA-Z0-9_-]+\.[a-zA-Z0-9_-]+\.[a-zA-Z0-9_-]+/;
+                            // a. document.cookie
+                            try {
+                                const cookies = document.cookie.split(';');
+                                for (let c of cookies) {
+                                    const idx = c.indexOf('=');
+                                    if (idx > -1) {
+                                        const name = c.substring(0, idx).trim();
+                                        const val = c.substring(idx + 1).trim();
+                                        if (name === 'LA_API_TOKEN' || jwtRegex.test(val)) {
+                                            const match = val.match(jwtRegex);
+                                            if (match) return match[0];
+                                        }
+                                    }
+                                }
+                            } catch(e) {}
+                            // b. localStorage
+                            try {
+                                for (let i = 0; i < localStorage.length; i++) {
+                                    const val = localStorage.getItem(localStorage.key(i));
+                                    if (typeof val === 'string' && jwtRegex.test(val)) {
+                                        const match = val.match(jwtRegex);
+                                        if (match) return match[0];
+                                    }
+                                }
+                            } catch(e) {}
+                            // c. sessionStorage
+                            try {
+                                for (let i = 0; i < sessionStorage.length; i++) {
+                                    const val = sessionStorage.getItem(sessionStorage.key(i));
+                                    if (typeof val === 'string' && jwtRegex.test(val)) {
+                                        const match = val.match(jwtRegex);
+                                        if (match) return match[0];
+                                    }
+                                }
+                            } catch(e) {}
+                            return null;
+                        }""")
+                        
+                        if js_token:
+                            info = decode_jwt_info(js_token)
+                            if info and info["valid"]:
+                                detected_token = js_token
+                                print(f"\n[DÉTECTION DOM/STORAGE RÉUSSIE] Token trouvé pour : {info['email']} !")
+                                break
+                    except Exception:
+                        pass
+                        
+                    time.sleep(1.0)
                 
             # Sauvegarder cookies & state
             try:
@@ -294,6 +484,14 @@ def main():
             else:
                 print("[ERREUR] Aucun token JWT valide trouvé dans le presse-papiers.")
             return
+        elif arg in ["--session"]:
+            s_res = extract_token_from_session_file()
+            if s_res:
+                token, info = s_res
+                save_manual_token(token)
+            else:
+                print("[ERREUR] Aucun token valide trouvé dans 'jinka_session.json'.")
+            return
 
     print("=" * 65)
     print("      Connexion Jinka - Gestion Automatisée de la Session")
@@ -304,7 +502,7 @@ def main():
     if clip_res:
         token, info = clip_res
         print("\n" + "*" * 65)
-        print(f" [DÉTECTION AUTOMATIQUE] Un token valide a été trouvé dans le presse-papiers !")
+        print(f" [DÉTECTION PRESSE-PAPIERS] Un token valide a été trouvé !")
         print(f"  - Compte      : {info['email']}")
         print(f"  - Expire le   : {info['exp_date_str']} (dans {info['days_left']} jours)")
         print("*" * 65)
@@ -313,20 +511,42 @@ def main():
             save_manual_token(token)
             return
 
+    # 2. Vérifier si un token valide existe dans la session ou le profil persistant
+    session_res = extract_token_from_session_file()
+    if session_res:
+        token, info = session_res
+        print("\n" + "*" * 65)
+        print(f" [DÉTECTION SESSION] Un token actif est présent dans votre session existante !")
+        print(f"  - Compte      : {info['email']}")
+        print(f"  - Expire le   : {info['exp_date_str']} (dans {info['days_left']} jours)")
+        print("*" * 65)
+        choice = input("\nVoulez-vous réactiver ce token directement ? (O/n) [défaut: O] : ").strip().lower()
+        if choice in ["o", "oui", "y", "yes", ""]:
+            save_manual_token(token)
+            return
+
     print("\nChoisissez une méthode :")
     print("1) Ouvrir le navigateur Chrome sécurisé (Connexion facile, token détecté TOUT SEUL)")
-    print("2) Saisir ou coller un Token JWT manuellement")
-    print("3) Afficher l'état du token actuel")
+    print("2) Récupérer le token depuis le profil Chrome persistant (si déjà connecté)")
+    print("3) Saisir ou coller un Token JWT manuellement")
+    print("4) Afficher l'état du token actuel")
     print()
     
-    choice = input("Votre choix (1, 2 ou 3) [défaut: 1] : ").strip()
+    choice = input("Votre choix (1, 2, 3 ou 4) [défaut: 1] : ").strip()
     if choice in ["1", ""]:
         run_playwright_stealth()
     elif choice == "2":
+        prof_res = extract_token_from_profile_cookies()
+        if prof_res:
+            token, info = prof_res
+            save_manual_token(token)
+        else:
+            print("[INFO] Aucun token actif trouvé dans le profil Chrome. Lancez le choix 1.")
+    elif choice == "3":
         token = input("\nCollez votre token ici : ").strip()
         if token:
             save_manual_token(token)
-    elif choice == "3":
+    elif choice == "4":
         show_status()
     else:
         print("[ERREUR] Choix invalide.")
