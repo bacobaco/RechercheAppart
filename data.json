@@ -194,5 +194,24 @@
         "questions_visite": "",
         "notes": "tropcher pour la taille pas terrible et pas de photos de totes les chambres...\nAvantages: ascenseur, balcon/terrasse, cachet de l'ancien, cuisine équipée, proche métro/tram (Masséna à 180m), trajet Framatome Gerland ~29 min\nInconvénients: sans climatisation (clim d'appoint envisageable sur balcon)",
         "date_elimination": "2026-09-29"
+    },
+    {
+        "titre": "Appartement meublé 2 chambres",
+        "prix": "1 795,00 €",
+        "surface": 73.0,
+        "nb_pieces": 3,
+        "quartier": "Lyon 3e, Lyon",
+        "adresse_estimee": "Quartier Lyon 3e",
+        "avantages": "ascenseur, étage élevé (7ème), balcon/terrasse, parking/garage, calme, proche métro/tram (Place Guichard - Bourse du Travail à 0m), trajet Framatome Gerland ~15 min",
+        "inconvenients": "sans climatisation (clim d'appoint envisageable sur balcon), cuisine non équipée ou non mentionnée",
+        "prix_m2": 24.59,
+        "source": "Lodgis",
+        "lien_annonce": "https://www.lodgis.com/fr/lyon,location-meublee/appartement/LPA23928-rue-maurice-flandin-appartement-lyon-3.mod.html",
+        "google_street_view": "",
+        "date_decouverte": "2026-10-04",
+        "statut": "Nouveau",
+        "remarques_visite": "",
+        "questions_visite": "",
+        "notes": "Avantages: ascenseur, étage élevé (7ème), balcon/terrasse, parking/garage, calme, proche métro/tram (Place Guichard - Bourse du Travail à 0m), trajet Framatome Gerland ~15 min\nInconvénients: sans climatisation (clim d'appoint envisageable sur balcon), cuisine non équipée ou non mentionnée"
     }
 ]
