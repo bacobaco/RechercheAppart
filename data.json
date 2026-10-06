@@ -306,9 +306,10 @@
         "lien_annonce": "https://gensdeconfiance.com/fr/ui/post/realestate__rent/daa87b58-ed28-4298-b8e9-b54f734069d0",
         "google_street_view": "",
         "date_decouverte": "2026-10-06",
-        "statut": "Nouveau",
+        "statut": "Éliminer",
         "remarques_visite": "",
         "questions_visite": "",
-        "notes": "beau mais froid; 1 seul lit... cher\nAvantages: ascenseur, balcon/terrasse, proche métro/tram (Brotteaux à 272m), trajet Framatome Gerland ~24 min\nInconvénients: sans climatisation (clim d'appoint envisageable sur balcon), cuisine non équipée ou non mentionnée"
+        "notes": "beau mais froid; 1 seul lit... cher\nAvantages: ascenseur, balcon/terrasse, proche métro/tram (Brotteaux à 272m), trajet Framatome Gerland ~24 min\nInconvénients: sans climatisation (clim d'appoint envisageable sur balcon), cuisine non équipée ou non mentionnée",
+        "date_elimination": "2026-10-06"
     }
 ]
