@@ -228,10 +228,11 @@
         "lien_annonce": "https://gensdeconfiance.com/fr/ui/post/realestate__rent/166c4d37-be60-4589-b6dd-4f5ce8d40f56",
         "google_street_view": "",
         "date_decouverte": "2026-10-06",
-        "statut": "Nouveau",
+        "statut": "Éliminer",
         "remarques_visite": "",
         "questions_visite": "",
-        "notes": "Avantages: ascenseur, étage élevé (4ème), balcon/terrasse, parking/garage, cuisine équipée, calme, proche métro/tram (Gare Part-Dieu - Vivier Merle à 486m), trajet Framatome Gerland ~25 min\nInconvénients: sans climatisation (clim d'appoint envisageable sur balcon)"
+        "notes": "Avantages: ascenseur, étage élevé (4ème), balcon/terrasse, parking/garage, cuisine équipée, calme, proche métro/tram (Gare Part-Dieu - Vivier Merle à 486m), trajet Framatome Gerland ~25 min\nInconvénients: sans climatisation (clim d'appoint envisageable sur balcon)",
+        "date_elimination": "2026-10-06"
     },
     {
         "titre": "Appartement meublé 85 m²/2chambres et vue dégagée – Lyon 3e (Servient)",
