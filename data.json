@@ -267,10 +267,11 @@
         "lien_annonce": "https://gensdeconfiance.com/fr/ui/post/realestate__rent/5c2fb87c-0a03-4064-b940-707bb912f493",
         "google_street_view": "",
         "date_decouverte": "2026-10-06",
-        "statut": "Nouveau",
+        "statut": "Déjà loué",
         "remarques_visite": "",
         "questions_visite": "",
-        "notes": "Trop grand trop cher vers les halles bocuse immeuble en travaux...\nAvantages: ascenseur, étage élevé (5ème), balcon/terrasse, parking/garage, proche métro/tram (Palais de Justice - Mairie du 3ème à 522m), trajet Framatome Gerland ~27 min\nInconvénients: sans climatisation (clim d'appoint envisageable sur balcon), cuisine non équipée ou non mentionnée"
+        "notes": "Trop grand trop cher vers les halles bocuse immeuble en travaux...\nAvantages: ascenseur, étage élevé (5ème), balcon/terrasse, parking/garage, proche métro/tram (Palais de Justice - Mairie du 3ème à 522m), trajet Framatome Gerland ~27 min\nInconvénients: sans climatisation (clim d'appoint envisageable sur balcon), cuisine non équipée ou non mentionnée",
+        "date_elimination": "2026-10-06"
     },
     {
         "titre": "Loue appartement ÉTÉ 2026 uniquement - 101m² - Lyon",
