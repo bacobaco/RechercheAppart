@@ -287,10 +287,11 @@
         "lien_annonce": "https://gensdeconfiance.com/fr/ui/post/realestate__rent/d94f4303-ddd2-4153-b1df-3381df445b48",
         "google_street_view": "",
         "date_decouverte": "2026-10-06",
-        "statut": "Nouveau",
+        "statut": "Éliminer",
         "remarques_visite": "",
         "questions_visite": "",
-        "notes": "Avantages: ascenseur, étage élevé (4ème), balcon/terrasse, proche métro/tram (Saxe - Gambetta à 120m), trajet Framatome Gerland ~14 min\nInconvénients: sans climatisation (clim d'appoint envisageable sur balcon), cuisine non équipée ou non mentionnée"
+        "notes": "Loue appartement ÉTÉ 2026 uniquement????\nAvantages: ascenseur, étage élevé (4ème), balcon/terrasse, proche métro/tram (Saxe - Gambetta à 120m), trajet Framatome Gerland ~14 min\nInconvénients: sans climatisation (clim d'appoint envisageable sur balcon), cuisine non équipée ou non mentionnée",
+        "date_elimination": "2026-10-06"
     },
     {
         "titre": "Loue appartement meublé refait à neuf - 83m² - Cours Vitton Lyon 6ème",
