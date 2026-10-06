@@ -248,10 +248,11 @@
         "lien_annonce": "https://gensdeconfiance.com/fr/ui/post/realestate__rent/51473a43-0e0d-4d2f-939f-5fe662f9da9f",
         "google_street_view": "",
         "date_decouverte": "2026-10-06",
-        "statut": "Nouveau",
+        "statut": "Éliminer",
         "remarques_visite": "",
         "questions_visite": "",
-        "notes": "Avantages: ascenseur, étage élevé (8ème), balcon/terrasse, cuisine équipée, calme, proche métro/tram (Lafayette - Préfecture à 232m), trajet Framatome Gerland ~25 min\nInconvénients: sans climatisation (clim d'appoint envisageable sur balcon)"
+        "notes": "Pas de photos !!!\nAvantages: ascenseur, étage élevé (8ème), balcon/terrasse, cuisine équipée, calme, proche métro/tram (Lafayette - Préfecture à 232m), trajet Framatome Gerland ~25 min\nInconvénients: sans climatisation (clim d'appoint envisageable sur balcon)",
+        "date_elimination": "2026-10-06"
     },
     {
         "titre": "Loue appartement - 106m² - Lyon 6ème",
