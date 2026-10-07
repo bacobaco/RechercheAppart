@@ -61,6 +61,7 @@ JINKA_SESSION_FILE = "jinka_session.json"
 JINKA_TOKEN_FILE = "jinka_token.json"
 GDC_SESSION_FILE = "gdc_session.json"
 GDC_URL_FILE = "gdc_url.json"
+GDC_PARKING_URL_FILE = "gdc_parking_url.json"
 GDC_DEFAULT_COOKIES = "cookies_gdc.json"
 
 def decode_jinka_token(token):
@@ -460,6 +461,22 @@ def extract_address(description, postal_code):
         if street_type and len(street_name) > 2:
             return f"{full_address}, {postal_code} Lyon"
     return None
+
+def haversine(lat1, lon1, lat2, lon2):
+    """Calcule la distance en mètres entre deux points GPS (formule de Haversine)."""
+    import math
+    if lat1 is None or lon1 is None or lat2 is None or lon2 is None:
+        return 9999
+    try:
+        lat1, lon1, lat2, lon2 = float(lat1), float(lon1), float(lat2), float(lon2)
+        R = 6371000  # Rayon de la Terre en mètres
+        phi1, phi2 = math.radians(lat1), math.radians(lat2)
+        dphi = math.radians(lat2 - lat1)
+        dlambda = math.radians(lon2 - lon1)
+        a = math.sin(dphi / 2)**2 + math.cos(phi1) * math.cos(phi2) * math.sin(dlambda / 2)**2
+        return 2 * R * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+    except Exception:
+        return 9999
 
 def get_district_coordinates(text):
     """Fallback coordinates based on Lyon districts/arrondissement names."""
@@ -1544,16 +1561,18 @@ def scrape_urbansejour():
     print(f"[INFO] Total Urban Séjour: {len(ads)} annonces récupérées.")
     return ads
 
-def scrape_gdc():
-    """Récupère les annonces depuis Gens de Confiance.
+def scrape_gdc(profile=None):
+    """Récupère les annonces d'appartements depuis Gens de Confiance (Recherche Meublé).
     Utilise en priorité curl_cffi (impersonation Chrome TLS) pour contourner
     Cloudflare Turnstile et renouveler automatiquement les cookies de session.
     Repli automatique sur Playwright Stealth si nécessaire."""
-    print("[INFO] Interrogation du site Gens de Confiance (mode anti-bot résilient)...")
+    print("[INFO] Interrogation du site Gens de Confiance (Appartements Meublés)...")
     ads = []
     
     SESSION_FILE = GDC_SESSION_FILE
     URL_FILE = GDC_URL_FILE
+    if profile and isinstance(profile, dict):
+        URL_FILE = profile.get("gdc_url_file", GDC_URL_FILE)
     
     # Auto-récupération de session si absente
     if not os.path.exists(SESSION_FILE):
@@ -2022,7 +2041,7 @@ def run_apartment_search(profile=None):
         
     # Source G: Gens de Confiance (Playwright + Session)
     try:
-        all_raw_ads.extend(scrape_gdc())
+        all_raw_ads.extend(scrape_gdc(profile))
     except Exception as e:
         print(f"[ERREUR] Échec du scan Gens de Confiance: {e}")
         
@@ -2429,54 +2448,162 @@ def scrape_bienici_parking(params=None):
     return list(all_ads.values())
 
 
-def scrape_gdc_parking(params=None):
-    """Récupère les annonces de parking depuis Gens de Confiance si disponibles."""
-    print("[INFO] [Parking] Interrogation du site Gens de Confiance...")
+def scrape_gdc_parking(profile=None):
+    """Récupère les annonces de stationnement/box/parking depuis Gens de Confiance.
+    Isole strictement la recherche de parking de celle des appartements meublés."""
+    print("[INFO] [Parking] Interrogation du site Gens de Confiance (isolation parking)...")
     if not os.path.exists(GDC_SESSION_FILE):
+        if os.path.exists(GDC_DEFAULT_COOKIES):
+            try:
+                from login_gdc import import_from_file
+                import_from_file(GDC_DEFAULT_COOKIES)
+            except Exception:
+                pass
+                
+    if not os.path.exists(GDC_SESSION_FILE):
+        try:
+            from login_gdc import import_from_clipboard
+            import_from_clipboard()
+        except Exception:
+            pass
+
+    if not os.path.exists(GDC_SESSION_FILE):
+        print("[WARN] [Parking GDC] Session Gens de Confiance absente (gdc_session.json). Lancez: python login_gdc.py")
         return []
         
     try:
         with open(GDC_SESSION_FILE, "r", encoding="utf-8") as f:
             session_data = json.load(f)
-        cookie_dict = {c["name"]: c["value"] for c in session_data.get("cookies", []) if "name" in c and "value" in c}
-    except Exception:
+        cookies_list = session_data.get("cookies", [])
+        cookie_dict = {c["name"]: c["value"] for c in cookies_list if "name" in c and "value" in c}
+    except Exception as e:
+        print(f"[WARN] [Parking GDC] Impossible de lire {GDC_SESSION_FILE}: {e}")
         return []
 
-    url = "https://gensdeconfiance.com/fr/s/immobilier/locations-immobilieres?type=offering&propertyTypes=parking&rootLocales=fr%2Cen&currentAdSort=displayDate_desc"
+    url_file = GDC_PARKING_URL_FILE
+    search_url = "https://gensdeconfiance.com/fr/s/immobilier/locations-immobilieres?type=offering&propertyTypes=carPark&terms=lyon&currentAdSort=displayDate_desc"
+    
+    if profile and isinstance(profile, dict):
+        p_params = profile.get("params", {})
+        if p_params.get("gdc_url"):
+            search_url = p_params.get("gdc_url")
+        elif profile.get("gdc_url_file"):
+            url_file = profile.get("gdc_url_file")
+            
+    if os.path.exists(url_file):
+        try:
+            with open(url_file, "r", encoding="utf-8") as f:
+                url_data = json.load(f)
+                search_url = url_data.get("search_url", search_url)
+        except Exception as e:
+            print(f"[WARN] [Parking GDC] Impossible de lire {url_file}: {e}")
+
+    search_url = search_url.replace("https://www.gensdeconfiance.com", "https://gensdeconfiance.com")
+    print(f"[INFO] [Parking GDC] URL interrogée : {search_url}")
+
     ads = []
+    seen_urls = set()
     if curl_requests and BeautifulSoup:
         try:
-            resp = curl_requests.get(url, cookies=cookie_dict, impersonate="chrome120", timeout=15)
-            if resp.status_code == 200:
+            for page_num in range(1, 4):
+                page_url = search_url
+                if page_num > 1:
+                    sep = "&" if "?" in page_url else "?"
+                    page_url = f"{page_url}{sep}page={page_num}"
+
+                resp = curl_requests.get(page_url, cookies=cookie_dict, impersonate="chrome120", timeout=15)
+                if resp.status_code == 403 or "Just a moment" in resp.text:
+                    print(f"[WARN] [Parking GDC] Challenge Cloudflare sur page {page_num}.")
+                    break
+                elif resp.status_code != 200:
+                    print(f"[WARN] [Parking GDC] Statut HTTP {resp.status_code} sur page {page_num}.")
+                    break
+
+                cookies_list = update_gdc_session_cookies(resp, cookies_list, GDC_SESSION_FILE)
+                cookie_dict = {c["name"]: c["value"] for c in cookies_list if "name" in c and "value" in c}
+
                 soup = BeautifulSoup(resp.text, "html.parser")
-                cards = soup.find_all("article")
-                for card in cards:
-                    link_el = card.find("a", href=True)
-                    if not link_el:
-                        continue
-                    ad_url = urllib.parse.urljoin("https://gensdeconfiance.com", link_el["href"])
-                    title_el = card.find(["h2", "h3"]) or card.find(class_=re.compile(r"title", re.I))
-                    title = title_el.get_text(strip=True) if title_el else "Parking GDC"
-                    price_el = card.find(string=re.compile(r"\d+\s*€"))
-                    price = None
-                    if price_el:
-                        m = re.search(r"(\d[\d\s]*)\s*€", price_el)
-                        if m:
-                            price = float(m.group(1).replace(" ", ""))
-                    ads.append({
-                        "id": f"gdc_{extract_gdc_uuid(ad_url) or 'p'}",
-                        "title": title,
-                        "description": title,
-                        "price": price,
-                        "url": ad_url,
-                        "source": "Gens de Confiance",
-                        "postalCode": "69003",
-                        "city": "Lyon"
-                    })
+                tag = soup.find("script", id="__NEXT_DATA__")
+                items = []
+                if tag and tag.text:
+                    try:
+                        next_json = json.loads(tag.text)
+                        items = next_json.get("props", {}).get("pageProps", {}).get("initialSearchClassifieds", {}).get("items", [])
+                    except Exception as e:
+                        print(f"[WARN] [Parking GDC] Erreur parsing __NEXT_DATA__: {e}")
+
+                if not items:
+                    break
+
+                for item in items:
+                    try:
+                        uuid = item.get("uuid")
+                        slug = item.get("slug")
+                        if not uuid and not slug:
+                            continue
+
+                        if uuid:
+                            ad_url = f"https://gensdeconfiance.com/fr/ui/post/realestate__rent/{uuid}"
+                        else:
+                            ad_url = f"https://gensdeconfiance.com/fr/annonce/{slug}"
+
+                        if ad_url in seen_urls:
+                            continue
+                        seen_urls.add(ad_url)
+
+                        title = item.get("title") or "Place de parking / Garage Gens de Confiance"
+                        price_val = (item.get("price") or {}).get("value")
+                        charge_val = (item.get("rentalCharge") or {}).get("value") or 0
+                        price = (float(price_val) + float(charge_val)) if price_val is not None else None
+
+                        addr = item.get("address") or {}
+                        city = addr.get("city") or ""
+                        zip_code = str(addr.get("zip") or "")
+                        lat = addr.get("latitude")
+                        lon = addr.get("longitude")
+
+                        # Exclure Paris ou hors Rhône (ex: "Paris 12e Gare de Lyon")
+                        if "paris" in city.lower() or zip_code.startswith("75") or zip_code.startswith("92") or zip_code.startswith("93") or zip_code.startswith("94"):
+                            continue
+
+                        is_rhone = zip_code.startswith("69") or "lyon" in city.lower() or "villeurbanne" in city.lower() or "lyon" in title.lower()
+                        if not is_rhone:
+                            continue
+
+                        surface = item.get("carrezSurface")
+                        surface = float(surface) if surface is not None else 0.0
+
+                        description = item.get("description") or title
+
+                        suffix = (slug or uuid).split("-")[-1]
+                        ad_id = f"gdc_{suffix}"
+
+                        ads.append({
+                            "id": ad_id,
+                            "title": title,
+                            "description": description,
+                            "price": price,
+                            "surfaceArea": surface,
+                            "url": ad_url,
+                            "source": "Gens de Confiance",
+                            "postalCode": zip_code or "69003",
+                            "city": city or "Lyon",
+                            "district": {"libelle": f"{city} ({zip_code})" if zip_code else "Lyon 3e"},
+                            "blurInfo": {
+                                "position": {
+                                    "lat": lat,
+                                    "lon": lon
+                                }
+                            }
+                        })
+                        print(f" [V] [Parking GDC] Annonce retenue : {title} | {price}€ | {city} ({zip_code})")
+                    except Exception as ex:
+                        print(f"[WARN] [Parking GDC] Erreur item: {ex}")
+
         except Exception as e:
-            print(f"[WARN] [Parking GDC] {e}")
-            
-    print(f"[INFO] [Parking] Gens de Confiance: {len(ads)} annonces trouvées.")
+            print(f"[WARN] [Parking GDC] Erreur curl_cffi: {e}")
+
+    print(f"[INFO] [Parking] Gens de Confiance: {len(ads)} annonce(s) candidate(s) trouvée(s).")
     return ads
 
 
@@ -2536,7 +2663,7 @@ def run_parking_search(profile=None):
         print(f"[ERREUR] Scan Bien'ici Parking: {e}")
         
     try:
-        all_raw_ads.extend(scrape_gdc_parking(params))
+        all_raw_ads.extend(scrape_gdc_parking(profile))
     except Exception as e:
         print(f"[ERREUR] Scan GDC Parking: {e}")
         
