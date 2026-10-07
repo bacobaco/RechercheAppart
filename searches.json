@@ -53,7 +53,7 @@
         "adresse_cible": "56 avenue Félix Faure, 69003 Lyon",
         "cible_lat": 45.7528,
         "cible_lon": 4.8531,
-        "rayon_metres": 650,
+        "rayon_metres": 300,
         "budget_max": 150,
         "vehicule": "Tesla (Model 3 / Y)",
         "preferer_box_ferme": true,
