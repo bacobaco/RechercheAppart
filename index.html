@@ -6,11 +6,11 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    <title>Chasseur d'Appartement Lyon</title>
+    <title>Veille Immobilière & Multi-Recherches Lyon</title>
     <!-- Google Fonts & FontAwesome Icons -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
@@ -23,7 +23,7 @@
             --text-main: #f8fafc;
             --text-muted: #94a3b8;
             --accent: #6366f1;
-            --accent-glow: rgba(99, 102, 241, 0.15);
+            --accent-glow: rgba(99, 102, 241, 0.25);
             --success: #10b981;
             --info: #0ea5e9;
             --warning: #f59e0b;
@@ -63,9 +63,9 @@
         }
 
         .container {
-            max-width: 1400px;
+            max-width: 1440px;
             margin: 0 auto;
-            padding: 2rem 1.5rem;
+            padding: 1.5rem 1.25rem 3rem 1.25rem;
         }
 
         /* Header Styles */
@@ -74,7 +74,7 @@
             justify-content: space-between;
             align-items: center;
             padding: 1.5rem;
-            margin-bottom: 2rem;
+            margin-bottom: 1.5rem;
             flex-wrap: wrap;
             gap: 1.5rem;
         }
@@ -97,6 +97,7 @@
             background: linear-gradient(to right, #ffffff, #e2e8f0);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+            letter-spacing: -0.02em;
         }
 
         .brand p {
@@ -107,7 +108,7 @@
         .header-actions {
             display: flex;
             align-items: center;
-            gap: 1rem;
+            gap: 0.75rem;
             flex-wrap: wrap;
         }
 
@@ -143,19 +144,27 @@
             background: var(--accent);
             color: white;
             border: none;
-            padding: 0.75rem 1.5rem;
+            padding: 0.65rem 1.25rem;
             border-radius: 12px;
             font-family: 'Outfit', sans-serif;
             font-weight: 500;
+            font-size: 0.9rem;
             cursor: pointer;
             transition: all 0.3s ease;
             box-shadow: 0 4px 14px var(--accent-glow);
+            text-decoration: none;
         }
 
         .btn:hover {
             transform: translateY(-2px);
             background: #4f46e5;
-            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.3);
+            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.35);
+        }
+
+        .btn-sm {
+            padding: 0.5rem 0.9rem;
+            font-size: 0.82rem;
+            border-radius: 10px;
         }
 
         .btn-secondary {
@@ -171,10 +180,151 @@
             box-shadow: none;
         }
 
-        /* Dashboard Overview Stats */
+        .btn-primary {
+            background: linear-gradient(135deg, #6366f1, #4f46e5);
+            color: white;
+            border: none;
+        }
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #4f46e5, #4338ca);
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
+        }
+
+        .btn-sync {
+            background: rgba(16, 185, 129, 0.15);
+            color: #34d399;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            box-shadow: none;
+        }
+        .btn-sync:hover {
+            background: rgba(16, 185, 129, 0.3);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+        }
+
+        .btn-scan {
+            background: linear-gradient(135deg, #0ea5e9, #2563eb);
+            color: white;
+            border: none;
+            box-shadow: 0 4px 14px rgba(14, 165, 233, 0.3);
+        }
+        .btn-scan:hover {
+            background: linear-gradient(135deg, #0284c7, #1d4ed8);
+            box-shadow: 0 6px 20px rgba(14, 165, 233, 0.4);
+        }
+
+        .last-sync-time {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            align-self: center;
+        }
+
+        /* ==========================================================================
+           PROFILES SWITCHER BAR
+           ========================================================================== */
+        .search-profiles-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.85rem 1.25rem;
+            margin-bottom: 2rem;
+            gap: 1rem;
+            flex-wrap: wrap;
+            background: rgba(30, 41, 59, 0.6);
+            border: 1px solid rgba(99, 102, 241, 0.2);
+        }
+
+        .profiles-tabs {
+            display: flex;
+            gap: 0.65rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .profile-tab {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.65rem;
+            padding: 0.6rem 1.15rem;
+            border-radius: 12px;
+            background: rgba(15, 23, 42, 0.5);
+            border: 1px solid var(--border-color);
+            color: var(--text-muted);
+            cursor: pointer;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 500;
+            font-size: 0.9rem;
+            transition: all 0.25s ease;
+            user-select: none;
+        }
+
+        .profile-tab:hover {
+            color: var(--text-main);
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.15);
+            transform: translateY(-1px);
+        }
+
+        .profile-tab.active {
+            color: #ffffff;
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.35), rgba(14, 165, 233, 0.25));
+            border-color: rgba(99, 102, 241, 0.6);
+            box-shadow: 0 4px 16px rgba(99, 102, 241, 0.25);
+        }
+
+        .profile-tab i {
+            font-size: 1.05rem;
+        }
+
+        .profile-tab.active i {
+            color: #818cf8;
+        }
+
+        .profile-count-pill {
+            background: rgba(255, 255, 255, 0.12);
+            padding: 0.15rem 0.5rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        .profile-tab.active .profile-count-pill {
+            background: var(--accent);
+            color: #ffffff;
+        }
+
+        .profiles-actions {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        /* Description banner of current search */
+        .search-info-banner {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            padding: 0.9rem 1.25rem;
+            background: rgba(15, 23, 42, 0.35);
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            margin-bottom: 1.5rem;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .search-info-banner strong {
+            color: var(--text-main);
+        }
+
+        /* ==========================================================================
+           STATS GRID
+           ========================================================================== */
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
             gap: 1rem;
             margin-bottom: 2rem;
         }
@@ -193,59 +343,54 @@
         }
 
         .stat-card h3 {
-            font-size: 0.8rem;
+            font-size: 0.78rem;
             color: var(--text-muted);
             text-transform: uppercase;
             letter-spacing: 0.05em;
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.4rem;
         }
 
         .stat-card .value {
-            font-size: 1.8rem;
+            font-size: 2rem;
             font-weight: 700;
             color: var(--text-main);
+            font-family: 'Outfit', sans-serif;
         }
 
-        /* Color accent bars on stats cards */
-        .stat-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 3px;
-            background: var(--accent);
-        }
-        .stat-card.total::before { background: linear-gradient(to right, var(--accent), var(--info)); }
-        .stat-card.nouveau::before { background: var(--accent); }
-        .stat-card.infos::before { background: var(--info); }
-        .stat-card.visiter::before { background: var(--success); }
-        .stat-card.attente::before { background: var(--warning); }
-        .stat-card.elimine::before { background: var(--danger); }
+        .stat-card.total { border-left: 4px solid var(--accent); }
+        .stat-card.visiter { border-left: 4px solid var(--success); }
+        .stat-card.tesla { border-left: 4px solid #38bdf8; }
+        .stat-card.box { border-left: 4px solid #a855f7; }
+        .stat-card.elec { border-left: 4px solid #10b981; }
+        .stat-card.infos { border-left: 4px solid var(--info); }
+        .stat-card.attente { border-left: 4px solid var(--warning); }
+        .stat-card.nouveau { border-left: 4px solid #38bdf8; }
+        .stat-card.elimine { border-left: 4px solid var(--danger); }
 
-        /* Controls: Search, filter and view toggles */
+        /* ==========================================================================
+           CONTROLS & FILTERS
+           ========================================================================== */
         .controls-panel {
             display: flex;
             justify-content: space-between;
             align-items: center;
             padding: 1.25rem;
             margin-bottom: 2rem;
+            gap: 1rem;
             flex-wrap: wrap;
-            gap: 1.5rem;
         }
 
         .search-filters {
             display: flex;
             gap: 1rem;
             flex-grow: 1;
-            max-width: 800px;
             flex-wrap: wrap;
         }
 
         .search-box {
             position: relative;
-            flex-grow: 2;
-            min-width: 200px;
+            flex-grow: 1;
+            min-width: 260px;
         }
 
         .search-box i {
@@ -259,27 +404,31 @@
         .search-box input {
             width: 100%;
             padding: 0.75rem 1rem 0.75rem 2.5rem;
-            background: rgba(15, 23, 42, 0.3);
+            background: rgba(15, 23, 42, 0.4);
             border: 1px solid var(--border-color);
-            border-radius: 12px;
+            border-radius: 10px;
             color: var(--text-main);
             outline: none;
+            font-family: inherit;
+            font-size: 0.9rem;
             transition: all 0.3s ease;
         }
 
         .search-box input:focus {
             border-color: var(--accent);
-            background: rgba(15, 23, 42, 0.5);
+            background: rgba(15, 23, 42, 0.6);
             box-shadow: 0 0 0 3px var(--accent-glow);
         }
 
         .filter-select {
-            padding: 0.75rem 1.5rem;
-            background: rgba(15, 23, 42, 0.3);
+            padding: 0.75rem 1.25rem;
+            background: rgba(15, 23, 42, 0.4);
             border: 1px solid var(--border-color);
-            border-radius: 12px;
+            border-radius: 10px;
             color: var(--text-main);
             outline: none;
+            font-family: inherit;
+            font-size: 0.9rem;
             cursor: pointer;
             transition: all 0.3s ease;
         }
@@ -288,86 +437,65 @@
             border-color: var(--accent);
         }
 
-        /* Main Listings Grid */
+        .filter-select option {
+            background: var(--bg-color);
+            color: var(--text-main);
+        }
+
+        /* ==========================================================================
+           LISTINGS GRID & CARDS
+           ========================================================================== */
         .listings-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
             gap: 1.5rem;
         }
 
-        @media (max-width: 480px) {
-            .listings-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        /* Card Styles */
         .listing-card {
             display: flex;
             flex-direction: column;
             padding: 1.5rem;
-            transition: all 0.3s ease;
             position: relative;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
             overflow: hidden;
+            border-top: 3px solid transparent;
         }
 
         .listing-card:hover {
-            border-color: var(--accent);
-            box-shadow: 0 0 20px var(--accent-glow), var(--card-shadow);
+            transform: translateY(-4px);
+            border-color: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 16px 36px 0 rgba(0, 0, 0, 0.45);
         }
 
-        /* Drag and Drop visual feedback & Reorder Controls */
-        .listing-card.dragging {
-            opacity: 0.35;
-            border: 2px dashed var(--accent) !important;
-            cursor: grabbing;
-        }
-        .listing-card.drag-over-top {
-            border-top: 4px solid var(--accent) !important;
-            box-shadow: 0 -4px 15px var(--accent-glow);
-        }
-        .listing-card.drag-over-bottom {
-            border-bottom: 4px solid var(--accent) !important;
-            box-shadow: 0 4px 15px var(--accent-glow);
+        .listing-card.status-nouveau { border-top-color: #38bdf8; }
+        .listing-card.status-visiter { border-top-color: var(--success); }
+        .listing-card.status-infos { border-top-color: var(--info); }
+        .listing-card.status-attente { border-top-color: var(--warning); }
+        .listing-card.status-loue { border-top-color: var(--danger); opacity: 0.65; }
+        .listing-card.status-elimine { border-top-color: var(--danger); opacity: 0.65; }
+
+        /* Reorder Controls */
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 0.85rem;
+            gap: 0.75rem;
         }
 
         .card-header-left {
             display: flex;
             align-items: flex-start;
-            gap: 0.75rem;
+            gap: 0.5rem;
             flex: 1;
-            min-width: 0;
         }
 
         .card-reorder-controls {
-            display: inline-flex;
+            display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 0.15rem 0.2rem;
-            flex-shrink: 0;
-            user-select: none;
-            gap: 0.1rem;
-        }
-
-        .card-drag-handle {
-            cursor: grab;
-            color: var(--text-muted);
-            padding: 0.15rem 0.3rem;
-            font-size: 0.85rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: color 0.2s;
-        }
-        .card-drag-handle:hover {
-            color: var(--accent);
-        }
-        .card-drag-handle:active {
-            cursor: grabbing;
+            gap: 0.15rem;
+            margin-top: 0.1rem;
         }
 
         .btn-reorder {
@@ -376,117 +504,60 @@
             color: var(--text-muted);
             cursor: pointer;
             padding: 0.15rem 0.3rem;
-            font-size: 0.7rem;
             border-radius: 4px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            font-size: 0.75rem;
             transition: all 0.2s;
         }
+
         .btn-reorder:hover:not(:disabled) {
-            background: rgba(99, 102, 241, 0.25);
             color: var(--accent);
+            background: rgba(255, 255, 255, 0.08);
         }
+
         .btn-reorder:disabled {
-            opacity: 0.2;
+            opacity: 0.25;
             cursor: default;
         }
 
-        /* Toast notifications */
-        .toast-container {
-            position: fixed;
-            bottom: 1.5rem;
-            right: 1.5rem;
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-            z-index: 9999;
-            pointer-events: none;
-        }
-        .toast {
-            background: rgba(15, 23, 42, 0.95);
-            border: 1px solid var(--accent);
-            color: var(--text-main);
-            padding: 0.75rem 1.25rem;
-            border-radius: 10px;
-            font-size: 0.85rem;
-            font-weight: 500;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5), 0 0 15px var(--accent-glow);
-            display: flex;
-            align-items: center;
-            gap: 0.65rem;
-            animation: toastIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-            pointer-events: auto;
-            backdrop-filter: blur(8px);
-        }
-        .toast.toast-info {
-            border-color: var(--info);
-        }
-        @keyframes toastIn {
-            from { opacity: 0; transform: translateY(12px) scale(0.95); }
-            to { opacity: 1; transform: translateY(0) scale(1); }
-        }
-        @keyframes toastOut {
-            from { opacity: 1; transform: translateY(0) scale(1); }
-            to { opacity: 0; transform: translateY(12px) scale(0.95); }
+        .card-drag-handle {
+            color: rgba(255, 255, 255, 0.2);
+            cursor: grab;
+            font-size: 0.8rem;
+            padding: 0 0.2rem;
         }
 
-        /* Card Status color indicator vertical border */
-        .listing-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            bottom: 0;
-            left: 0;
-            width: 5px;
-            background: var(--text-muted);
-        }
-
-        .listing-card.status-nouveau::before { background: var(--accent); }
-        .listing-card.status-infos::before { background: var(--info); }
-        .listing-card.status-visiter::before { background: var(--success); }
-        .listing-card.status-attente::before { background: var(--warning); }
-        .listing-card.status-loue::before { background: #475569; }
-        .listing-card.status-elimine::before { background: var(--danger); }
-
-        .card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            gap: 1rem;
-            margin-bottom: 1rem;
+        .card-drag-handle:hover {
+            color: var(--text-muted);
         }
 
         .card-title {
             font-size: 1.15rem;
-            line-height: 1.4;
-            color: var(--text-main);
             font-weight: 600;
+            color: var(--text-main);
+            line-height: 1.35;
         }
 
         .card-price {
-            font-family: 'Outfit', sans-serif;
             font-size: 1.35rem;
             font-weight: 700;
-            color: var(--success);
+            color: #38bdf8;
+            font-family: 'Outfit', sans-serif;
             white-space: nowrap;
         }
 
         .card-meta-tags {
             display: flex;
-            gap: 0.5rem;
+            gap: 0.4rem;
             flex-wrap: wrap;
             margin-bottom: 1rem;
         }
 
         .tag {
-            font-size: 0.75rem;
-            padding: 0.25rem 0.65rem;
+            font-size: 0.72rem;
+            padding: 0.25rem 0.6rem;
             border-radius: 6px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.02em;
-            display: flex;
+            font-weight: 500;
+            display: inline-flex;
             align-items: center;
             gap: 0.35rem;
         }
@@ -509,12 +580,40 @@
             border: 1px solid var(--border-color);
         }
 
+        .tag-distance {
+            background: rgba(16, 185, 129, 0.15);
+            color: #34d399;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            font-weight: 600;
+        }
+
+        .tag-tesla {
+            background: rgba(56, 189, 248, 0.15);
+            color: #38bdf8;
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            font-weight: 600;
+        }
+
+        .tag-elec {
+            background: rgba(245, 158, 11, 0.15);
+            color: #fbbf24;
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            font-weight: 600;
+        }
+
+        .tag-box {
+            background: rgba(168, 85, 247, 0.15);
+            color: #c084fc;
+            border: 1px solid rgba(168, 85, 247, 0.3);
+        }
+
+        /* Specs Grid */
         .card-specs {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             gap: 0.75rem;
             padding: 0.85rem;
-            background: rgba(15, 23, 42, 0.3);
+            background: rgba(15, 23, 42, 0.35);
             border-radius: 10px;
             margin-bottom: 1rem;
             border: 1px solid var(--border-color);
@@ -537,23 +636,20 @@
             color: var(--text-main);
         }
 
+        /* Address & Maps */
         .card-address {
             font-size: 0.85rem;
             color: var(--text-muted);
-            margin-bottom: 1.25rem;
+            margin-bottom: 1rem;
             display: flex;
             align-items: center;
             gap: 0.5rem;
         }
 
-        .card-address i {
-            color: var(--accent);
-        }
-
         .card-address a {
             color: #38bdf8;
             text-decoration: none;
-            transition: color 0.3s;
+            transition: color 0.2s;
         }
 
         .card-address a:hover {
@@ -561,33 +657,60 @@
             text-decoration: underline;
         }
 
+        /* Walking itinerary button for parking */
+        .card-itinerary-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.55rem 0.9rem;
+            border-radius: 8px;
+            background: rgba(14, 165, 233, 0.12);
+            border: 1px solid rgba(14, 165, 233, 0.3);
+            color: #38bdf8;
+            font-size: 0.82rem;
+            font-weight: 500;
+            text-decoration: none;
+            margin-bottom: 1rem;
+            transition: all 0.2s ease;
+        }
+
+        .card-itinerary-btn:hover {
+            background: rgba(14, 165, 233, 0.25);
+            color: #7dd3fc;
+            transform: translateY(-1px);
+        }
+
+        /* Advantages & Disadvantages */
+        .card-details-box {
+            background: rgba(15, 23, 42, 0.25);
+            border-radius: 8px;
+            padding: 0.65rem 0.85rem;
+            margin-bottom: 1rem;
+            font-size: 0.8rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .detail-line {
+            display: flex;
+            gap: 0.4rem;
+            margin-bottom: 0.35rem;
+            line-height: 1.4;
+        }
+
+        .detail-line:last-child {
+            margin-bottom: 0;
+        }
+
+        .detail-line.plus { color: #86efac; }
+        .detail-line.minus { color: #fca5a5; }
+
         /* Notes & Annotations styling */
         .card-notes {
             margin-top: auto;
             background: rgba(15, 23, 42, 0.2);
             border-top: 1px solid var(--border-color);
-            padding-top: 1rem;
-            margin-bottom: 1.25rem;
-        }
-
-        .notes-textarea {
-            width: 100%;
-            background: rgba(15, 23, 42, 0.4);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            color: var(--text-main);
-            padding: 0.5rem;
-            font-family: inherit;
-            font-size: 0.82rem;
-            resize: vertical;
-            min-height: 80px;
-            outline: none;
-            transition: all 0.3s ease;
-        }
-
-        .notes-textarea:focus {
-            border-color: var(--accent);
-            background: rgba(15, 23, 42, 0.6);
+            padding-top: 0.85rem;
+            margin-bottom: 1rem;
         }
 
         .notes-header {
@@ -617,12 +740,31 @@
             opacity: 1;
         }
 
+        .notes-textarea {
+            width: 100%;
+            background: rgba(15, 23, 42, 0.4);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-main);
+            padding: 0.5rem;
+            font-family: inherit;
+            font-size: 0.82rem;
+            resize: vertical;
+            min-height: 70px;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .notes-textarea:focus {
+            border-color: var(--accent);
+            background: rgba(15, 23, 42, 0.6);
+        }
+
         /* Card Actions and dropdowns */
         .card-actions {
             display: flex;
             gap: 0.75rem;
             align-items: center;
-            margin-top: 0.5rem;
         }
 
         .status-dropdown {
@@ -649,13 +791,13 @@
         }
 
         .card-btn {
-            background: rgba(99, 102, 241, 0.1);
-            color: var(--accent);
-            border: 1px solid rgba(99, 102, 241, 0.2);
+            background: rgba(99, 102, 241, 0.12);
+            color: #a5b4fc;
+            border: 1px solid rgba(99, 102, 241, 0.25);
             padding: 0.65rem 1rem;
             border-radius: 8px;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all 0.2s ease;
             text-decoration: none;
             display: inline-flex;
             align-items: center;
@@ -692,7 +834,9 @@
             margin-bottom: 0.5rem;
         }
 
-        /* Modal styling */
+        /* ==========================================================================
+           MODALS
+           ========================================================================== */
         .modal-backdrop {
             display: none;
             position: fixed;
@@ -700,7 +844,7 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(11, 15, 25, 0.75);
+            background: rgba(11, 15, 25, 0.8);
             backdrop-filter: blur(8px);
             z-index: 1000;
             align-items: center;
@@ -713,7 +857,7 @@
         }
 
         .modal-content {
-            background: rgba(30, 41, 59, 0.95);
+            background: rgba(30, 41, 59, 0.96);
             border: 1px solid rgba(255, 255, 255, 0.15);
             border-radius: 16px;
             width: 100%;
@@ -771,18 +915,19 @@
             font-weight: 500;
         }
 
-        .form-group input, .form-group select {
+        .form-group input, .form-group select, .form-group textarea {
             width: 100%;
-            padding: 0.6rem 0.8rem;
+            padding: 0.65rem 0.85rem;
             background: rgba(15, 23, 42, 0.6);
             border: 1px solid var(--border-color);
             border-radius: 8px;
             color: var(--text-main);
             outline: none;
+            font-family: inherit;
             font-size: 0.9rem;
         }
 
-        .form-group input:focus, .form-group select:focus {
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
             border-color: var(--accent);
         }
 
@@ -795,30 +940,45 @@
             padding-top: 1rem;
         }
 
-        .btn-primary {
-            background: linear-gradient(135deg, #6366f1, #4f46e5);
-            color: white;
-            border: none;
-        }
-        .btn-primary:hover {
-            background: linear-gradient(135deg, #4f46e5, #4338ca);
-            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
-        }
-
-        .btn-sync {
-            background: rgba(16, 185, 129, 0.15);
-            color: #34d399;
-            border: 1px solid rgba(16, 185, 129, 0.3);
-        }
-        .btn-sync:hover {
-            background: rgba(16, 185, 129, 0.3);
-            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+        /* Toasts */
+        .toast-container {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            z-index: 2000;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            pointer-events: none;
         }
 
-        .last-sync-time {
-            font-size: 0.75rem;
-            color: var(--text-muted);
-            align-self: center;
+        .toast {
+            background: rgba(15, 23, 42, 0.92);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 0.85rem 1.25rem;
+            color: var(--text-main);
+            font-size: 0.88rem;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            pointer-events: auto;
+            animation: toastIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        .toast-success { border-left: 4px solid var(--success); }
+        .toast-danger { border-left: 4px solid var(--danger); }
+        .toast-info { border-left: 4px solid var(--info); }
+
+        @keyframes toastIn {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        @keyframes toastOut {
+            from { transform: translateY(0); opacity: 1; }
+            to { transform: translateY(20px); opacity: 0; }
         }
     </style>
 </head>
@@ -827,10 +987,10 @@
         <!-- Dashboard Header -->
         <header class="glass-panel">
             <div class="brand">
-                <i class="fa-solid fa-house-chimney-window"></i>
+                <i class="fa-solid fa-radar" id="brand-icon"></i>
                 <div>
-                    <h1>Chasseur d'Appartement</h1>
-                    <p>Suivi de recherche d'appartements à Lyon (Damien & Isabelle)</p>
+                    <h1 id="brand-title">Veille Immobilière & Multi-Recherches</h1>
+                    <p id="brand-subtitle">Recherche autonome d'appartements et de parkings à Lyon</p>
                 </div>
             </div>
             
@@ -851,97 +1011,36 @@
             </div>
         </header>
 
-        <!-- Modal Ajouter une annonce -->
-        <div id="add-modal" class="modal-backdrop" onclick="if(event.target === this) closeAddModal()">
-            <div class="modal-content glass-panel">
-                <div class="modal-header">
-                    <h3><i class="fa-solid fa-plus-circle" style="color: var(--accent);"></i> Ajouter un appartement</h3>
-                    <button type="button" class="btn-close" onclick="closeAddModal()">&times;</button>
-                </div>
-                <form id="add-form" onsubmit="submitAddModal(event)">
-                    <div class="form-grid">
-                        <div class="form-group full">
-                            <label for="add-titre">Titre de l'annonce *</label>
-                            <input type="text" id="add-titre" required placeholder="ex: T3 meublé de standing 85m² avec terrasse">
-                        </div>
-                        <div class="form-group full">
-                            <label for="add-lien">Lien web de l'annonce (URL)</label>
-                            <input type="url" id="add-lien" placeholder="https://www.seloger.com/... ou leboncoin.fr/...">
-                        </div>
-                        <div class="form-group">
-                            <label for="add-prix">Loyer CC (€)</label>
-                            <input type="text" id="add-prix" placeholder="ex: 1 850 €">
-                        </div>
-                        <div class="form-group">
-                            <label for="add-surface">Surface (m²)</label>
-                            <input type="number" step="0.1" id="add-surface" placeholder="ex: 85">
-                        </div>
-                        <div class="form-group">
-                            <label for="add-pieces">Nombre de pièces</label>
-                            <input type="number" id="add-pieces" placeholder="ex: 3">
-                        </div>
-                        <div class="form-group">
-                            <label for="add-quartier">Quartier</label>
-                            <input type="text" id="add-quartier" placeholder="ex: Lyon 6e, Brotteaux">
-                        </div>
-                        <div class="form-group full">
-                            <label for="add-adresse">Adresse estimée / Rue</label>
-                            <input type="text" id="add-adresse" placeholder="ex: Cours Franklin Roosevelt, 69006 Lyon">
-                        </div>
-                        <div class="form-group">
-                            <label for="add-statut">Statut initial</label>
-                            <select id="add-statut" class="status-dropdown">
-                                <option value="Nouveau" selected>Nouveau</option>
-                                <option value="Demande d'infos">Demande d'infos</option>
-                                <option value="À visiter">À visiter</option>
-                                <option value="En attente">En attente</option>
-                                <option value="Déjà loué">Déjà loué</option>
-                                <option value="Éliminer">Éliminer</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="add-avantages">Avantages clés</label>
-                            <input type="text" id="add-avantages" placeholder="ex: ascenseur, clim, terrasse, calme">
-                        </div>
-                        <div class="form-group full">
-                            <label for="add-notes">Notes &amp; Observations</label>
-                            <textarea id="add-notes" class="notes-textarea" placeholder="Remarques, contact agence, disponibilité..."></textarea>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" onclick="closeAddModal()">Annuler</button>
-                        <button type="submit" class="btn btn-primary"><i class="fa-solid fa-check"></i> Enregistrer et Synchroniser</button>
-                    </div>
-                </form>
+        <!-- Search Profiles Switcher Bar -->
+        <div class="search-profiles-bar glass-panel">
+            <div class="profiles-tabs" id="profiles-tabs">
+                <!-- Dynamically populated profile tabs -->
             </div>
+            <div class="profiles-actions">
+                <button class="btn btn-sm btn-scan" id="btn-run-scan" onclick="triggerScanCurrentSearch()" title="Lancer le scan immédiat pour cette recherche">
+                    <i class="fa-solid fa-play"></i> Lancer le Scan
+                </button>
+                <button class="btn btn-sm btn-secondary" onclick="openSearchSettingsModal()" title="Consulter et modifier les critères de la recherche">
+                    <i class="fa-solid fa-sliders"></i> Critères
+                </button>
+                <button class="btn btn-sm btn-secondary" onclick="openNewSearchModal()" title="Créer un nouveau profil de recherche">
+                    <i class="fa-solid fa-plus"></i> Nouvelle Recherche
+                </button>
+            </div>
+        </div>
+
+        <!-- Current Search Description Banner -->
+        <div class="search-info-banner" id="search-info-banner">
+            <div>
+                <i class="fa-solid fa-circle-info" style="color: var(--accent); margin-right: 0.4rem;"></i>
+                <span id="current-search-desc">Chargement des critères...</span>
+            </div>
+            <div id="current-search-target-address" style="font-size: 0.8rem; color: #7dd3fc;"></div>
         </div>
 
         <!-- Dashboard Stats Grid -->
         <div class="stats-grid" id="stats-grid">
-            <div class="glass-panel stat-card total">
-                <h3>Total Trouvés</h3>
-                <div class="value" id="stat-total">0</div>
-            </div>
-            <div class="glass-panel stat-card visiter">
-                <h3>À visiter</h3>
-                <div class="value" id="stat-visiter">0</div>
-            </div>
-            <div class="glass-panel stat-card infos">
-                <h3>Demandes infos</h3>
-                <div class="value" id="stat-infos">0</div>
-            </div>
-            <div class="glass-panel stat-card attente">
-                <h3>En attente</h3>
-                <div class="value" id="stat-attente">0</div>
-            </div>
-            <div class="glass-panel stat-card nouveau">
-                <h3>Nouveaux</h3>
-                <div class="value" id="stat-nouveau">0</div>
-            </div>
-            <div class="glass-panel stat-card elimine">
-                <h3>Éliminés / Loués</h3>
-                <div class="value" id="stat-elimines">0</div>
-            </div>
+            <!-- Dynamically populated depending on search type (appartement vs parking) -->
         </div>
 
         <!-- Filters and controls -->
@@ -949,13 +1048,23 @@
             <div class="search-filters">
                 <div class="search-box">
                     <i class="fa-solid fa-magnifying-glass"></i>
-                    <input type="text" id="search-input" placeholder="Rechercher par mot-clé (titre, description, adresse...)" oninput="filterAndRender()">
+                    <input type="text" id="search-input" placeholder="Rechercher par mot-clé (titre, quartier, adresse...)" oninput="filterAndRender()">
                 </div>
                 <select class="filter-select" id="filter-source" onchange="filterAndRender()">
                     <option value="">Toutes les sources</option>
                 </select>
                 <select class="filter-select" id="filter-quartier" onchange="filterAndRender()">
                     <option value="">Tous les quartiers</option>
+                </select>
+                <select class="filter-select" id="filter-statut" onchange="filterAndRender()">
+                    <option value="">Tous les statuts</option>
+                    <option value="Nouveau">Nouveau</option>
+                    <option value="À visiter">À visiter</option>
+                    <option value="Demande d'infos">Demande d'infos</option>
+                    <option value="En attente">En attente</option>
+                    <option value="Retenu">Retenu</option>
+                    <option value="Éliminer">Éliminer</option>
+                    <option value="Déjà loué">Déjà loué</option>
                 </select>
             </div>
             
@@ -968,20 +1077,188 @@
         <div class="listings-grid" id="listings-grid">
             <div class="empty-state">
                 <i class="fa-solid fa-spinner fa-spin"></i>
-                <h3>Chargement des appartements...</h3>
-                <p>Connexion à la base de données locale.</p>
+                <h3>Chargement des annonces...</h3>
+                <p>Connexion aux données de la recherche.</p>
             </div>
         </div>
     </div>
 
+    <!-- Modal Ajouter une annonce -->
+    <div id="add-modal" class="modal-backdrop" onclick="if(event.target === this) closeAddModal()">
+        <div class="modal-content glass-panel">
+            <div class="modal-header">
+                <h3><i class="fa-solid fa-plus-circle" style="color: var(--accent);"></i> <span id="add-modal-title">Ajouter une annonce</span></h3>
+                <button type="button" class="btn-close" onclick="closeAddModal()">&times;</button>
+            </div>
+            <form id="add-form" onsubmit="submitAddModal(event)">
+                <div class="form-grid">
+                    <div class="form-group full">
+                        <label for="add-titre">Titre de l'annonce *</label>
+                        <input type="text" id="add-titre" required placeholder="ex: Box fermé sécurisé Rue du Lac">
+                    </div>
+                    <div class="form-group full">
+                        <label for="add-lien">Lien web de l'annonce (URL)</label>
+                        <input type="url" id="add-lien" placeholder="https://www.bienici.com/... ou leboncoin.fr/...">
+                    </div>
+                    <div class="form-group">
+                        <label for="add-prix">Loyer mensuel (€)</label>
+                        <input type="text" id="add-prix" placeholder="ex: 90 €">
+                    </div>
+                    <div class="form-group" id="field-surface-group">
+                        <label for="add-surface">Surface (m²)</label>
+                        <input type="number" step="0.1" id="add-surface" placeholder="ex: 15">
+                    </div>
+                    <div class="form-group" id="field-type-parking-group" style="display:none;">
+                        <label for="add-type-parking">Type de stationnement</label>
+                        <select id="add-type-parking">
+                            <option value="Box fermé">Box fermé</option>
+                            <option value="Place en sous-sol">Place en sous-sol</option>
+                            <option value="Place extérieure">Place extérieure</option>
+                        </select>
+                    </div>
+                    <div class="form-group" id="field-distance-group" style="display:none;">
+                        <label for="add-distance">Distance / Temps à pied</label>
+                        <input type="text" id="add-distance" placeholder="ex: 250 m (~3 min à pied)">
+                    </div>
+                    <div class="form-group">
+                        <label for="add-quartier">Quartier</label>
+                        <input type="text" id="add-quartier" placeholder="ex: Lyon 3e, Garibaldi">
+                    </div>
+                    <div class="form-group full">
+                        <label for="add-adresse">Adresse / Rue</label>
+                        <input type="text" id="add-adresse" placeholder="ex: 28 Rue des Rancy, 69003 Lyon">
+                    </div>
+                    <div class="form-group">
+                        <label for="add-statut">Statut initial</label>
+                        <select id="add-statut" class="status-dropdown">
+                            <option value="Nouveau" selected>Nouveau</option>
+                            <option value="À visiter">À visiter</option>
+                            <option value="Demande d'infos">Demande d'infos</option>
+                            <option value="En attente">En attente</option>
+                            <option value="Retenu">Retenu</option>
+                            <option value="Déjà loué">Déjà loué</option>
+                            <option value="Éliminer">Éliminer</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="add-avantages">Avantages clés</label>
+                        <input type="text" id="add-avantages" placeholder="ex: Box fermé, bip, électricité, très proche">
+                    </div>
+                    <div class="form-group full">
+                        <label for="add-notes">Notes &amp; Observations</label>
+                        <textarea id="add-notes" class="notes-textarea" placeholder="Remarques, contact agence, disponibilité..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeAddModal()">Annuler</button>
+                    <button type="submit" class="btn btn-primary"><i class="fa-solid fa-check"></i> Enregistrer et Synchroniser</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Paramètres de la recherche -->
+    <div id="settings-modal" class="modal-backdrop" onclick="if(event.target === this) closeSearchSettingsModal()">
+        <div class="modal-content glass-panel">
+            <div class="modal-header">
+                <h3><i class="fa-solid fa-sliders" style="color: var(--accent);"></i> Paramètres de la Recherche</h3>
+                <button type="button" class="btn-close" onclick="closeSearchSettingsModal()">&times;</button>
+            </div>
+            <form id="settings-form" onsubmit="submitSearchSettings(event)">
+                <div class="form-grid">
+                    <div class="form-group full">
+                        <label for="cfg-name">Nom de la recherche</label>
+                        <input type="text" id="cfg-name" required>
+                    </div>
+                    <div class="form-group full">
+                        <label for="cfg-desc">Description</label>
+                        <textarea id="cfg-desc" style="min-height: 60px;"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="cfg-budget-max">Budget Maximum (€/mois)</label>
+                        <input type="number" id="cfg-budget-max">
+                    </div>
+                    <div class="form-group" id="cfg-surface-group">
+                        <label for="cfg-surface-min">Surface minimum (m²)</label>
+                        <input type="number" id="cfg-surface-min">
+                    </div>
+                    <div class="form-group full" id="cfg-address-group">
+                        <label for="cfg-target-address">Adresse cible</label>
+                        <input type="text" id="cfg-target-address" placeholder="ex: 56 avenue Félix Faure, 69003 Lyon">
+                    </div>
+                    <div class="form-group" id="cfg-radius-group">
+                        <label for="cfg-radius">Rayon de recherche (mètres)</label>
+                        <input type="number" id="cfg-radius" placeholder="ex: 650">
+                    </div>
+                    <div class="form-group">
+                        <label for="cfg-enabled">Statut du scan automatique</label>
+                        <select id="cfg-enabled">
+                            <option value="true">Actif (Inclus dans les scans)</option>
+                            <option value="false">Désactivé (En pause)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeSearchSettingsModal()">Fermer</button>
+                    <button type="submit" class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> Enregistrer les Critères</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Nouvelle Recherche -->
+    <div id="new-search-modal" class="modal-backdrop" onclick="if(event.target === this) closeNewSearchModal()">
+        <div class="modal-content glass-panel">
+            <div class="modal-header">
+                <h3><i class="fa-solid fa-plus-circle" style="color: var(--accent);"></i> Créer une nouvelle recherche</h3>
+                <button type="button" class="btn-close" onclick="closeNewSearchModal()">&times;</button>
+            </div>
+            <form id="new-search-form" onsubmit="submitNewSearch(event)">
+                <div class="form-grid">
+                    <div class="form-group full">
+                        <label for="new-search-name">Nom de la recherche *</label>
+                        <input type="text" id="new-search-name" required placeholder="ex: Recherche Parking Part-Dieu ou Achat Studio Lyon 2">
+                    </div>
+                    <div class="form-group">
+                        <label for="new-search-type">Type de bien / objet</label>
+                        <select id="new-search-type" onchange="toggleNewSearchFields()">
+                            <option value="appartement">Appartement</option>
+                            <option value="parking">Parking / Garage / Box</option>
+                            <option value="objet">Objet / Véhicule / Autre</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="new-search-budget">Budget Max (€)</label>
+                        <input type="number" id="new-search-budget" placeholder="ex: 150">
+                    </div>
+                    <div class="form-group full" id="new-search-addr-row">
+                        <label for="new-search-address">Adresse cible / Secteur</label>
+                        <input type="text" id="new-search-address" placeholder="ex: 56 avenue Félix Faure, 69003 Lyon">
+                    </div>
+                    <div class="form-group full">
+                        <label for="new-search-desc">Description &amp; Critères clés</label>
+                        <textarea id="new-search-desc" style="min-height: 60px;" placeholder="Explications, contraintes spécifiques..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeNewSearchModal()">Annuler</button>
+                    <button type="submit" class="btn btn-primary"><i class="fa-solid fa-check"></i> Créer la Recherche</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <script>
+        let searchesConfig = null;
+        let currentSearchId = "meuble_1";
         let allListings = [];
         let showEliminated = false;
         let isLocalServer = false;
 
         // On Load initialization
-        window.addEventListener('DOMContentLoaded', () => {
-            fetchData();
+        window.addEventListener('DOMContentLoaded', async () => {
+            await initSearches();
+            
             // Polling: local server every 8s, static every 60s
             setInterval(() => {
                 if (isLocalServer) fetchData();
@@ -991,68 +1268,198 @@
             }, 60000);
         });
 
-        // Fetch listings (supports local server and GitHub Pages static hosting)
+        // Initialize Searches Configuration
+        async function initSearches() {
+            try {
+                // 1. Try /api/searches
+                let cfg = null;
+                try {
+                    const res = await fetch('/api/searches', { cache: 'no-store' });
+                    if (res.ok) {
+                        cfg = await res.json();
+                        isLocalServer = true;
+                    }
+                } catch (e) {}
+
+                // 2. Fallback to ./searches.json
+                if (!cfg) {
+                    try {
+                        const staticRes = await fetch('./searches.json?t=' + Date.now(), { cache: 'no-store' });
+                        if (staticRes.ok) {
+                            cfg = await staticRes.json();
+                        }
+                    } catch (e) {}
+                }
+
+                if (!cfg) {
+                    cfg = {
+                        active_search_id: "meuble_1",
+                        searches: [
+                            {
+                                id: "meuble_1",
+                                name: "Recherche Meublé 1",
+                                type: "appartement",
+                                icon: "fa-house",
+                                enabled: true,
+                                data_file: "data.json",
+                                description: "Appartements meublés de standing Lyon"
+                            },
+                            {
+                                id: "parking_felix_faure",
+                                name: "Recherche Parking 56 rue Félix Faure Lyon",
+                                type: "parking",
+                                icon: "fa-square-parking",
+                                enabled: true,
+                                data_file: "data_parking_felix_faure.json",
+                                description: "Parking / box pour Tesla autour du 56 Félix Faure Lyon 3"
+                            }
+                        ]
+                    };
+                }
+
+                searchesConfig = cfg;
+                
+                // Get URL parameter ?search=... or saved preference or default
+                const urlParams = new URLSearchParams(window.location.search);
+                const urlSearchId = urlParams.get('search') || urlParams.get('id');
+                if (urlSearchId && searchesConfig.searches.some(s => s.id === urlSearchId)) {
+                    currentSearchId = urlSearchId;
+                } else if (searchesConfig.active_search_id) {
+                    currentSearchId = searchesConfig.active_search_id;
+                } else {
+                    currentSearchId = searchesConfig.searches[0]?.id || "meuble_1";
+                }
+
+                renderProfileTabs();
+                await fetchData(true);
+            } catch (err) {
+                console.error("Erreur initialisation searches:", err);
+                await fetchData(true);
+            }
+        }
+
+        // Render Profile Tabs in the Top Bar
+        function renderProfileTabs() {
+            const tabsContainer = document.getElementById('profiles-tabs');
+            if (!tabsContainer || !searchesConfig) return;
+
+            tabsContainer.innerHTML = '';
+            searchesConfig.searches.forEach(search => {
+                const isActive = (search.id === currentSearchId);
+                const tab = document.createElement('div');
+                tab.className = `profile-tab ${isActive ? 'active' : ''}`;
+                
+                const iconClass = search.icon || (search.type === 'parking' ? 'fa-square-parking' : 'fa-house');
+                
+                tab.innerHTML = `
+                    <i class="fa-solid ${iconClass}"></i>
+                    <span>${search.name}</span>
+                    <span class="profile-count-pill" id="tab-count-${search.id}">...</span>
+                `;
+                tab.onclick = () => switchSearchProfile(search.id);
+                tabsContainer.appendChild(tab);
+            });
+
+            // Update Header & Banner info for current search
+            updateSearchHeaderInfo();
+        }
+
+        // Switch to a different Search Profile
+        async function switchSearchProfile(searchId) {
+            if (currentSearchId === searchId) return;
+            currentSearchId = searchId;
+            
+            // Update URL without full reload
+            const url = new URL(window.location);
+            url.searchParams.set('search', searchId);
+            window.history.replaceState({}, '', url);
+
+            renderProfileTabs();
+            await fetchData(true);
+        }
+
+        // Update Header & Banner Info based on selected profile
+        function updateSearchHeaderInfo() {
+            const currentProfile = searchesConfig?.searches.find(s => s.id === currentSearchId) || {};
+            const brandTitle = document.getElementById('brand-title');
+            const brandSubtitle = document.getElementById('brand-subtitle');
+            const brandIcon = document.getElementById('brand-icon');
+            const descEl = document.getElementById('current-search-desc');
+            const targetAddrEl = document.getElementById('current-search-target-address');
+
+            if (currentProfile.type === 'parking') {
+                brandTitle.textContent = currentProfile.name || "Veille Parking Lyon";
+                brandSubtitle.textContent = "Parkings, garages et box sécurisés pour Tesla à proximité du 56 Félix Faure";
+                brandIcon.className = "fa-solid fa-square-parking";
+                if (targetAddrEl) targetAddrEl.innerHTML = `<i class="fa-solid fa-location-crosshairs"></i> Cible : <strong>56 av. Félix Faure (Lyon 3e)</strong> | Rayon : ${currentProfile.params?.rayon_metres || 650}m`;
+            } else {
+                brandTitle.textContent = currentProfile.name || "Chasseur d'Appartement";
+                brandSubtitle.textContent = "Suivi de recherche d'appartements à Lyon (Damien & Isabelle)";
+                brandIcon.className = "fa-solid fa-house-chimney-window";
+                if (targetAddrEl) targetAddrEl.innerHTML = `<i class="fa-solid fa-filter"></i> Secteurs : <strong>Lyon 1, 2, 3, 5 Vieux Lyon, 6</strong> | Ascenseur + Clim`;
+            }
+
+            if (descEl) {
+                descEl.textContent = currentProfile.description || "Recherche configurée dans searches.json";
+            }
+        }
+
+        // Fetch listings for current profile
         async function fetchData(force = false) {
             try {
-                // Do not auto-update or re-render if the user is editing/interacting
                 const activeEl = document.activeElement;
                 const isEditing = !force && activeEl && (
                     activeEl.id === 'search-input' ||
                     activeEl.id === 'filter-source' ||
                     activeEl.id === 'filter-quartier' ||
+                    activeEl.id === 'filter-statut' ||
                     activeEl.classList.contains('notes-textarea') ||
                     activeEl.classList.contains('status-dropdown')
                 );
                 if (isEditing) return;
 
+                const currentProfile = searchesConfig?.searches.find(s => s.id === currentSearchId) || {};
+                const dataFile = currentProfile.data_file || "data.json";
+
                 let dataFetched = null;
 
-                // 1. Try local server API
+                // 1. Try local server API with ?search=...
                 try {
-                    const apiRes = await fetch('/api/data', { cache: 'no-store' });
+                    const apiRes = await fetch(`/api/data?search=${encodeURIComponent(currentSearchId)}`, { cache: 'no-store' });
                     if (apiRes.ok) {
                         dataFetched = await apiRes.json();
                         isLocalServer = true;
                     }
-                } catch (e) {
-                    // API unreachable, will fallback to static
-                }
-
-                // 2. Fallback to static data.json (GitHub Pages)
-                if (!dataFetched) {
-                    isLocalServer = false;
-                    const staticRes = await fetch('./data.json?t=' + Date.now(), { cache: 'no-store' });
-                    if (!staticRes.ok) {
-                        throw new Error("Impossible de charger data.json (" + staticRes.status + ")");
-                    }
-                    dataFetched = await staticRes.json();
-                }
-
-                // data.json est la source de vérité absolue
-                allListings = dataFetched;
-
-                // Nettoyage proactif de tout vestige localStorage susceptible de corrompre l'ordre ou les statuts
-                try {
-                    localStorage.removeItem('listings_order');
-                    for (let i = localStorage.length - 1; i >= 0; i--) {
-                        const key = localStorage.key(i);
-                        if (key && (key.startsWith('status_') || key.startsWith('notes_'))) {
-                            localStorage.removeItem(key);
-                        }
-                    }
                 } catch (e) {}
 
-                // Update badge indicator & controls
+                // 2. Fallback to static file (GitHub Pages)
+                if (!dataFetched) {
+                    isLocalServer = false;
+                    const staticRes = await fetch(`./${dataFile}?t=` + Date.now(), { cache: 'no-store' });
+                    if (staticRes.ok) {
+                        dataFetched = await staticRes.json();
+                    } else {
+                        // Fallback to data.json
+                        const fallbackRes = await fetch('./data.json?t=' + Date.now(), { cache: 'no-store' });
+                        if (fallbackRes.ok) dataFetched = await fallbackRes.json();
+                    }
+                }
+
+                allListings = dataFetched || [];
+
+                // Update count in tab
+                const tabCount = document.getElementById(`tab-count-${currentSearchId}`);
+                if (tabCount) tabCount.textContent = allListings.length;
+
+                // Update server connection badge
                 const badge = document.getElementById('mode-badge');
                 const modeText = document.getElementById('mode-text');
                 const syncBtn = document.getElementById('btn-sync-github');
                 const lastSyncEl = document.getElementById('last-sync-time');
-                
+
                 const now = new Date();
                 const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-                if (lastSyncEl) {
-                    lastSyncEl.textContent = `Mis à jour à ${timeStr}`;
-                }
+                if (lastSyncEl) lastSyncEl.textContent = `Mis à jour à ${timeStr}`;
 
                 if (badge && modeText) {
                     if (isLocalServer) {
@@ -1077,7 +1484,7 @@
                         <div class="empty-state">
                             <i class="fa-solid fa-triangle-exclamation" style="color: var(--danger)"></i>
                             <h3>Erreur lors du chargement des annonces</h3>
-                            <p>${err.message || "Vérifiez que le fichier data.json est accessible."}</p>
+                            <p>${err.message || "Vérifiez que le fichier de données est accessible."}</p>
                             <button class="btn" style="margin-top: 1rem" onclick="fetchData(true)">Réessayer</button>
                         </div>
                     `;
@@ -1104,7 +1511,6 @@
                 }
             });
             
-            // Build Source Select options
             sourceSelect.innerHTML = '<option value="">Toutes les sources</option>';
             Array.from(sources).sort().forEach(src => {
                 const opt = document.createElement('option');
@@ -1114,7 +1520,6 @@
             });
             sourceSelect.value = currentSource;
             
-            // Build Quartier Select options
             quartierSelect.innerHTML = '<option value="">Tous les quartiers</option>';
             Array.from(quartiers).sort().forEach(q => {
                 const opt = document.createElement('option');
@@ -1125,14 +1530,79 @@
             quartierSelect.value = currentQuartier;
         }
 
-        // Compute dashboard statistic values
+        // Compute dashboard statistic values adaptively
         function updateStats() {
-            document.getElementById('stat-total').textContent = allListings.length;
-            document.getElementById('stat-visiter').textContent = allListings.filter(i => i.statut === "À visiter").length;
-            document.getElementById('stat-infos').textContent = allListings.filter(i => i.statut === "Demande d'infos").length;
-            document.getElementById('stat-attente').textContent = allListings.filter(i => i.statut === "En attente").length;
-            document.getElementById('stat-nouveau').textContent = allListings.filter(i => i.statut === "Nouveau").length;
-            document.getElementById('stat-elimines').textContent = allListings.filter(i => i.statut === "Éliminer" || i.statut === "Déjà loué").length;
+            const currentProfile = searchesConfig?.searches.find(s => s.id === currentSearchId) || {};
+            const isParking = currentProfile.type === 'parking';
+            const statsGrid = document.getElementById('stats-grid');
+            if (!statsGrid) return;
+
+            const total = allListings.length;
+            const visiter = allListings.filter(i => i.statut === "À visiter").length;
+            const infos = allListings.filter(i => i.statut === "Demande d'infos").length;
+            const attente = allListings.filter(i => i.statut === "En attente").length;
+            const nouveau = allListings.filter(i => i.statut === "Nouveau").length;
+            const elimines = allListings.filter(i => i.statut === "Éliminer" || i.statut === "Déjà loué").length;
+
+            if (isParking) {
+                const closeCount = allListings.filter(i => (i.distance_metres && i.distance_metres <= 350)).length;
+                const boxCount = allListings.filter(i => (i.type_parking === "Box fermé" || (i.titre && i.titre.toLowerCase().includes("box")))).length;
+                const elecCount = allListings.filter(i => (i.prise_electrique && i.prise_electrique.includes("Borne")) || (i.avantages && i.avantages.toLowerCase().includes("prise"))).length;
+
+                statsGrid.innerHTML = `
+                    <div class="glass-panel stat-card total">
+                        <h3>Total Parkings</h3>
+                        <div class="value">${total}</div>
+                    </div>
+                    <div class="glass-panel stat-card visiter">
+                        <h3>< 350 m</h3>
+                        <div class="value">${closeCount}</div>
+                    </div>
+                    <div class="glass-panel stat-card box">
+                        <h3>Box fermés</h3>
+                        <div class="value">${boxCount}</div>
+                    </div>
+                    <div class="glass-panel stat-card elec">
+                        <h3>Prise / Borne</h3>
+                        <div class="value">${elecCount}</div>
+                    </div>
+                    <div class="glass-panel stat-card nouveau">
+                        <h3>Nouveaux</h3>
+                        <div class="value">${nouveau}</div>
+                    </div>
+                    <div class="glass-panel stat-card elimine">
+                        <h3>Éliminés / Loués</h3>
+                        <div class="value">${elimines}</div>
+                    </div>
+                `;
+            } else {
+                statsGrid.innerHTML = `
+                    <div class="glass-panel stat-card total">
+                        <h3>Total Trouvés</h3>
+                        <div class="value">${total}</div>
+                    </div>
+                    <div class="glass-panel stat-card visiter">
+                        <h3>À visiter</h3>
+                        <div class="value">${visiter}</div>
+                    </div>
+                    <div class="glass-panel stat-card infos">
+                        <h3>Demandes infos</h3>
+                        <div class="value">${infos}</div>
+                    </div>
+                    <div class="glass-panel stat-card attente">
+                        <h3>En attente</h3>
+                        <div class="value">${attente}</div>
+                    </div>
+                    <div class="glass-panel stat-card nouveau">
+                        <h3>Nouveaux</h3>
+                        <div class="value">${nouveau}</div>
+                    </div>
+                    <div class="glass-panel stat-card elimine">
+                        <h3>Éliminés / Loués</h3>
+                        <div class="value">${elimines}</div>
+                    </div>
+                `;
+            }
         }
 
         // Toggle eliminated listings visibility
@@ -1149,14 +1619,50 @@
             filterAndRender();
         }
 
-        // Save updated notes (local backend with automatic GitHub sync)
+        // Trigger scan for the active search profile
+        async function triggerScanCurrentSearch() {
+            const btn = document.getElementById('btn-run-scan');
+            if (!btn) return;
+            const originalHtml = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Scan en cours...';
+
+            if (isLocalServer) {
+                try {
+                    const res = await fetch('/api/run_agent', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ search: currentSearchId })
+                    });
+                    if (res.ok) {
+                        showToast(`Scan de '${currentSearchId}' lancé avec succès en tâche de fond !`, "success");
+                    } else if (res.status === 409) {
+                        showToast("Un scan est déjà en cours d'exécution.", "info");
+                    } else {
+                        showToast("Erreur lors du déclenchement du scan.", "danger");
+                    }
+                } catch (e) {
+                    showToast("Erreur réseau vers le serveur local", "danger");
+                }
+            } else {
+                showToast("Le scan autonome s'exécute sur le serveur local via : python agent.py", "info");
+            }
+
+            setTimeout(() => {
+                btn.disabled = false;
+                btn.innerHTML = originalHtml;
+            }, 3000);
+        }
+
+        // Save updated notes
         let saveTimeouts = {};
         function saveNotes(url, notes, indicatorElId) {
             const indicator = document.getElementById(indicatorElId);
-            indicator.textContent = "Sauvegarde...";
-            indicator.classList.add('active');
+            if (indicator) {
+                indicator.textContent = "Sauvegarde...";
+                indicator.classList.add('active');
+            }
             
-            // Debounce save API calls
             if (saveTimeouts[url]) clearTimeout(saveTimeouts[url]);
             
             saveTimeouts[url] = setTimeout(async () => {
@@ -1166,32 +1672,29 @@
                         const response = await fetch('/api/update_notes', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ lien_annonce: url, notes: notes })
+                            body: JSON.stringify({ search: currentSearchId, lien_annonce: url, notes: notes })
                         });
                         if (response.ok) {
                             saved = true;
-                            indicator.textContent = "Enregistré & Sync GitHub";
-                            showToast("Notes sauvegardées et synchronisées vers GitHub Pages !", "success");
+                            if (indicator) indicator.textContent = "Enregistré & Sync";
+                            showToast("Notes sauvegardées et synchronisées !", "success");
                         }
                     } catch (err) {
                         console.warn("API save error:", err);
                     }
                 }
 
-                if (!saved) {
+                if (!saved && indicator) {
                     indicator.textContent = isLocalServer ? "Erreur serveur" : "Session (en ligne)";
-                    if (!isLocalServer) {
-                        showToast("Note modifiée en session. Utilisez le serveur local pour enregistrer sur GitHub Pages.", "info");
-                    }
                 }
 
-                setTimeout(() => indicator.classList.remove('active'), 2500);
+                if (indicator) setTimeout(() => indicator.classList.remove('active'), 2500);
                 const item = allListings.find(i => i.lien_annonce === url);
                 if (item) item.notes = notes;
             }, 1000);
         }
 
-        // Save updated status (local backend with automatic GitHub sync)
+        // Save updated status
         async function saveStatus(url, newStatus) {
             let saved = false;
             if (isLocalServer) {
@@ -1199,11 +1702,11 @@
                     const response = await fetch('/api/update_status', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ lien_annonce: url, statut: newStatus })
+                        body: JSON.stringify({ search: currentSearchId, lien_annonce: url, statut: newStatus })
                     });
                     if (response.ok) {
                         saved = true;
-                        showToast(`Statut '${newStatus}' enregistré et synchronisé vers GitHub Pages !`, "success");
+                        showToast(`Statut '${newStatus}' enregistré et synchronisé !`, "success");
                     }
                 } catch (err) {
                     console.warn("Error saving status to server:", err);
@@ -1211,17 +1714,16 @@
             }
 
             if (!saved && !isLocalServer) {
-                showToast(`Statut '${newStatus}' mis à jour pour cette session. (Pour enregistrer sur GitHub, utilisez le serveur local)`, "info");
+                showToast(`Statut '${newStatus}' mis à jour pour cette session.`, "info");
             }
 
-            // Update locally and re-render
             const item = allListings.find(i => i.lien_annonce === url);
             if (item) item.statut = newStatus;
             updateStats();
             filterAndRender();
         }
 
-        // Helper: retrieve listings matching current filter & search values
+        // Helper: retrieve listings matching current filters
         function getFilteredListings() {
             const searchInput = document.getElementById('search-input');
             const searchVal = searchInput ? searchInput.value.toLowerCase().trim() : "";
@@ -1229,10 +1731,13 @@
             const sourceVal = sourceSelect ? sourceSelect.value : "";
             const quartierSelect = document.getElementById('filter-quartier');
             const quartierVal = quartierSelect ? quartierSelect.value : "";
+            const statutSelect = document.getElementById('filter-statut');
+            const statutVal = statutSelect ? statutSelect.value : "";
             
             return allListings.filter(item => {
                 const isEliminated = (item.statut === "Éliminer" || item.statut === "Déjà loué");
                 if (isEliminated && !showEliminated) return false;
+                if (statutVal && item.statut !== statutVal) return false;
                 if (sourceVal && item.source !== sourceVal) return false;
                 
                 if (quartierVal) {
@@ -1241,7 +1746,7 @@
                 }
                 
                 if (searchVal) {
-                    const text = (item.titre + " " + (item.description || "") + " " + (item.adresse_estimee || "") + " " + (item.quartier || "") + " " + (item.source || "")).toLowerCase();
+                    const text = (item.titre + " " + (item.description || "") + " " + (item.adresse_estimee || "") + " " + (item.quartier || "") + " " + (item.type_parking || "") + " " + (item.source || "")).toLowerCase();
                     if (!text.includes(searchVal)) return false;
                 }
                 
@@ -1277,20 +1782,14 @@
                         method: 'POST',
                         keepalive: true,
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(allListings)
+                        body: JSON.stringify({ search: currentSearchId, data: allListings })
                     });
                     if (response.ok) {
                         showToast("Nouvel ordre enregistré et synchronisé vers GitHub Pages !", "success");
-                        return;
-                    } else {
-                        showToast("Erreur lors de la sauvegarde de l'ordre sur le serveur", "danger");
                     }
                 } catch (err) {
                     console.warn("Erreur réseau sauvegarde ordre:", err);
-                    showToast("Erreur de connexion au serveur local", "danger");
                 }
-            } else {
-                showToast("Ordre réorganisé pour cette session. (Note : Pour enregistrer définitivement sur GitHub, utilisez le serveur local)", "info");
             }
         }
 
@@ -1302,7 +1801,7 @@
             setTimeout(() => {
                 if (icon) icon.classList.remove('fa-spin');
             }, 600);
-            showToast(isLocalServer ? "Données actualisées depuis le serveur local" : "Données actualisées depuis GitHub Pages", "success");
+            showToast("Données actualisées avec succès", "success");
         }
 
         // Force manual push to GitHub
@@ -1311,16 +1810,14 @@
             if (!btn) return;
             const originalHtml = btn.innerHTML;
             btn.disabled = true;
-            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Synchronisation...';
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Sync...';
             try {
                 const res = await fetch('/api/sync_github', { method: 'POST' });
                 if (res.ok) {
-                    showToast("Synchronisation vers GitHub Pages lancée avec succès ! (Déploiement d'ici ~15-30s)", "success");
-                } else {
-                    showToast("Erreur lors de la synchronisation GitHub", "danger");
+                    showToast("Synchronisation GitHub Pages déclenchée !", "success");
                 }
             } catch (e) {
-                showToast("Erreur de connexion au serveur", "danger");
+                showToast("Erreur de connexion", "danger");
             } finally {
                 setTimeout(() => {
                     btn.disabled = false;
@@ -1329,87 +1826,8 @@
             }
         }
 
-        // Modal management for adding an apartment manually
-        function openAddModal() {
-            const modal = document.getElementById('add-modal');
-            if (modal) {
-                modal.classList.add('open');
-                const titreInput = document.getElementById('add-titre');
-                if (titreInput) titreInput.focus();
-            }
-        }
-
-        function closeAddModal() {
-            const modal = document.getElementById('add-modal');
-            if (modal) modal.classList.remove('open');
-        }
-
-        async function submitAddModal(e) {
-            e.preventDefault();
-            const titre = document.getElementById('add-titre').value.trim();
-            const lien = document.getElementById('add-lien').value.trim();
-            const prix = document.getElementById('add-prix').value.trim();
-            const surface = document.getElementById('add-surface').value.trim();
-            const pieces = document.getElementById('add-pieces').value.trim();
-            const quartier = document.getElementById('add-quartier').value.trim();
-            const adresse = document.getElementById('add-adresse').value.trim();
-            const statut = document.getElementById('add-statut').value;
-            const avantages = document.getElementById('add-avantages').value.trim();
-            const inconvenients = document.getElementById('add-inconvenients').value.trim();
-            const notes = document.getElementById('add-notes').value.trim();
-
-            if (!titre) {
-                showToast("Le titre de l'annonce est obligatoire", "danger");
-                return;
-            }
-
-            const payload = {
-                titre,
-                lien_annonce: lien || ("https://recherche-appart.local/" + Date.now()),
-                prix,
-                surface: parseFloat(surface) || 0,
-                nb_pieces: parseInt(pieces, 10) || 0,
-                quartier,
-                adresse_estimee: adresse,
-                source: "Manuel",
-                statut,
-                avantages,
-                inconvenients,
-                notes: notes || (avantages ? `Avantages: ${avantages}` : "")
-            };
-
-            if (isLocalServer) {
-                try {
-                    const res = await fetch('/api/add_listing', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload)
-                    });
-                    if (res.ok) {
-                        closeAddModal();
-                        document.getElementById('add-form').reset();
-                        showToast(`Annonce '${titre}' ajoutée et synchronisée avec GitHub Pages !`, "success");
-                        await fetchData(true);
-                        return;
-                    } else {
-                        showToast("Erreur serveur lors de l'ajout", "danger");
-                    }
-                } catch (err) {
-                    showToast("Erreur réseau lors de l'ajout", "danger");
-                }
-            } else {
-                closeAddModal();
-                allListings.unshift(payload);
-                populateFilters();
-                updateStats();
-                filterAndRender();
-                showToast("Annonce ajoutée pour votre session en cours. (Pour enregistrer définitivement sur GitHub Pages, utilisez le serveur local)", "info");
-            }
-        }
-
         // Reorder listing by clicking Move Up / Move Down buttons
         function reorderListing(url, direction) {
-            // direction: -1 (monter), +1 (descendre)
             const filtered = getFilteredListings();
             const visIdx = filtered.findIndex(i => i.lien_annonce === url);
             if (visIdx === -1) return;
@@ -1435,17 +1853,19 @@
             persistOrder();
         }
 
-        // Filter search input results and render matching cards
+        // Render Cards Adaptively (Appartement vs Parking)
         function filterAndRender() {
             const grid = document.getElementById('listings-grid');
             const filtered = getFilteredListings();
+            const currentProfile = searchesConfig?.searches.find(s => s.id === currentSearchId) || {};
+            const isParking = currentProfile.type === 'parking';
             
             if (filtered.length === 0) {
                 grid.innerHTML = `
                     <div class="empty-state">
                         <i class="fa-solid fa-face-frown"></i>
                         <h3>Aucune annonce trouvée</h3>
-                        <p>Essayez de modifier vos filtres.</p>
+                        <p>Modifiez vos filtres ou lancez un scan pour découvrir de nouveaux biens.</p>
                     </div>
                 `;
                 return;
@@ -1465,21 +1885,91 @@
                 
                 card.className = `glass-panel listing-card ${statusClass}`;
                 
-                const pricePerM2 = item.prix_m2 ? `${item.prix_m2.toFixed(1)} €/m²` : "Non défini";
                 const notesValue = item.notes || "";
                 const indicatorId = `save-indicator-${idx}`;
                 
                 let addressHtml = `<span><i class="fa-solid fa-map-pin"></i> ${item.adresse_estimee || "Non précisée"}</span>`;
                 if (item.google_street_view) {
                     addressHtml = `
-                        <a href="${item.google_street_view}" target="_blank" title="Voir l'adresse dans Google Maps / Street View">
-                            <i class="fa-solid fa-location-dot"></i> ${item.adresse_estimee} <i class="fa-solid fa-up-right-from-square" style="font-size: 0.75rem; margin-left: 0.2rem;"></i>
+                        <a href="${item.google_street_view}" target="_blank" title="Voir l'emplacement sur Google Maps">
+                            <i class="fa-solid fa-location-dot"></i> ${item.adresse_estimee || "Voir l'adresse"} <i class="fa-solid fa-up-right-from-square" style="font-size: 0.72rem; margin-left: 0.2rem;"></i>
                         </a>
                     `;
                 }
 
                 const isFirst = (idx === 0);
                 const isLast = (idx === filtered.length - 1);
+                
+                // Specific specs and tags for Parking vs Apartment
+                let specsHtml = "";
+                let specificTags = "";
+                let itineraryButtonHtml = "";
+
+                if (isParking) {
+                    if (item.distance_cible) {
+                        specificTags += `<span class="tag tag-distance"><i class="fa-solid fa-person-walking"></i> ${item.distance_cible}</span>`;
+                    }
+                    if (item.type_parking) {
+                        specificTags += `<span class="tag tag-box"><i class="fa-solid fa-warehouse"></i> ${item.type_parking}</span>`;
+                    }
+                    if (item.tesla_compatible && item.tesla_compatible.includes("Tesla")) {
+                        specificTags += `<span class="tag tag-tesla"><i class="fa-solid fa-bolt"></i> ${item.tesla_compatible}</span>`;
+                    }
+                    if (item.prise_electrique && item.prise_electrique.includes("Borne")) {
+                        specificTags += `<span class="tag tag-elec"><i class="fa-solid fa-charging-station"></i> Prise / Borne</span>`;
+                    }
+
+                    specsHtml = `
+                        <div class="card-specs">
+                            <div class="spec-item">
+                                <div class="spec-label">Distance 56 Félix Faure</div>
+                                <div class="spec-value">${item.distance_metres ? item.distance_metres + ' m' : 'Proche'}</div>
+                            </div>
+                            <div class="spec-item">
+                                <div class="spec-label">Protection</div>
+                                <div class="spec-value">${item.type_parking || 'Garage'}</div>
+                            </div>
+                            <div class="spec-item">
+                                <div class="spec-label">Recharge Tesla</div>
+                                <div class="spec-value" style="font-size: 0.85rem;">${item.prise_electrique && item.prise_electrique.includes('Borne') ? '⚡ Oui' : 'Non spécifié'}</div>
+                            </div>
+                        </div>
+                    `;
+
+                    if (item.google_street_view) {
+                        itineraryButtonHtml = `
+                            <a href="${item.google_street_view}" target="_blank" class="card-itinerary-btn">
+                                <i class="fa-solid fa-route"></i> Itinéraire piéton depuis 56 Félix Faure
+                            </a>
+                        `;
+                    }
+                } else {
+                    const pricePerM2 = item.prix_m2 ? `${item.prix_m2.toFixed(1)} €/m²` : "N/C";
+                    specsHtml = `
+                        <div class="card-specs">
+                            <div class="spec-item">
+                                <div class="spec-label">Surface</div>
+                                <div class="spec-value">${item.surface ? item.surface + ' m²' : 'N/C'}</div>
+                            </div>
+                            <div class="spec-item">
+                                <div class="spec-label">Pièces</div>
+                                <div class="spec-value">${item.nb_pieces || 'N/A'}</div>
+                            </div>
+                            <div class="spec-item">
+                                <div class="spec-label">Loyer / m²</div>
+                                <div class="spec-value">${pricePerM2}</div>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                // Details Box (Avantages / Inconvénients)
+                let detailsBoxHtml = "";
+                if (item.avantages || item.inconvenients) {
+                    let avLines = item.avantages ? item.avantages.split(',').map(s => `<div class="detail-line plus"><i class="fa-solid fa-circle-check"></i> ${s.trim()}</div>`).join('') : '';
+                    let incLines = item.inconvenients ? item.inconvenients.split(',').map(s => `<div class="detail-line minus"><i class="fa-solid fa-circle-xmark"></i> ${s.trim()}</div>`).join('') : '';
+                    detailsBoxHtml = `<div class="card-details-box">${avLines}${incLines}</div>`;
+                }
                 
                 card.innerHTML = `
                     <div class="card-header">
@@ -1495,35 +1985,26 @@
                                     <i class="fa-solid fa-chevron-down"></i>
                                 </button>
                             </div>
-                            <h3 class="card-title">${item.titre || "Appartement"}</h3>
+                            <h3 class="card-title">${item.titre || (isParking ? "Place de Parking" : "Appartement")}</h3>
                         </div>
                         <div class="card-price">${item.prix}</div>
                     </div>
                     
                     <div class="card-meta-tags">
                         <span class="tag tag-source"><i class="fa-solid fa-globe"></i> ${item.source}</span>
-                        <span class="tag tag-quartier"><i class="fa-solid fa-map-location-dot"></i> ${item.quartier || "Lyon Centre"}</span>
-                        <span class="tag tag-date"><i class="fa-regular fa-calendar"></i> Trouvé le ${item.date_decouverte}</span>
+                        <span class="tag tag-quartier"><i class="fa-solid fa-map-location-dot"></i> ${item.quartier || "Lyon"}</span>
+                        <span class="tag tag-date"><i class="fa-regular fa-calendar"></i> ${item.date_decouverte}</span>
+                        ${specificTags}
                     </div>
                     
-                    <div class="card-specs">
-                        <div class="spec-item">
-                            <div class="spec-label">Surface</div>
-                            <div class="spec-value">${item.surface} m²</div>
-                        </div>
-                        <div class="spec-item">
-                            <div class="spec-label">Pièces</div>
-                            <div class="spec-value">${item.nb_pieces || 'N/A'}</div>
-                        </div>
-                        <div class="spec-item">
-                            <div class="spec-label">Loyer / m²</div>
-                            <div class="spec-value">${pricePerM2}</div>
-                        </div>
-                    </div>
+                    ${specsHtml}
+                    ${itineraryButtonHtml}
                     
                     <div class="card-address">
                         ${addressHtml}
                     </div>
+
+                    ${detailsBoxHtml}
                     
                     <div class="card-notes">
                         <div class="notes-header">
@@ -1536,9 +2017,10 @@
                     <div class="card-actions">
                         <select class="status-dropdown" onchange="saveStatus('${item.lien_annonce.replace(/'/g, "\\'")}', this.value)">
                             <option value="Nouveau" ${item.statut === "Nouveau" ? "selected" : ""}>Nouveau</option>
-                            <option value="Demande d'infos" ${item.statut === "Demande d'infos" ? "selected" : ""}>Demande d'infos</option>
                             <option value="À visiter" ${item.statut === "À visiter" ? "selected" : ""}>À visiter</option>
+                            <option value="Demande d'infos" ${item.statut === "Demande d'infos" ? "selected" : ""}>Demande d'infos</option>
                             <option value="En attente" ${item.statut === "En attente" ? "selected" : ""}>En attente</option>
+                            <option value="Retenu" ${item.statut === "Retenu" ? "selected" : ""}>Retenu</option>
                             <option value="Déjà loué" ${item.statut === "Déjà loué" ? "selected" : ""}>Déjà loué</option>
                             <option value="Éliminer" ${item.statut === "Éliminer" ? "selected" : ""}>Éliminer</option>
                         </select>
@@ -1549,75 +2031,211 @@
                     </div>
                 `;
                 
-                // Drag & Drop events
-                card.addEventListener('dragstart', (e) => {
-                    if (['TEXTAREA', 'SELECT', 'INPUT', 'A'].includes(e.target.tagName)) {
-                        e.preventDefault();
-                        return;
-                    }
-                    currentDraggedUrl = item.lien_annonce;
-                    e.dataTransfer.effectAllowed = 'move';
-                    e.dataTransfer.setData('text/plain', item.lien_annonce);
-                    card.classList.add('dragging');
-                });
-                
-                card.addEventListener('dragend', () => {
-                    currentDraggedUrl = null;
-                    card.classList.remove('dragging');
-                    document.querySelectorAll('.listing-card').forEach(c => {
-                        c.classList.remove('drag-over-top', 'drag-over-bottom');
-                    });
-                });
-                
-                card.addEventListener('dragover', (e) => {
-                    e.preventDefault();
-                    e.dataTransfer.dropEffect = 'move';
-                    const rect = card.getBoundingClientRect();
-                    const midY = rect.top + rect.height / 2;
-                    if (e.clientY < midY) {
-                        card.classList.add('drag-over-top');
-                        card.classList.remove('drag-over-bottom');
-                        card.dataset.dropPos = 'top';
-                    } else {
-                        card.classList.add('drag-over-bottom');
-                        card.classList.remove('drag-over-top');
-                        card.dataset.dropPos = 'bottom';
-                    }
-                });
-                
-                card.addEventListener('dragleave', (e) => {
-                    if (!card.contains(e.relatedTarget)) {
-                        card.classList.remove('drag-over-top', 'drag-over-bottom');
-                    }
-                });
-                
-                card.addEventListener('drop', async (e) => {
-                    e.preventDefault();
-                    const dropPos = card.dataset.dropPos || 'top';
-                    card.classList.remove('drag-over-top', 'drag-over-bottom');
-                    
-                    const draggedUrl = currentDraggedUrl || e.dataTransfer.getData('text/plain');
-                    if (!draggedUrl || draggedUrl === item.lien_annonce) return;
-                    
-                    const draggedIdx = allListings.findIndex(i => i.lien_annonce === draggedUrl);
-                    if (draggedIdx === -1) return;
-                    
-                    const [draggedItem] = allListings.splice(draggedIdx, 1);
-                    const targetIdx = allListings.findIndex(i => i.lien_annonce === item.lien_annonce);
-                    
-                    if (targetIdx === -1) {
-                        allListings.push(draggedItem);
-                    } else {
-                        const insertIdx = (dropPos === 'bottom') ? targetIdx + 1 : targetIdx;
-                        allListings.splice(insertIdx, 0, draggedItem);
-                    }
-                    
-                    filterAndRender();
-                    persistOrder();
-                });
-                
                 grid.appendChild(card);
             });
+        }
+
+        // =========================================================================
+        // MODALS MANAGEMENT (Add Listing, Settings, New Search)
+        // =========================================================================
+        function openAddModal() {
+            const currentProfile = searchesConfig?.searches.find(s => s.id === currentSearchId) || {};
+            const isParking = currentProfile.type === 'parking';
+            
+            document.getElementById('add-modal-title').textContent = isParking ? "Ajouter un parking / box" : "Ajouter un appartement";
+            document.getElementById('field-surface-group').style.display = isParking ? "none" : "block";
+            document.getElementById('field-type-parking-group').style.display = isParking ? "block" : "none";
+            document.getElementById('field-distance-group').style.display = isParking ? "block" : "none";
+            
+            const modal = document.getElementById('add-modal');
+            if (modal) {
+                modal.classList.add('open');
+                document.getElementById('add-titre').focus();
+            }
+        }
+
+        function closeAddModal() {
+            const modal = document.getElementById('add-modal');
+            if (modal) modal.classList.remove('open');
+        }
+
+        async function submitAddModal(e) {
+            e.preventDefault();
+            const currentProfile = searchesConfig?.searches.find(s => s.id === currentSearchId) || {};
+            const isParking = currentProfile.type === 'parking';
+
+            const titre = document.getElementById('add-titre').value.trim();
+            const lien = document.getElementById('add-lien').value.trim();
+            const prix = document.getElementById('add-prix').value.trim();
+            const surface = document.getElementById('add-surface').value.trim();
+            const quartier = document.getElementById('add-quartier').value.trim();
+            const adresse = document.getElementById('add-adresse').value.trim();
+            const statut = document.getElementById('add-statut').value;
+            const avantages = document.getElementById('add-avantages').value.trim();
+            const notes = document.getElementById('add-notes').value.trim();
+
+            const payload = {
+                search: currentSearchId,
+                titre,
+                lien_annonce: lien || ("https://recherche.local/" + Date.now()),
+                prix,
+                surface: parseFloat(surface) || 0,
+                quartier,
+                adresse_estimee: adresse,
+                source: "Manuel",
+                statut,
+                avantages,
+                notes: notes || (avantages ? `Avantages: ${avantages}` : "")
+            };
+
+            if (isParking) {
+                payload.type_parking = document.getElementById('add-type-parking').value;
+                payload.distance_cible = document.getElementById('add-distance').value || "Proximité 56 Félix Faure";
+            }
+
+            if (isLocalServer) {
+                try {
+                    const res = await fetch('/api/add_listing', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    if (res.ok) {
+                        closeAddModal();
+                        document.getElementById('add-form').reset();
+                        showToast(`Annonce '${titre}' ajoutée avec succès !`, "success");
+                        await fetchData(true);
+                        return;
+                    }
+                } catch (err) {}
+            }
+
+            closeAddModal();
+            allListings.unshift(payload);
+            updateStats();
+            filterAndRender();
+            showToast("Annonce ajoutée pour votre session.", "info");
+        }
+
+        // Settings Modal
+        function openSearchSettingsModal() {
+            const profile = searchesConfig?.searches.find(s => s.id === currentSearchId);
+            if (!profile) return;
+
+            document.getElementById('cfg-name').value = profile.name || "";
+            document.getElementById('cfg-desc').value = profile.description || "";
+            document.getElementById('cfg-budget-max').value = profile.params?.budget_max || 150;
+            document.getElementById('cfg-surface-min').value = profile.params?.surface_min || 70;
+            document.getElementById('cfg-target-address').value = profile.params?.adresse_cible || "";
+            document.getElementById('cfg-radius').value = profile.params?.rayon_metres || 650;
+            document.getElementById('cfg-enabled').value = profile.enabled ? "true" : "false";
+
+            const isParking = profile.type === 'parking';
+            document.getElementById('cfg-surface-group').style.display = isParking ? "none" : "block";
+            document.getElementById('cfg-address-group').style.display = isParking ? "block" : "none";
+            document.getElementById('cfg-radius-group').style.display = isParking ? "block" : "none";
+
+            document.getElementById('settings-modal').classList.add('open');
+        }
+
+        function closeSearchSettingsModal() {
+            document.getElementById('settings-modal').classList.remove('open');
+        }
+
+        async function submitSearchSettings(e) {
+            e.preventDefault();
+            const profile = searchesConfig?.searches.find(s => s.id === currentSearchId);
+            if (!profile) return;
+
+            profile.name = document.getElementById('cfg-name').value.trim();
+            profile.description = document.getElementById('cfg-desc').value.trim();
+            profile.enabled = (document.getElementById('cfg-enabled').value === "true");
+
+            if (!profile.params) profile.params = {};
+            profile.params.budget_max = parseFloat(document.getElementById('cfg-budget-max').value) || profile.params.budget_max;
+            
+            if (profile.type === 'parking') {
+                profile.params.adresse_cible = document.getElementById('cfg-target-address').value.trim();
+                profile.params.rayon_metres = parseInt(document.getElementById('cfg-radius').value, 10) || 650;
+            } else {
+                profile.params.surface_min = parseFloat(document.getElementById('cfg-surface-min').value) || 70;
+            }
+
+            if (isLocalServer) {
+                try {
+                    await fetch('/api/searches', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(searchesConfig)
+                    });
+                    showToast("Paramètres enregistrés et synchronisés !", "success");
+                } catch (err) {}
+            }
+
+            closeSearchSettingsModal();
+            renderProfileTabs();
+        }
+
+        // New Search Modal
+        function openNewSearchModal() {
+            document.getElementById('new-search-modal').classList.add('open');
+            toggleNewSearchFields();
+        }
+
+        function closeNewSearchModal() {
+            document.getElementById('new-search-modal').classList.remove('open');
+        }
+
+        function toggleNewSearchFields() {
+            const type = document.getElementById('new-search-type').value;
+            const addrRow = document.getElementById('new-search-addr-row');
+            if (addrRow) addrRow.style.display = (type === 'parking' || type === 'appartement') ? 'block' : 'none';
+        }
+
+        async function submitNewSearch(e) {
+            e.preventDefault();
+            const name = document.getElementById('new-search-name').value.trim();
+            const type = document.getElementById('new-search-type').value;
+            const budget = parseFloat(document.getElementById('new-search-budget').value) || 0;
+            const address = document.getElementById('new-search-address').value.trim();
+            const desc = document.getElementById('new-search-desc').value.trim();
+
+            const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '');
+            const newId = slug || ("search_" + Date.now());
+            const dataFile = `data_${newId}.json`;
+
+            const newProfile = {
+                id: newId,
+                name: name,
+                type: type,
+                icon: type === 'parking' ? 'fa-square-parking' : (type === 'appartement' ? 'fa-house' : 'fa-box'),
+                badge: type === 'parking' ? 'Parking / Box' : (type === 'appartement' ? 'Appartement' : 'Objet'),
+                enabled: true,
+                data_file: dataFile,
+                description: desc || name,
+                params: {
+                    budget_max: budget,
+                    adresse_cible: address
+                },
+                sources: ["bienici"]
+            };
+
+            searchesConfig.searches.push(newProfile);
+
+            if (isLocalServer) {
+                try {
+                    await fetch('/api/searches', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(searchesConfig)
+                    });
+                } catch (err) {}
+            }
+
+            closeNewSearchModal();
+            document.getElementById('new-search-form').reset();
+            showToast(`Recherche '${name}' créée avec succès !`, "success");
+            switchSearchProfile(newId);
         }
     </script>
 </body>

@@ -8,6 +8,13 @@ import subprocess
 import sys
 from datetime import datetime
 
+if hasattr(sys.stdout, "reconfigure"):
+    try:
+        sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+        sys.stderr.reconfigure(encoding='utf-8', errors='replace')
+    except Exception:
+        pass
+
 import base64
 import time
 
@@ -27,6 +34,29 @@ except ImportError:
     sync_playwright = None
 
 DATA_FILE = "data.json"
+SEARCHES_FILE = "searches.json"
+
+def load_searches_config():
+    """Charge la configuration des recherches depuis searches.json."""
+    if os.path.exists(SEARCHES_FILE):
+        try:
+            with open(SEARCHES_FILE, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except Exception as e:
+            print(f"[ERREUR] Impossible de lire {SEARCHES_FILE}: {e}")
+    return {
+        "active_search_id": "meuble_1",
+        "searches": [
+            {
+                "id": "meuble_1",
+                "name": "Recherche Meublé 1",
+                "type": "appartement",
+                "enabled": True,
+                "data_file": "data.json"
+            }
+        ]
+    }
+
 JINKA_SESSION_FILE = "jinka_session.json"
 JINKA_TOKEN_FILE = "jinka_token.json"
 GDC_SESSION_FILE = "gdc_session.json"
@@ -1821,52 +1851,53 @@ def start_server_if_not_running():
         except Exception as e:
             print(f"[ERREUR] Impossible de lancer server.py: {e}")
 
-def sync_data_to_github(commit_msg="Mise à jour des annonces (data.json)"):
-    """Synchronise automatiquement data.json vers GitHub pour actualiser le site GitHub Pages."""
+def sync_data_to_github(commit_msg="Mise à jour des annonces", files=None):
+    """Synchronise automatiquement les données et la configuration vers GitHub pour actualiser GitHub Pages."""
     try:
+        files_to_sync = files if files else [DATA_FILE, SEARCHES_FILE]
         res = subprocess.run(
-            ["git", "status", "--porcelain", DATA_FILE],
+            ["git", "status", "--porcelain"] + files_to_sync,
             capture_output=True,
             text=True,
             check=False
         )
         if res.stdout.strip():
-            print("\n[GITHUB] Nouvelles données détectées dans data.json. Synchronisation vers GitHub Pages...")
-            subprocess.run(["git", "add", DATA_FILE], check=True, capture_output=True)
+            print(f"\n[GITHUB] Nouvelles données détectées ({', '.join(files_to_sync)}). Synchronisation vers GitHub Pages...")
+            subprocess.run(["git", "add"] + files_to_sync, check=True, capture_output=True)
             subprocess.run(["git", "commit", "-m", commit_msg], check=True, capture_output=True)
             push_res = subprocess.run(["git", "push", "origin", "main"], capture_output=True, text=True, check=False)
             if push_res.returncode == 0:
-                print("[GITHUB] [OK] data.json synchronisé avec succès sur GitHub !")
+                print("[GITHUB] [OK] Synchronisé avec succès sur GitHub !")
                 print("[GITHUB] -> Le site https://bacobaco.github.io/RechercheAppart/ sera à jour d'ici ~1 minute.\n")
             else:
                 print(f"[GITHUB] [ATTENTION] Échec initial push ({push_res.stderr.strip()}). Tentative de rebase...")
                 subprocess.run(["git", "pull", "--rebase", "origin", "main"], capture_output=True, text=True, check=False)
                 push_retry = subprocess.run(["git", "push", "origin", "main"], capture_output=True, text=True, check=False)
                 if push_retry.returncode == 0:
-                    print("[GITHUB] [OK] data.json synchronisé avec succès après rebase !")
+                    print("[GITHUB] [OK] Synchronisé avec succès après rebase !")
                     print("[GITHUB] -> Le site https://bacobaco.github.io/RechercheAppart/ sera à jour d'ici ~1 minute.\n")
                 else:
                     print(f"[GITHUB] [ATTENTION] Échec persistant du push : {push_retry.stderr.strip()}")
         else:
-            print("[GITHUB] Aucun changement dans data.json à synchroniser.")
+            print("[GITHUB] Aucun changement à synchroniser.")
     except Exception as e:
         print(f"[GITHUB] [AVERTISSEMENT] Erreur lors de la synchronisation GitHub : {e}")
 
-def purge_old_eliminated():
+def purge_old_eliminated(target_data_file=DATA_FILE):
     """Supprime définitivement de data.json les annonces éliminées depuis plus de 30 jours.
     Cible les statuts 'Éliminer' et 'Déjà loué'.
     Utilise le champ 'date_elimination' si présent, sinon 'date_decouverte' comme fallback."""
-    if not os.path.exists(DATA_FILE):
+    if not os.path.exists(target_data_file):
         return
 
     try:
-        with open(DATA_FILE, "r", encoding="utf-8") as f:
+        with open(target_data_file, "r", encoding="utf-8") as f:
             content = f.read().strip()
             if not content:
                 return
             data = json.loads(content)
     except Exception as e:
-        print(f"[ERREUR] Impossible de charger {DATA_FILE} pour la purge: {e}")
+        print(f"[ERREUR] Impossible de charger {target_data_file} pour la purge: {e}")
         return
 
     current_date = datetime.now().date()
@@ -1911,39 +1942,48 @@ def purge_old_eliminated():
 
     if purged_count > 0 or backfill_count > 0:
         try:
-            with open(DATA_FILE, "w", encoding="utf-8") as f:
+            with open(target_data_file, "w", encoding="utf-8") as f:
                 json.dump(kept, f, ensure_ascii=False, indent=4)
             if purged_count > 0:
                 print(f"[INFO] Purge terminée : {purged_count} annonce(s) supprimée(s) définitivement.")
-                sync_data_to_github(f"chore: purge automatique de {purged_count} annonce(s) expiree(s)")
+                sync_data_to_github(f"chore: purge automatique de {purged_count} annonce(s) expiree(s)", [target_data_file])
             if backfill_count > 0:
                 print(f"[INFO] {backfill_count} annonce(s) mises à jour avec date_elimination rétro-initialisée.")
         except Exception as e:
             print(f"[ERREUR] Impossible de sauvegarder après purge: {e}")
     else:
-        print("[INFO] Purge : aucune annonce éliminée depuis plus de 30 jours.")
+        print(f"[INFO] Purge ({os.path.basename(target_data_file)}) : aucune annonce éliminée depuis plus de 30 jours.")
 
 
-def main():
-    print("=== Démarrage de l'Agent de Recherche Immobilière ===")
+def run_apartment_search(profile=None):
+    if profile is None:
+        cfg = load_searches_config()
+        profile = next((s for s in cfg.get("searches", []) if s.get("id") == "meuble_1"), {
+            "id": "meuble_1",
+            "name": "Recherche Meublé 1",
+            "data_file": DATA_FILE,
+            "params": {}
+        })
+    target_data_file = profile.get("data_file", DATA_FILE)
+    print(f"\n=== Lancement de : {profile.get('name', 'Recherche Meublé 1')} (Fichier: {target_data_file}) ===")
     
     # 0. Purge des annonces éliminées depuis plus d'un mois
-    purge_old_eliminated()
+    purge_old_eliminated(target_data_file)
     
     # 1. Load existing listings
     existing_data = []
-    if os.path.exists(DATA_FILE):
+    if os.path.exists(target_data_file):
         try:
-            with open(DATA_FILE, "r", encoding="utf-8") as f:
+            with open(target_data_file, "r", encoding="utf-8") as f:
                 content = f.read().strip()
                 if content:
                     existing_data = json.loads(content)
-            print(f"[INFO] {len(existing_data)} annonces chargées depuis {DATA_FILE}")
+            print(f"[INFO] {len(existing_data)} annonces chargées depuis {target_data_file}")
         except Exception as e:
-            print(f"[ERREUR] Impossible de charger {DATA_FILE}: {e}")
+            print(f"[ERREUR] Impossible de charger {target_data_file}: {e}")
             existing_data = []
     else:
-        print(f"[INFO] Le fichier {DATA_FILE} n'existe pas encore, il sera créé.")
+        print(f"[INFO] Le fichier {target_data_file} n'existe pas encore, il sera créé.")
     
     existing_urls = {item.get("lien_annonce") for item in existing_data if item.get("lien_annonce")}
     
@@ -2326,31 +2366,385 @@ def main():
         new_listings_count += 1
         print(f"[OK] Nouvelle annonce ajoutée : {new_item['titre']} ({new_item['prix']})")
         
-    # 3. Write back to data.json
+    # 3. Write back to target_data_file
     if new_listings_count > 0:
         try:
-            with open(DATA_FILE, "w", encoding="utf-8") as f:
+            with open(target_data_file, "w", encoding="utf-8") as f:
                 json.dump(existing_data, f, ensure_ascii=False, indent=4)
-            print(f"[INFO] Scan terminé. {new_listings_count} nouvelles annonces ajoutées à {DATA_FILE}.")
+            print(f"[INFO] Scan terminé ({profile.get('name')}). {new_listings_count} nouvelles annonces ajoutées à {target_data_file}.")
             # Synchronisation automatique sur GitHub Pages
-            sync_data_to_github(f"feat: ajout de {new_listings_count} nouvelle(s) annonce(s) via scan agent")
+            sync_data_to_github(f"feat: ajout de {new_listings_count} annonce(s) ({profile.get('id')})", [target_data_file, SEARCHES_FILE])
         except Exception as e:
-            print(f"[ERREUR] Impossible de sauvegarder dans {DATA_FILE}: {e}")
+            print(f"[ERREUR] Impossible de sauvegarder dans {target_data_file}: {e}")
     else:
-        print("[INFO] Scan terminé. Aucune nouvelle annonce trouvée.")
+        print(f"[INFO] Scan terminé ({profile.get('name')}). Aucune nouvelle annonce trouvée.")
 
-    # 4. Grand récapitulatif des erreurs / tokens expirés
+    return new_listings_count
+
+
+def scrape_bienici_parking(params=None):
+    """Récupère les annonces de stationnement/parking/box depuis l'API Bien'ici."""
+    print("[INFO] [Parking] Interrogation du site Bien'ici...")
+    if params is None:
+        params = {}
+    budget_max = params.get("budget_max", 150)
+    
+    url = "https://www.bienici.com/realEstateAds.json"
+    filters = {
+        "size": 50,
+        "from": 0,
+        "filterType": "rent",
+        "propertyType": ["parking"],
+        "maxPrice": budget_max,
+        "page": 1,
+        "sortBy": "publicationDate",
+        "sortOrder": "desc",
+        "onTheMarket": [True],
+        "zoneIdsByTypes": {
+            "zoneIds": ["-120967", "-10690"] # Lyon 3e et Lyon 7e limitrophe
+        }
+    }
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        "Accept": "application/json, text/plain, */*"
+    }
+    
+    all_ads = {}
+    try:
+        response = requests.get(url, params={"filters": json.dumps(filters)}, headers=headers, timeout=15)
+        if response.status_code == 200:
+            ads = response.json().get("realEstateAds", [])
+            for ad in ads:
+                ad_id = ad.get("id")
+                if ad_id and ad_id not in all_ads:
+                    ad["source"] = "Bien'ici"
+                    ad["url"] = f"https://www.bienici.com/annonce/{ad_id}"
+                    all_ads[ad_id] = ad
+            print(f"[INFO] [Parking] Bien'ici: {len(all_ads)} annonces de stationnement récupérées.")
+        else:
+            print(f"[ERREUR] [Parking] Bien'ici code HTTP {response.status_code}")
+    except Exception as e:
+        print(f"[ERREUR] [Parking] Erreur requête Bien'ici: {e}")
+        
+    return list(all_ads.values())
+
+
+def scrape_gdc_parking(params=None):
+    """Récupère les annonces de parking depuis Gens de Confiance si disponibles."""
+    print("[INFO] [Parking] Interrogation du site Gens de Confiance...")
+    if not os.path.exists(GDC_SESSION_FILE):
+        return []
+        
+    try:
+        with open(GDC_SESSION_FILE, "r", encoding="utf-8") as f:
+            session_data = json.load(f)
+        cookie_dict = {c["name"]: c["value"] for c in session_data.get("cookies", []) if "name" in c and "value" in c}
+    except Exception:
+        return []
+
+    url = "https://gensdeconfiance.com/fr/s/immobilier/locations-immobilieres?type=offering&propertyTypes=parking&rootLocales=fr%2Cen&currentAdSort=displayDate_desc"
+    ads = []
+    if curl_requests and BeautifulSoup:
+        try:
+            resp = curl_requests.get(url, cookies=cookie_dict, impersonate="chrome120", timeout=15)
+            if resp.status_code == 200:
+                soup = BeautifulSoup(resp.text, "html.parser")
+                cards = soup.find_all("article")
+                for card in cards:
+                    link_el = card.find("a", href=True)
+                    if not link_el:
+                        continue
+                    ad_url = urllib.parse.urljoin("https://gensdeconfiance.com", link_el["href"])
+                    title_el = card.find(["h2", "h3"]) or card.find(class_=re.compile(r"title", re.I))
+                    title = title_el.get_text(strip=True) if title_el else "Parking GDC"
+                    price_el = card.find(string=re.compile(r"\d+\s*€"))
+                    price = None
+                    if price_el:
+                        m = re.search(r"(\d[\d\s]*)\s*€", price_el)
+                        if m:
+                            price = float(m.group(1).replace(" ", ""))
+                    ads.append({
+                        "id": f"gdc_{extract_gdc_uuid(ad_url) or 'p'}",
+                        "title": title,
+                        "description": title,
+                        "price": price,
+                        "url": ad_url,
+                        "source": "Gens de Confiance",
+                        "postalCode": "69003",
+                        "city": "Lyon"
+                    })
+        except Exception as e:
+            print(f"[WARN] [Parking GDC] {e}")
+            
+    print(f"[INFO] [Parking] Gens de Confiance: {len(ads)} annonces trouvées.")
+    return ads
+
+
+def run_parking_search(profile=None):
+    """Exécute la recherche de parking/garage/box pour un véhicule (Tesla Model 3/Y) à proximité du 56 Félix Faure."""
+    if profile is None:
+        cfg = load_searches_config()
+        profile = next((s for s in cfg.get("searches", []) if s.get("id") == "parking_felix_faure"), {
+            "id": "parking_felix_faure",
+            "name": "Recherche Parking 56 rue Félix Faure Lyon",
+            "data_file": "data_parking_felix_faure.json",
+            "params": {
+                "adresse_cible": "56 avenue Félix Faure, 69003 Lyon",
+                "cible_lat": 45.7528,
+                "cible_lon": 4.8531,
+                "rayon_metres": 650,
+                "budget_max": 150
+            }
+        })
+        
+    target_data_file = profile.get("data_file", "data_parking_felix_faure.json")
+    params = profile.get("params", {})
+    target_lat = params.get("cible_lat", 45.7528)
+    target_lon = params.get("cible_lon", 4.8531)
+    target_address = params.get("adresse_cible", "56 avenue Félix Faure, 69003 Lyon")
+    max_radius = params.get("rayon_metres", 650)
+    max_budget = params.get("budget_max", 150)
+    
+    print(f"\n=== Lancement de : {profile.get('name')} ===")
+    print(f"    * Cible : {target_address} (GPS: {target_lat}, {target_lon})")
+    print(f"    * Rayon max : {max_radius} m | Budget max : {max_budget} €/mois")
+    print(f"    * Fichier de données : {target_data_file}")
+    
+    # 0. Purge
+    purge_old_eliminated(target_data_file)
+    
+    # 1. Chargement des données existantes
+    existing_data = []
+    if os.path.exists(target_data_file):
+        try:
+            with open(target_data_file, "r", encoding="utf-8") as f:
+                content = f.read().strip()
+                if content:
+                    existing_data = json.loads(content)
+            print(f"[INFO] {len(existing_data)} annonces chargées depuis {target_data_file}")
+        except Exception as e:
+            print(f"[ERREUR] Impossible de charger {target_data_file}: {e}")
+            existing_data = []
+            
+    existing_urls = {item.get("lien_annonce") for item in existing_data if item.get("lien_annonce")}
+    
+    # 2. Collecte des annonces
+    all_raw_ads = []
+    try:
+        all_raw_ads.extend(scrape_bienici_parking(params))
+    except Exception as e:
+        print(f"[ERREUR] Scan Bien'ici Parking: {e}")
+        
+    try:
+        all_raw_ads.extend(scrape_gdc_parking(params))
+    except Exception as e:
+        print(f"[ERREUR] Scan GDC Parking: {e}")
+        
+    print(f"[INFO] {len(all_raw_ads)} annonces de stationnement brutes à analyser...")
+    new_listings_count = 0
+    
+    for ad in all_raw_ads:
+        ad_id = ad.get("id")
+        ad_url = ad.get("url")
+        if ad_url in existing_urls:
+            continue
+            
+        title = ad.get("title") or "Place de stationnement / Garage"
+        description = ad.get("description", "")
+        price = ad.get("price")
+        postal_code = ad.get("postalCode", "69003")
+        city = ad.get("city", "Lyon")
+        district_libelle = ad.get("district", {}).get("libelle", "Lyon 3e")
+        
+        full_text = (title + " " + description).lower()
+        
+        # Filtrage prix
+        if not price:
+            match = re.search(r'\b(\d{2,3})\s*(?:€|euros|euro)\b', description, re.IGNORECASE)
+            if match:
+                price = float(match.group(1))
+                
+        if price and price > max_budget:
+            print(f"[REJECT] {ad_id}: Loyer {price}€ > {max_budget}€.")
+            continue
+            
+        # Filtrage distance à 56 Avenue Félix Faure
+        lat = ad.get("blurInfo", {}).get("position", {}).get("lat")
+        lon = ad.get("blurInfo", {}).get("position", {}).get("lon")
+        
+        dist = None
+        if lat and lon:
+            dist = haversine(target_lat, target_lon, lat, lon)
+            if dist > max_radius:
+                print(f"[REJECT] {ad_id}: Trop loin du 56 Félix Faure ({int(dist)}m > {max_radius}m).")
+                continue
+        else:
+            street_keywords = [
+                "félix faure", "felix faure", "garibaldi", "gambetta", "paul bert", "rue du lac",
+                "rancy", "bir hakeim", "bir-hakeim", "danton", "guillotière", "guillotiere",
+                "mouton duvernet", "mouton-duvernet", "part-dieu", "part dieu", "moncey",
+                "baraban", "villeroy", "béchevelin", "bechevelin", "mazagran", "saxe"
+            ]
+            if not any(sk in full_text for sk in street_keywords):
+                print(f"[REJECT] {ad_id}: Coordonnées absentes et adresse hors périmètre Félix Faure.")
+                continue
+            dist = 380  # Distance moyenne estimée
+            
+        # Caractéristiques et compatibilité Tesla
+        is_box = any(k in full_text for k in ["box", "garage fermé", "garage individuel", "fermé", "ferme", "boxe", "boxé"])
+        is_sous_sol = any(k in full_text for k in ["sous-sol", "sous sol", "ss", "-1", "-2", "couvert", "souterrain"])
+        is_exterieur = any(k in full_text for k in ["extérieur", "exterieur", "aérien", "aerien", "cour"])
+        
+        has_security = any(k in full_text for k in ["bip", "télécommande", "telecommande", "badge", "sécurisé", "securise", "portail automatique", "gardien", "vidéosurveillance", "videosurveillance", "caméra", "camera"])
+        has_electric = any(k in full_text for k in ["prise", "recharge", "électrique", "electrique", "borne", "green'up", "greenup", "courant", "220v", "tesla", "wallbox"])
+        
+        if is_box and has_electric:
+            tesla_verdict = "⭐ Idéal Tesla (Box fermé + Prise électrique)"
+        elif is_box:
+            tesla_verdict = "✅ Recommandé Tesla (Box fermé sécurisé)"
+        elif is_sous_sol and has_security:
+            tesla_verdict = "✅ Compatible Tesla (Sous-sol sécurisé par bip)"
+        elif is_sous_sol:
+            tesla_verdict = "👍 Compatible Tesla (Sous-sol)"
+        else:
+            tesla_verdict = "⚠️ Stationnement standard / extérieur"
+            
+        type_parking = "Box fermé" if is_box else ("Place en sous-sol" if is_sous_sol else ("Place extérieure" if is_exterieur else "Stationnement"))
+        formatted_price = f"{price:,.2f} €".replace(",", " ").replace(".", ",") if price else "Loyer N/C"
+        
+        walking_mins = max(1, round(dist / 75)) if dist else 5
+        distance_str = f"{int(dist)} m (~{walking_mins} min à pied)" if dist else "Proximité immédiate"
+        
+        exact_addr = extract_address(description, postal_code or "69003")
+        adresse_estimee = exact_addr if exact_addr else f"{district_libelle}, {postal_code or '69003'} Lyon"
+        
+        itinerary_url = f"https://www.google.com/maps/dir/?api=1&origin={urllib.parse.quote(target_address)}&destination={urllib.parse.quote(adresse_estimee)}&travelmode=walking"
+        
+        avantages = []
+        inconvenients = []
+        if is_box:
+            avantages.append("Box fermé privatif (sécurité carrosserie)")
+        elif is_sous_sol:
+            avantages.append("Stationnement couvert en sous-sol")
+            
+        if dist:
+            avantages.append(f"À {int(dist)}m ({walking_mins} min à pied)")
+            
+        if has_electric:
+            avantages.append("Prise électrique / recharge mentionnée")
+        else:
+            inconvenients.append("Prise électrique non spécifiée")
+            
+        if has_security:
+            avantages.append("Accès sécurisé (bip / télécommande)")
+            
+        new_item = {
+            "titre": title if title and title != "APPARTEMENT" else f"{type_parking} - {district_libelle} ({formatted_price})",
+            "prix": formatted_price,
+            "surface": ad.get("surfaceArea") or 0.0,
+            "nb_pieces": 0,
+            "type_parking": type_parking,
+            "distance_cible": distance_str,
+            "distance_metres": int(dist) if dist else 9999,
+            "tesla_compatible": tesla_verdict,
+            "prise_electrique": "⚡ Prise / Borne mentionnée" if has_electric else "Non mentionnée",
+            "quartier": f"{district_libelle}, Lyon",
+            "adresse_estimee": adresse_estimee,
+            "avantages": ", ".join(avantages),
+            "inconvenients": ", ".join(inconvenients),
+            "prix_m2": 0.0,
+            "source": ad.get("source", "Bien'ici"),
+            "lien_annonce": ad_url,
+            "google_street_view": itinerary_url,
+            "date_decouverte": datetime.now().strftime("%Y-%m-%d"),
+            "statut": "Nouveau",
+            "remarques_visite": "",
+            "questions_visite": "",
+            "notes": f"Distance au 56 Félix Faure: {distance_str}\nVéhicule: Tesla Model 3/Y\nAvantages: {', '.join(avantages)}\nInconvénients: {', '.join(inconvenients)}"
+        }
+        
+        existing_data.append(new_item)
+        existing_urls.add(ad_url)
+        new_listings_count += 1
+        print(f"[OK] [Parking] Nouvelle place ajoutée : {new_item['titre']} ({new_item['prix']} - {distance_str})")
+        
+    # Tri par distance croissante (les plus proches en premier !)
+    existing_data.sort(key=lambda x: x.get("distance_metres", 9999))
+    
+    if new_listings_count > 0:
+        try:
+            with open(target_data_file, "w", encoding="utf-8") as f:
+                json.dump(existing_data, f, ensure_ascii=False, indent=4)
+            print(f"[INFO] [Parking] Scan terminé. {new_listings_count} nouvelles annonces ajoutées à {target_data_file}.")
+            sync_data_to_github(f"feat: ajout de {new_listings_count} parking(s) autour du 56 Félix Faure", [target_data_file, SEARCHES_FILE])
+        except Exception as e:
+            print(f"[ERREUR] Impossible de sauvegarder dans {target_data_file}: {e}")
+    else:
+        print(f"[INFO] [Parking] Scan terminé ({profile.get('name')}). Aucune nouvelle annonce trouvée.")
+        
+    return new_listings_count
+
+
+def main():
+    import argparse
+    parser = argparse.ArgumentParser(description="Agent de Veille Immobilière & Multi-Recherches Lyon")
+    parser.add_argument("--search", "--profile", dest="search_id", default=None, help="ID de la recherche à lancer ('meuble_1', 'parking_felix_faure', ou 'all')")
+    parser.add_argument("--list", action="store_true", help="Lister toutes les recherches configurées et quitter")
+    args = parser.parse_args()
+    
+    cfg = load_searches_config()
+    searches = cfg.get("searches", [])
+    
+    if args.list:
+        print("\n" + "="*80)
+        print(" [RECHERCHES CONFIGUREES DANS SEARCHES.JSON]")
+        print("="*80)
+        for s in searches:
+            status_icon = "[ACTIF]" if s.get("enabled", True) else "[INACTIF]"
+            print(f" * {s.get('id'):<22} | {status_icon} | {s.get('name')} ({s.get('type')})")
+            print(f"   -> Fichier : {s.get('data_file')}")
+            print(f"   -> Détails : {s.get('description', '')}\n")
+        print("="*80 + "\n")
+        return
+        
+    print("=== Démarrage de l'Agent de Veille Multi-Recherches ===")
+    
+    target_search_id = args.search_id
+    total_added = 0
+    
+    # Déterminer les recherches à exécuter
+    profiles_to_run = []
+    if target_search_id and target_search_id.lower() != "all":
+        matched = [s for s in searches if s.get("id") == target_search_id]
+        if not matched:
+            print(f"[ERREUR] Recherche '{target_search_id}' introuvable dans searches.json !")
+            print(f"Recherches disponibles : {', '.join(s.get('id') for s in searches)}")
+            return
+        profiles_to_run = matched
+    else:
+        # Exécuter toutes les recherches actives
+        profiles_to_run = [s for s in searches if s.get("enabled", True)]
+        
+    for profile in profiles_to_run:
+        p_type = profile.get("type", "appartement")
+        if p_type == "parking":
+            total_added += run_parking_search(profile)
+        else:
+            total_added += run_apartment_search(profile)
+            
+    # Rapport final des sources et erreurs
     print_final_summary_report()
-
-    # 5. Start the server if not already running
+    
+    # Lancement du serveur si nécessaire
     start_server_if_not_running()
-
-    # 6. Affichage final des liens d'accès
+    
+    # Affichage final des liens d'accès
     print("\n" + "="*75)
     print(" [ACCES AU TABLEAU DE BORD]")
     print("   * Serveur Local   : http://localhost:8000/dashboard.html (ou http://localhost:8000)")
     print("   * GitHub Pages    : https://bacobaco.github.io/RechercheAppart/")
     print("="*75 + "\n")
-    
+
+
 if __name__ == "__main__":
     main()
