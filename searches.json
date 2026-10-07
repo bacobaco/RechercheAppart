@@ -9,6 +9,7 @@
       "badge": "Appartement Meublé",
       "enabled": true,
       "data_file": "data.json",
+      "gdc_url_file": "gdc_url.json",
       "description": "Appartements meublés de standing >= 70m², 3-4 pièces, ascenseur, climatisation ou balcon (Lyon 1, 2, 3, 5 Vieux Lyon, 6).",
       "params": {
         "budget_min": 1500,
@@ -48,12 +49,13 @@
       "badge": "Parking / Box Tesla",
       "enabled": true,
       "data_file": "data_parking_felix_faure.json",
+      "gdc_url_file": "gdc_parking_url.json",
       "description": "Parking, garage ou box à louer autour du 56 avenue Félix Faure (Lyon 3e) pour Tesla à moins de 150 €/mois.",
       "params": {
         "adresse_cible": "56 avenue Félix Faure, 69003 Lyon",
         "cible_lat": 45.7528,
         "cible_lon": 4.8531,
-        "rayon_metres": 300,
+        "rayon_metres": 800,
         "budget_max": 150,
         "vehicule": "Tesla (Model 3 / Y)",
         "preferer_box_ferme": true,
