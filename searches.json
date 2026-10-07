@@ -1,0 +1,69 @@
+{
+  "active_search_id": "meuble_1",
+  "searches": [
+    {
+      "id": "meuble_1",
+      "name": "Recherche Meublé 1",
+      "type": "appartement",
+      "icon": "fa-house",
+      "badge": "Appartement Meublé",
+      "enabled": true,
+      "data_file": "data.json",
+      "description": "Appartements meublés de standing >= 70m², 3-4 pièces, ascenseur, climatisation ou balcon (Lyon 1, 2, 3, 5 Vieux Lyon, 6).",
+      "params": {
+        "budget_min": 1500,
+        "budget_max": 2500,
+        "surface_min": 70,
+        "pieces_min": 3,
+        "pieces_max": 4,
+        "chambres_min": 2,
+        "meuble_uniquement": true,
+        "ascenseur_requis": true,
+        "clim_ou_balcon_requis": true,
+        "interdire_duplex": true,
+        "codes_postaux": [
+          "69001",
+          "69002",
+          "69003",
+          "69005",
+          "69006"
+        ],
+        "vieux_lyon_strict_si_5e": true,
+        "trajet_max_framatome": 45
+      },
+      "sources": [
+        "bienici",
+        "jinka",
+        "gdc",
+        "barnes",
+        "lodgis",
+        "urbansejour"
+      ]
+    },
+    {
+      "id": "parking_felix_faure",
+      "name": "Recherche Parking 56 rue Félix Faure Lyon",
+      "type": "parking",
+      "icon": "fa-square-parking",
+      "badge": "Parking / Box Tesla",
+      "enabled": true,
+      "data_file": "data_parking_felix_faure.json",
+      "description": "Parking, garage ou box à louer autour du 56 avenue Félix Faure (Lyon 3e) pour Tesla à moins de 150 €/mois.",
+      "params": {
+        "adresse_cible": "56 avenue Félix Faure, 69003 Lyon",
+        "cible_lat": 45.7528,
+        "cible_lon": 4.8531,
+        "rayon_metres": 650,
+        "budget_max": 150,
+        "vehicule": "Tesla (Model 3 / Y)",
+        "preferer_box_ferme": true,
+        "rechercher_recharge": true
+      },
+      "sources": [
+        "bienici",
+        "gdc",
+        "jinka"
+      ]
+    }
+  ]
+}
