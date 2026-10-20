@@ -2628,6 +2628,52 @@ def geocode_address(address):
         print(f"[WARN] Géocodage adresse '{address}': {e}")
     return None
 
+_walking_route_cache = {}
+
+def get_walking_distance(lat1, lon1, lat2, lon2, timeout=4):
+    """
+    Calcule la distance et le temps réel d'itinéraire à pied entre deux coordonnées GPS
+    en utilisant l'API d'itinéraire piéton OpenStreetMap / OSRM.
+    Retourne (distance_metres, duree_minutes, source).
+    En cas d'échec ou d'absence de réseau, utilise un fallback estimé (Haversine * 1.35).
+    """
+    if lat1 is None or lon1 is None or lat2 is None or lon2 is None:
+        return 9999, 99, "unknown"
+        
+    crow_dist = haversine(lat1, lon1, lat2, lon2)
+    cache_key = (round(float(lat1), 5), round(float(lon1), 5), round(float(lat2), 5), round(float(lon2), 5))
+    if cache_key in _walking_route_cache:
+        return _walking_route_cache[cache_key]
+
+    urls = [
+        f"https://routing.openstreetmap.de/routed-foot/route/v1/foot/{lon1},{lat1};{lon2},{lat2}?overview=false",
+        f"http://router.project-osrm.org/route/v1/foot/{lon1},{lat1};{lon2},{lat2}?overview=false"
+    ]
+    
+    for url in urls:
+        try:
+            req = urllib.request.Request(url, headers={"User-Agent": "VeilleImmo/1.0 (Lyon pedestrian route)"})
+            with urllib.request.urlopen(req, timeout=timeout) as resp:
+                if resp.status == 200:
+                    data = json.loads(resp.read().decode("utf-8"))
+                    if data.get("code") == "Ok" and data.get("routes"):
+                        route = data["routes"][0]
+                        dist_m = round(float(route.get("distance", crow_dist * 1.35)))
+                        dur_s = float(route.get("duration", dist_m / 1.25))
+                        dur_min = max(1, round(dur_s / 60))
+                        res = (dist_m, dur_min, "osrm_foot")
+                        _walking_route_cache[cache_key] = res
+                        return res
+        except Exception:
+            continue
+
+    # Fallback si indisponibilité réseau : coefficient piéton urbain 1.35
+    fallback_dist = round(crow_dist * 1.35)
+    fallback_min = max(1, round(fallback_dist / 75))
+    res = (fallback_dist, fallback_min, "estimated_urban")
+    _walking_route_cache[cache_key] = res
+    return res
+
 
 def run_parking_search(profile=None):
     """Exécute la recherche de parking/garage/box pour un véhicule (Tesla Model 3/Y) à proximité du 56 Félix Faure."""
@@ -2686,15 +2732,10 @@ def run_parking_search(profile=None):
             print(f"[ERREUR] Impossible de charger {target_data_file}: {e}")
             existing_data = []
             
-    # 1.1 Nettoyage automatique des annonces existantes hors critères (rayon, budget, 2-roues)
+    # 1.1 Nettoyage automatique des annonces existantes hors critères (rayon piéton, budget, 2-roues)
     valid_existing = []
     removed_out_of_criteria = 0
     for it in existing_data:
-        it_dist = it.get("distance_metres")
-        if it_dist is not None and it_dist > max_radius:
-            removed_out_of_criteria += 1
-            continue
-            
         it_price_str = it.get("prix", "")
         clean_p = "".join(c for c in it_price_str.split(",")[0] if c.isdigit())
         if clean_p and float(clean_p) > max_budget:
@@ -2707,6 +2748,23 @@ def run_parking_search(profile=None):
         if is_moto:
             removed_out_of_criteria += 1
             continue
+
+        it_lat = it.get("latitude")
+        it_lon = it.get("longitude")
+        if it_lat and it_lon:
+            w_dist, w_min, _ = get_walking_distance(target_lat, target_lon, it_lat, it_lon)
+            it["distance_metres"] = w_dist
+            it["distance_cible"] = f"{w_dist} m à pied (~{w_min} min)"
+            it["distance_marche_minutes"] = w_min
+            it["google_street_view"] = f"https://www.google.com/maps/dir/?api=1&origin={urllib.parse.quote(target_address)}&destination={it_lat},{it_lon}&travelmode=walking"
+            if w_dist > max_radius:
+                removed_out_of_criteria += 1
+                continue
+        else:
+            it_dist = it.get("distance_metres")
+            if it_dist is not None and it_dist > max_radius:
+                removed_out_of_criteria += 1
+                continue
             
         valid_existing.append(it)
         
@@ -2774,17 +2832,36 @@ def run_parking_search(profile=None):
             print(f"[REJECT_PRIX] {ad_id}: Loyer {price}€ > Budget max ({max_budget}€).")
             continue
             
-        # Filtrage distance à l'adresse cible
+        # Filtrage distance à l'adresse cible (calcul itinéraire piéton réel)
         lat = ad.get("blurInfo", {}).get("position", {}).get("lat")
         lon = ad.get("blurInfo", {}).get("position", {}).get("lon")
         
+        exact_addr = extract_address(description, postal_code or "69003")
+        if (not lat or not lon) and exact_addr:
+            geo_coords = geocode_address(exact_addr)
+            if geo_coords:
+                lat, lon = geo_coords
+                
         dist = None
+        walking_mins = 1
+        crow_dist = None
         if lat and lon:
-            dist = haversine(target_lat, target_lon, lat, lon)
-            if dist > max_radius:
+            crow_dist = haversine(target_lat, target_lon, lat, lon)
+            # Un piéton ne marchera jamais moins que la distance à vol d'oiseau
+            if crow_dist > max_radius:
                 rejected_dist_count += 1
-                print(f"[REJECT_DIST] {ad_id}: Trop loin du point cible ({int(dist)}m > Rayon max {max_radius}m).")
+                print(f"[REJECT_DIST] {ad_id}: Trop loin à vol d'oiseau ({int(crow_dist)}m > Rayon max {max_radius}m).")
                 continue
+                
+            # Calcul du trajet piéton réel (OpenStreetMap / OSRM)
+            walk_dist, walk_mins, r_source = get_walking_distance(target_lat, target_lon, lat, lon)
+            if walk_dist > max_radius:
+                rejected_dist_count += 1
+                print(f"[REJECT_DIST] {ad_id}: Trop loin à pied ({walk_dist}m à pied > Rayon max {max_radius}m, vol oiseau: {int(crow_dist)}m).")
+                continue
+                
+            dist = walk_dist
+            walking_mins = walk_mins
         else:
             street_keywords = [
                 "félix faure", "felix faure", "garibaldi", "gambetta", "paul bert", "rue du lac",
@@ -2796,7 +2873,8 @@ def run_parking_search(profile=None):
                 rejected_dist_count += 1
                 print(f"[REJECT_DIST] {ad_id}: Coordonnées absentes et adresse hors périmètre.")
                 continue
-            dist = 380  # Distance moyenne estimée
+            dist = 220  # Distance moyenne estimée à pied
+            walking_mins = 3
             
         # Caractéristiques et compatibilité Tesla
         is_box = any(k in full_text for k in ["box", "garage fermé", "garage individuel", "fermé", "ferme", "boxe", "boxé"])
@@ -2820,13 +2898,13 @@ def run_parking_search(profile=None):
         type_parking = "Box fermé" if is_box else ("Place en sous-sol" if is_sous_sol else ("Place extérieure" if is_exterieur else "Stationnement"))
         formatted_price = f"{price:,.2f} €".replace(",", " ").replace(".", ",") if price else "Loyer N/C"
         
-        walking_mins = max(1, round(dist / 75)) if dist else 5
-        distance_str = f"{int(dist)} m (~{walking_mins} min à pied)" if dist else "Proximité immédiate"
-        
-        exact_addr = extract_address(description, postal_code or "69003")
+        distance_str = f"{int(dist)} m à pied (~{walking_mins} min)" if dist else "Proximité immédiate"
         adresse_estimee = exact_addr if exact_addr else f"{district_libelle}, {postal_code or '69003'} Lyon"
         
-        itinerary_url = f"https://www.google.com/maps/dir/?api=1&origin={urllib.parse.quote(target_address)}&destination={urllib.parse.quote(adresse_estimee)}&travelmode=walking"
+        if lat and lon:
+            itinerary_url = f"https://www.google.com/maps/dir/?api=1&origin={urllib.parse.quote(target_address)}&destination={lat},{lon}&travelmode=walking"
+        else:
+            itinerary_url = f"https://www.google.com/maps/dir/?api=1&origin={urllib.parse.quote(target_address)}&destination={urllib.parse.quote(adresse_estimee)}&travelmode=walking"
         
         avantages = []
         inconvenients = []
@@ -2854,6 +2932,11 @@ def run_parking_search(profile=None):
             "type_parking": type_parking,
             "distance_cible": distance_str,
             "distance_metres": int(dist) if dist else 9999,
+            "distance_a_pied": int(dist) if dist else 9999,
+            "distance_marche_minutes": walking_mins,
+            "distance_vol_oiseau": round(crow_dist) if crow_dist is not None else None,
+            "latitude": lat,
+            "longitude": lon,
             "tesla_compatible": tesla_verdict,
             "prise_electrique": "⚡ Prise / Borne mentionnée" if has_electric else "Non mentionnée",
             "quartier": f"{district_libelle}, Lyon",

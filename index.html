@@ -2853,8 +2853,8 @@
                     specsHtml = `
                         <div class="card-specs">
                             <div class="spec-item">
-                                <div class="spec-label">Distance 56 Félix Faure</div>
-                                <div class="spec-value">${item.distance_metres ? item.distance_metres + ' m' : 'Proche'}</div>
+                                <div class="spec-label">À pied (56 Félix Faure)</div>
+                                <div class="spec-value">${item.distance_metres ? item.distance_metres + ' m' : 'Proche'}${item.distance_marche_minutes ? ' (~' + item.distance_marche_minutes + ' min)' : ''}</div>
                             </div>
                             <div class="spec-item">
                                 <div class="spec-label">Protection</div>
