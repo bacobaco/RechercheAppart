@@ -52,9 +52,10 @@
         "lien_annonce": "https://www.seloger.com/annonces/achat/parking/lyon-3eme-69/part-dieu/258525039.htm",
         "google_street_view": "https://www.google.com/maps/dir/?api=1&origin=56%20avenue%20F%C3%A9lix%20Faure%2C%2069003%20Lyon&destination=45.75325,4.8518&travelmode=walking",
         "date_decouverte": "2026-10-27",
-        "statut": "À traiter",
+        "statut": "Éliminer",
         "remarques_visite": "Vendeur Particulier. Attention monte-charge voiture : contrainte technique et de poids majeure pour un véhicule électrique lourd (Tesla).",
         "questions_visite": "Charge maximale réelle et tolérance du monte-charge ? Dimensions de la cabine ? Fiabilité et coûts d'entretien du monte-charge dans les charges de copropriété ?",
-        "notes": "Distance au 56 avenue Félix Faure: 195 m à pied (~2 min)\nVéhicule: Tesla Model 3 / Y\nType: Box fermé 20.7m²\nATTENTION : Accès par monte-charge limité à 2000 kg et 180cm."
+        "notes": "Distance au 56 avenue Félix Faure: 195 m à pied (~2 min)\nVéhicule: Tesla Model 3 / Y\nType: Box fermé 20.7m²\nATTENTION : Accès par monte-charge limité à 2000 kg et 180cm.",
+        "date_elimination": "2026-10-27"
     }
 ]
