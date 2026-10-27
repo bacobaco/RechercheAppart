@@ -52,6 +52,7 @@
       "gdc_url_file": "gdc_parking_url.json",
       "description": "Parking, garage ou box à louer autour du 56 avenue Félix Faure (Lyon 3e) pour Tesla à moins de 150 €/mois.",
       "params": {
+        "transaction": "location",
         "adresse_cible": "56 avenue Félix Faure, 69003 Lyon",
         "cible_lat": 45.7528,
         "cible_lon": 4.8531,
@@ -63,8 +64,38 @@
       },
       "sources": [
         "bienici",
-        "gdc",
-        "jinka"
+        "seloger",
+        "jinka",
+        "gdc"
+      ]
+    },
+    {
+      "id": "achat_parking_felix_faure",
+      "name": "Recherche Achat Parking 56 rue Félix Faure Lyon",
+      "type": "parking",
+      "icon": "fa-warehouse",
+      "badge": "Achat Garage / Box Tesla",
+      "enabled": true,
+      "data_file": "data_achat_parking_felix_faure.json",
+      "gdc_url_file": "gdc_achat_parking_url.json",
+      "description": "Achat parking, garage ou box fermé autour du 56 avenue Félix Faure (Lyon 3e) pour Tesla entre 20 000 € et 35 000 €.",
+      "params": {
+        "transaction": "achat",
+        "adresse_cible": "56 avenue Félix Faure, 69003 Lyon",
+        "cible_lat": 45.7528,
+        "cible_lon": 4.8531,
+        "rayon_metres": 222,
+        "budget_min": 20000,
+        "budget_max": 35000,
+        "vehicule": "Tesla (Model 3 / Y)",
+        "preferer_box_ferme": true,
+        "rechercher_recharge": true
+      },
+      "sources": [
+        "bienici",
+        "seloger",
+        "jinka",
+        "gdc"
       ]
     }
   ]
