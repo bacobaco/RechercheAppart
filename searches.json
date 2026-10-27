@@ -1,46 +1,6 @@
 {
-  "active_search_id": "meuble_1",
+  "active_search_id": "achat_parking_felix_faure",
   "searches": [
-    {
-      "id": "meuble_1",
-      "name": "Recherche Meublé 1",
-      "type": "appartement",
-      "icon": "fa-house",
-      "badge": "Appartement Meublé",
-      "enabled": true,
-      "data_file": "data.json",
-      "gdc_url_file": "gdc_url.json",
-      "description": "Appartements meublés de standing >= 70m², 3-4 pièces, ascenseur, climatisation ou balcon (Lyon 1, 2, 3, 5 Vieux Lyon, 6).",
-      "params": {
-        "budget_min": 1500,
-        "budget_max": 2500,
-        "surface_min": 70,
-        "pieces_min": 3,
-        "pieces_max": 4,
-        "chambres_min": 2,
-        "meuble_uniquement": true,
-        "ascenseur_requis": true,
-        "clim_ou_balcon_requis": true,
-        "interdire_duplex": true,
-        "codes_postaux": [
-          "69001",
-          "69002",
-          "69003",
-          "69005",
-          "69006"
-        ],
-        "vieux_lyon_strict_si_5e": true,
-        "trajet_max_framatome": 45
-      },
-      "sources": [
-        "bienici",
-        "jinka",
-        "gdc",
-        "barnes",
-        "lodgis",
-        "urbansejour"
-      ]
-    },
     {
       "id": "parking_felix_faure",
       "name": "Recherche Parking 56 rue Félix Faure Lyon",
@@ -56,7 +16,7 @@
         "adresse_cible": "56 avenue Félix Faure, 69003 Lyon",
         "cible_lat": 45.7528,
         "cible_lon": 4.8531,
-        "rayon_metres": 222,
+        "rayon_metres": 300,
         "budget_max": 150,
         "vehicule": "Tesla (Model 3 / Y)",
         "preferer_box_ferme": true,
@@ -84,7 +44,7 @@
         "adresse_cible": "56 avenue Félix Faure, 69003 Lyon",
         "cible_lat": 45.7528,
         "cible_lon": 4.8531,
-        "rayon_metres": 222,
+        "rayon_metres": 300,
         "budget_min": 20000,
         "budget_max": 35000,
         "vehicule": "Tesla (Model 3 / Y)",

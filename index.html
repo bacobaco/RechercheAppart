@@ -1849,7 +1849,7 @@
 
     <script>
         let searchesConfig = null;
-        let currentSearchId = "meuble_1";
+        let currentSearchId = "achat_parking_felix_faure";
         let allListings = [];
         let showEliminated = false;
         let isLocalServer = false;
@@ -1892,16 +1892,16 @@
 
                 if (!cfg) {
                     cfg = {
-                        active_search_id: "meuble_1",
+                        active_search_id: "achat_parking_felix_faure",
                         searches: [
                             {
-                                id: "meuble_1",
-                                name: "Recherche Meublé 1",
-                                type: "appartement",
-                                icon: "fa-house",
+                                id: "achat_parking_felix_faure",
+                                name: "Recherche Achat Parking 56 rue Félix Faure Lyon",
+                                type: "parking",
+                                icon: "fa-warehouse",
                                 enabled: true,
-                                data_file: "data.json",
-                                description: "Appartements meublés de standing Lyon"
+                                data_file: "data_achat_parking_felix_faure.json",
+                                description: "Achat parking / garage / box pour Tesla autour du 56 Félix Faure Lyon 3"
                             },
                             {
                                 id: "parking_felix_faure",
@@ -1910,7 +1910,7 @@
                                 icon: "fa-square-parking",
                                 enabled: true,
                                 data_file: "data_parking_felix_faure.json",
-                                description: "Parking / box pour Tesla autour du 56 Félix Faure Lyon 3"
+                                description: "Location parking / box pour Tesla autour du 56 Félix Faure Lyon 3"
                             }
                         ]
                     };
@@ -1923,10 +1923,10 @@
                 const urlSearchId = urlParams.get('search') || urlParams.get('id');
                 if (urlSearchId && searchesConfig.searches.some(s => s.id === urlSearchId)) {
                     currentSearchId = urlSearchId;
-                } else if (searchesConfig.active_search_id) {
+                } else if (searchesConfig.active_search_id && searchesConfig.searches.some(s => s.id === searchesConfig.active_search_id)) {
                     currentSearchId = searchesConfig.active_search_id;
                 } else {
-                    currentSearchId = searchesConfig.searches[0]?.id || "meuble_1";
+                    currentSearchId = searchesConfig.searches[0]?.id || "achat_parking_felix_faure";
                 }
 
                 renderProfileTabs();

@@ -1,4 +1,4 @@
-# 🏠 RechercheAppart & Parkings - Lyon (v1.6.0)
+# 🚗 Veille & Recherche Parkings Félix Faure - Lyon (v2.0.0)
 
 🌐 **Tableau de bord accessible en ligne** : **[https://bacobaco.github.io/RechercheAppart/](https://bacobaco.github.io/RechercheAppart/)**
 
@@ -6,57 +6,49 @@
 
 ## 📌 Présentation du Projet
 
-Ce projet centralise et automatise la veille immobilière à Lyon via un système **multi-recherches** configurable dans `searches.json` :
-1. **Recherche Appartement Meublé** (`meuble_1`) : Appartements meublés de standing (>= 70 m², ascenseur, clim/balcon).
-2. **Recherche Location Parking** (`parking_felix_faure`) : Location de parking, box ou garage fermé autour du **56 avenue Félix Faure** (Lyon 3e), adapté pour **Tesla Model 3 / Y**, budget **< 150 €/mois**.
-3. **Recherche Achat Parking** (`achat_parking_felix_faure`) : Achat de garage, box fermé ou stationnement autour du **56 avenue Félix Faure** (Lyon 3e), adapté pour **Tesla Model 3 / Y**, budget **20 000 € à 35 000 €**.
+Ce projet centralise et automatise la veille immobilière pour la recherche d'emplacements de stationnement, garages et box fermés adaptés pour **Tesla (Model 3 / Y)** autour du **56 avenue Félix Faure, 69003 Lyon** via un système configurable dans `searches.json` :
+1. **Recherche Achat Parking** (`achat_parking_felix_faure`) : Achat de garage, box fermé ou place de stationnement (budget **20 000 € à 35 000 €**).
+2. **Recherche Location Parking** (`parking_felix_faure`) : Location de parking, box ou garage fermé (budget **< 150 €/mois**).
 
 ---
 
 ## 🎯 Profils de Recherche et Critères
 
-### 1. 🏢 Appartement Meublé Standing (`meuble_1`)
-- **Secteurs** : Lyon 1er, 2e, 3e (Préfecture), 5e (Vieux Lyon uniquement), 6e.
-- **Surface** : $\ge 70\text{ m}^2$ (Idéal 100 à 150 m²).
-- **Configuration** : 3 à 4 pièces (Minimum 2 chambres).
-- **Équipements** : Ascenseur (sauf RDC), Climatisation (ou balcon/terrasse).
-- **Exclusions** : Duplex exclus, rues bruyantes.
+### 1. 🏢 Achat Parking Tesla (`achat_parking_felix_faure`)
+- **Cible** : 56 avenue Félix Faure, 69003 Lyon (GPS: 45.7528, 4.8531).
+- **Type** : Achat de garage, box fermé ou place en sous-sol.
+- **Périmètre** : Rayon piéton strict (~300m) calculé via OpenStreetMap OSRM.
+- **Véhicule** : Tesla Model 3 / Y (box fermé et prises de recharge priorisés, vérification du poids/monte-charge).
+- **Budget** : Entre 20 000 € et 35 000 €.
+- **Sources** : Bien'ici (filtre `buy`), SeLoger (via Jinka + direct), Gens de Confiance (catégorie `realestate__sale`).
+- **Données** : `data_achat_parking_felix_faure.json`.
 
 ### 2. 🚗 Location Parking Tesla (`parking_felix_faure`)
 - **Cible** : 56 avenue Félix Faure, 69003 Lyon (GPS: 45.7528, 4.8531).
 - **Type** : Location de parking / box fermé privatif / garage en sous-sol.
-- **Périmètre** : Rayon piéton strict calculé via OpenStreetMap OSRM.
+- **Périmètre** : Rayon piéton strict (~300m) calculé via OpenStreetMap OSRM.
 - **Véhicule** : Tesla Model 3 / Y (exclusion automatique des emplacements moto/2-roues < 8m²).
 - **Budget** : Maximum 150 € / mois.
 - **Sources** : Bien'ici, SeLoger (via Jinka + direct), Gens de Confiance.
-
-### 3. 🏢 Achat Parking Tesla (`achat_parking_felix_faure`)
-- **Cible** : 56 avenue Félix Faure, 69003 Lyon (GPS: 45.7528, 4.8531).
-- **Type** : Achat de garage, box fermé ou place en sous-sol.
-- **Périmètre** : Rayon piéton strict calculé via OpenStreetMap OSRM.
-- **Véhicule** : Tesla Model 3 / Y (box fermé et prises de recharge priorisés).
-- **Budget** : Entre 20 000 € et 35 000 €.
-- **Sources** : Bien'ici (filtre `buy`), SeLoger (via Jinka + direct), Gens de Confiance (catégorie `realestate__sale`).
+- **Données** : `data_parking_felix_faure.json`.
 
 ---
 
 ## 🚀 Fonctionnalités Principales
 
 1. **Multi-sources de scraping résilient** :
-   - **Gens de Confiance** : Contournement Cloudflare transparent via `curl_cffi` (impersonation TLS Chrome) et auto-renouvellement permanent des cookies de session. Repli automatique sur Playwright Stealth.
-   - **Jinka API** : Suivi proactif de la validité du token JWT avec auto-récupération sur 401 et agrégation SeLoger/LBC/PAP.
-   - **Bien'ici** : API JSON directe très stable.
-   - **Barnes, Lodgis, Urban Séjour** : Scraping dédié aux spécialistes de la location meublée de standing.
+   - **Gens de Confiance** : Isolation stricte des annonces parking (vente et location) via `curl_cffi` (impersonation TLS Chrome) et auto-renouvellement des cookies de session.
+   - **Bien'ici API** : Interrogation directe pour achat (`filterType: buy`) et location (`filterType: rent`) avec géocodage précis.
+   - **Jinka API** : Agrégation des alertes et annonces SeLoger, LeBonCoin et ParuVendu.
+   - **SeLoger** : Détection des annonces directes et relai Jinka.
 2. **Filtrage et Scoring Intelligent** :
-   - Détection automatique des doublons inter-plateformes.
-   - Analyse sémantique des descriptions (détection d'ascenseur, climatisation, balcon, étage élevé, cachet, parking).
-   - Calcul automatique du loyer au m² ($€/\text{m}^2$).
-   - Purge automatique des annonces marquées *"Éliminer"* ou *"Déjà loué"* après 30 jours.
+   - **Itinéraire Piéton Réel** : Distance et temps de marche calculés avec OpenStreetMap OSRM (itinéraires réels à pied).
+   - **Compatibilité Tesla** : Détection automatique des box fermés, accès sécurisés (bip/badge), prises électriques/recharge et alertes sur les monte-charges limités en tonnage.
+   - **Exclusion 2-roues** : Élimination automatique des emplacements moto/scooter < 8m².
 3. **Tableau de Bord Interactif (`dashboard.html`)** :
-   - Visualisation claire des biens avec photos, prix, surface, étage, avantages/inconvénients.
-   - Filtres dynamiques par statut : *À traiter*, *Retenu*, *À visiter*, *Visité*, *Éliminer*, *Déjà loué*.
-   - Gestion des notes et suivi de l'avancement.
-   - Bouton de déclenchement du scan en direct depuis le navigateur.
+   - Visualisation avec photos, prix, distance piétonne, temps de marche, itinéraire Google Maps.
+   - Filtres dynamiques par statut : *Nouveau*, *Retenu*, *À visiter*, *Visité*, *Éliminer*.
+   - Modal de réglage des critères en direct (ajustement du rayon et des budgets min/max).
 
 ---
 
@@ -106,9 +98,6 @@ python agent.py --search parking_felix_faure
 
 # Lancer uniquement la recherche Achat Parking (Félix Faure)
 python agent.py --search achat_parking_felix_faure
-
-# Lancer uniquement la recherche Appartements Meublés
-python agent.py --search meuble_1
 
 # Lister les profils configurés
 python agent.py --list

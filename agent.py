@@ -46,14 +46,21 @@ def load_searches_config():
         except Exception as e:
             print(f"[ERREUR] Impossible de lire {SEARCHES_FILE}: {e}")
     return {
-        "active_search_id": "meuble_1",
+        "active_search_id": "achat_parking_felix_faure",
         "searches": [
             {
-                "id": "meuble_1",
-                "name": "Recherche Meublé 1",
-                "type": "appartement",
+                "id": "achat_parking_felix_faure",
+                "name": "Recherche Achat Parking 56 rue Félix Faure Lyon",
+                "type": "parking",
                 "enabled": True,
-                "data_file": "data.json"
+                "data_file": "data_achat_parking_felix_faure.json"
+            },
+            {
+                "id": "parking_felix_faure",
+                "name": "Recherche Parking 56 rue Félix Faure Lyon",
+                "type": "parking",
+                "enabled": True,
+                "data_file": "data_parking_felix_faure.json"
             }
         ]
     }
@@ -3252,7 +3259,7 @@ def run_parking_search(profile=None):
 def main():
     import argparse
     parser = argparse.ArgumentParser(description="Agent de Veille Immobilière & Multi-Recherches Lyon")
-    parser.add_argument("--search", "--profile", dest="search_id", default=None, help="ID de la recherche à lancer ('meuble_1', 'parking_felix_faure', ou 'all')")
+    parser.add_argument("--search", "--profile", dest="search_id", default=None, help="ID de la recherche à lancer ('achat_parking_felix_faure', 'parking_felix_faure', ou 'all')")
     parser.add_argument("--list", action="store_true", help="Lister toutes les recherches configurées et quitter")
     args = parser.parse_args()
     
