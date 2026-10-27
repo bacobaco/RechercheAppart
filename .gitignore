@@ -48,3 +48,5 @@ fetch_gdc_details.py
 generate_full_dossier_pdf.py
 generate_pdf.py
 parse_post_json.py
+download_photos.py
+temp_photos/

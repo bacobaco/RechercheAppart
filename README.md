@@ -1,4 +1,4 @@
-# 🏠 RechercheAppart - Lyon (v1.5.0)
+# 🏠 RechercheAppart & Parkings - Lyon (v1.6.0)
 
 🌐 **Tableau de bord accessible en ligne** : **[https://bacobaco.github.io/RechercheAppart/](https://bacobaco.github.io/RechercheAppart/)**
 
@@ -6,26 +6,37 @@
 
 ## 📌 Présentation du Projet
 
-Ce projet a été conçu pour automatiser et centraliser la veille immobilière locative à Lyon selon un cahier des charges strict. Il agrège plusieurs sources d'annonces, applique des filtres algorithmiques avancés (géolocalisation, équipements, mots-clés) et fournit un tableau de bord web interactif pour gérer vos visites et vos choix.
+Ce projet centralise et automatise la veille immobilière à Lyon via un système **multi-recherches** configurable dans `searches.json` :
+1. **Recherche Appartement Meublé** (`meuble_1`) : Appartements meublés de standing (>= 70 m², ascenseur, clim/balcon).
+2. **Recherche Location Parking** (`parking_felix_faure`) : Location de parking, box ou garage fermé autour du **56 avenue Félix Faure** (Lyon 3e), adapté pour **Tesla Model 3 / Y**, budget **< 150 €/mois**.
+3. **Recherche Achat Parking** (`achat_parking_felix_faure`) : Achat de garage, box fermé ou stationnement autour du **56 avenue Félix Faure** (Lyon 3e), adapté pour **Tesla Model 3 / Y**, budget **20 000 € à 35 000 €**.
 
 ---
 
-## 🎯 Critères de Recherche
+## 🎯 Profils de Recherche et Critères
 
-- **Type de bien** : Appartement **Meublé** de haut standing.
-- **Secteurs géographiques** :
-  - **Lyon 2e** (Presqu'île, Bellecour, Ainay, Cordeliers, Confluence récente).
-  - **Lyon 6e** (Foch, Brotteaux, Masséna, Parc de la Tête d'Or).
-  - **Lyon 3e** (Préfecture, Quais du Rhône - secteurs calmes).
-  - **Lyon 1er** (Pentes / Terreaux - secteurs calmes).
-  - **Lyon 5e** (**Vieux Lyon UNIQUEMENT** : Saint-Jean, Saint-Paul, Saint-Georges).
+### 1. 🏢 Appartement Meublé Standing (`meuble_1`)
+- **Secteurs** : Lyon 1er, 2e, 3e (Préfecture), 5e (Vieux Lyon uniquement), 6e.
 - **Surface** : $\ge 70\text{ m}^2$ (Idéal 100 à 150 m²).
 - **Configuration** : 3 à 4 pièces (Minimum 2 chambres).
-- **Équipements requis** :
-  - **Ascenseur obligatoire** (sauf RDC).
-  - **Climatisation obligatoire** (ou à défaut **balcon / terrasse** permettant l'installation d'une clim d'appoint).
-- **Exclusions strictes** : Duplex strictement exclus, rues bruyantes / fêtardes.
-- **Temps de trajet** : Accès métro/tram rapide vers Lyon Gerland (Framatome).
+- **Équipements** : Ascenseur (sauf RDC), Climatisation (ou balcon/terrasse).
+- **Exclusions** : Duplex exclus, rues bruyantes.
+
+### 2. 🚗 Location Parking Tesla (`parking_felix_faure`)
+- **Cible** : 56 avenue Félix Faure, 69003 Lyon (GPS: 45.7528, 4.8531).
+- **Type** : Location de parking / box fermé privatif / garage en sous-sol.
+- **Périmètre** : Rayon piéton strict calculé via OpenStreetMap OSRM.
+- **Véhicule** : Tesla Model 3 / Y (exclusion automatique des emplacements moto/2-roues < 8m²).
+- **Budget** : Maximum 150 € / mois.
+- **Sources** : Bien'ici, SeLoger (via Jinka + direct), Gens de Confiance.
+
+### 3. 🏢 Achat Parking Tesla (`achat_parking_felix_faure`)
+- **Cible** : 56 avenue Félix Faure, 69003 Lyon (GPS: 45.7528, 4.8531).
+- **Type** : Achat de garage, box fermé ou place en sous-sol.
+- **Périmètre** : Rayon piéton strict calculé via OpenStreetMap OSRM.
+- **Véhicule** : Tesla Model 3 / Y (box fermé et prises de recharge priorisés).
+- **Budget** : Entre 20 000 € et 35 000 €.
+- **Sources** : Bien'ici (filtre `buy`), SeLoger (via Jinka + direct), Gens de Confiance (catégorie `realestate__sale`).
 
 ---
 
@@ -87,7 +98,20 @@ Ouvrez ensuite votre navigateur à l'adresse suivante :
 
 ### 4. Lancer manuellement un Scan
 ```bash
+# Lancer toutes les recherches actives
 python agent.py
+
+# Lancer uniquement la recherche Location Parking (Félix Faure)
+python agent.py --search parking_felix_faure
+
+# Lancer uniquement la recherche Achat Parking (Félix Faure)
+python agent.py --search achat_parking_felix_faure
+
+# Lancer uniquement la recherche Appartements Meublés
+python agent.py --search meuble_1
+
+# Lister les profils configurés
+python agent.py --list
 ```
 
 ### 5. Gérer les connexions et statuts anti-bot

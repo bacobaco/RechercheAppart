@@ -1648,8 +1648,12 @@
                         <label for="cfg-desc">Description</label>
                         <textarea id="cfg-desc" style="min-height: 60px;"></textarea>
                     </div>
+                    <div class="form-group" id="cfg-budget-min-group" style="display: none;">
+                        <label for="cfg-budget-min" id="cfg-budget-min-label">Budget Minimum (€)</label>
+                        <input type="number" id="cfg-budget-min" placeholder="ex: 20000">
+                    </div>
                     <div class="form-group">
-                        <label for="cfg-budget-max">Budget Maximum (€/mois)</label>
+                        <label for="cfg-budget-max" id="cfg-budget-max-label">Budget Maximum (€/mois)</label>
                         <input type="number" id="cfg-budget-max">
                     </div>
                     <div class="form-group" id="cfg-surface-group">
@@ -3053,15 +3057,20 @@
             const profile = searchesConfig?.searches.find(s => s.id === currentSearchId);
             if (!profile) return;
 
+            const isAchat = profile.params?.transaction === 'achat' || profile.params?.transaction === 'vente';
+            const isParking = profile.type === 'parking';
+
             document.getElementById('cfg-name').value = profile.name || "";
             document.getElementById('cfg-desc').value = profile.description || "";
-            document.getElementById('cfg-budget-max').value = profile.params?.budget_max || 150;
+            document.getElementById('cfg-budget-min').value = profile.params?.budget_min || (isAchat ? 20000 : 0);
+            document.getElementById('cfg-budget-max').value = profile.params?.budget_max || (isAchat ? 35000 : 150);
             document.getElementById('cfg-surface-min').value = profile.params?.surface_min || 70;
             document.getElementById('cfg-target-address').value = profile.params?.adresse_cible || "";
             document.getElementById('cfg-radius').value = profile.params?.rayon_metres || 650;
             document.getElementById('cfg-enabled').value = profile.enabled ? "true" : "false";
 
-            const isParking = profile.type === 'parking';
+            document.getElementById('cfg-budget-min-group').style.display = isAchat ? "block" : "none";
+            document.getElementById('cfg-budget-max-label').textContent = isAchat ? "Budget Maximum (€)" : (isParking ? "Budget Maximum (€/mois)" : "Loyer Maximum (€/mois)");
             document.getElementById('cfg-surface-group').style.display = isParking ? "none" : "block";
             document.getElementById('cfg-address-group').style.display = isParking ? "block" : "none";
             document.getElementById('cfg-radius-group').style.display = isParking ? "block" : "none";
@@ -3084,6 +3093,10 @@
 
             if (!profile.params) profile.params = {};
             profile.params.budget_max = parseFloat(document.getElementById('cfg-budget-max').value) || profile.params.budget_max;
+            if (document.getElementById('cfg-budget-min-group').style.display !== 'none') {
+                const bMin = parseFloat(document.getElementById('cfg-budget-min').value);
+                if (!isNaN(bMin)) profile.params.budget_min = bMin;
+            }
             
             if (profile.type === 'parking') {
                 profile.params.adresse_cible = document.getElementById('cfg-target-address').value.trim();

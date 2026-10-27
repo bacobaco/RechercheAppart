@@ -63,6 +63,7 @@ JINKA_TOKEN_FILE = "jinka_token.json"
 GDC_SESSION_FILE = "gdc_session.json"
 GDC_URL_FILE = "gdc_url.json"
 GDC_PARKING_URL_FILE = "gdc_parking_url.json"
+GDC_ACHAT_PARKING_URL_FILE = "gdc_achat_parking_url.json"
 GDC_DEFAULT_COOKIES = "cookies_gdc.json"
 
 def decode_jinka_token(token):
@@ -2403,54 +2404,66 @@ def run_apartment_search(profile=None):
 
 
 def scrape_bienici_parking(params=None):
-    """Récupère les annonces de stationnement/parking/box depuis l'API Bien'ici."""
-    print("[INFO] [Parking] Interrogation du site Bien'ici...")
+    """Récupère les annonces de stationnement/parking/box depuis l'API Bien'ici (location ou achat)."""
     if params is None:
         params = {}
     budget_max = params.get("budget_max", 150)
+    budget_min = params.get("budget_min", 0)
+    transaction = params.get("transaction", "location")
+    filter_type = "buy" if transaction in ("achat", "vente", "buy") else "rent"
     
+    print(f"[INFO] [Parking] Interrogation du site Bien'ici ({'achat' if filter_type == 'buy' else 'location'})...")
     url = "https://www.bienici.com/realEstateAds.json"
-    filters = {
-        "size": 50,
-        "from": 0,
-        "filterType": "rent",
-        "propertyType": ["parking"],
-        "maxPrice": budget_max,
-        "page": 1,
-        "sortBy": "publicationDate",
-        "sortOrder": "desc",
-        "onTheMarket": [True],
-        "zoneIdsByTypes": {
-            "zoneIds": ["-120967", "-10690"] # Lyon 3e et Lyon 7e limitrophe
-        }
-    }
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
         "Accept": "application/json, text/plain, */*"
     }
     
     all_ads = {}
-    try:
-        response = requests.get(url, params={"filters": json.dumps(filters)}, headers=headers, timeout=15)
-        if response.status_code == 200:
-            ads = response.json().get("realEstateAds", [])
-            for ad in ads:
-                ad_id = ad.get("id")
-                if ad_id and ad_id not in all_ads:
-                    ad["source"] = "Bien'ici"
-                    ad["url"] = f"https://www.bienici.com/annonce/{ad_id}"
-                    all_ads[ad_id] = ad
-            print(f"[INFO] [Parking] Bien'ici: {len(all_ads)} annonces de stationnement récupérées.")
-        else:
-            print(f"[ERREUR] [Parking] Bien'ici code HTTP {response.status_code}")
-    except Exception as e:
-        print(f"[ERREUR] [Parking] Erreur requête Bien'ici: {e}")
-        
+    for page_idx in range(1, 3):
+        from_offset = (page_idx - 1) * 100
+        filters = {
+            "size": 100,
+            "from": from_offset,
+            "filterType": filter_type,
+            "propertyType": ["parking"],
+            "maxPrice": budget_max,
+            "page": page_idx,
+            "sortBy": "publicationDate",
+            "sortOrder": "desc",
+            "onTheMarket": [True],
+            "zoneIdsByTypes": {
+                "zoneIds": ["-120967", "-10690", "-10680", "-10679", "-10688", "-10691"] # Lyon 3e, 6e, 7e, 2e, 1er, 5e
+            }
+        }
+        if budget_min and budget_min > 0:
+            filters["minPrice"] = budget_min
+            
+        try:
+            response = requests.get(url, params={"filters": json.dumps(filters)}, headers=headers, timeout=15)
+            if response.status_code == 200:
+                ads = response.json().get("realEstateAds", [])
+                for ad in ads:
+                    ad_id = ad.get("id")
+                    if ad_id and ad_id not in all_ads:
+                        ad["source"] = "Bien'ici"
+                        ad["url"] = f"https://www.bienici.com/annonce/{ad_id}"
+                        all_ads[ad_id] = ad
+                if len(ads) < 100:
+                    break
+            else:
+                print(f"[ERREUR] [Parking] Bien'ici code HTTP {response.status_code} (page {page_idx})")
+                break
+        except Exception as e:
+            print(f"[ERREUR] [Parking] Erreur requête Bien'ici: {e}")
+            break
+            
+    print(f"[INFO] [Parking] Bien'ici: {len(all_ads)} annonces de stationnement récupérées ({filter_type}).")
     return list(all_ads.values())
 
 
 def scrape_gdc_parking(profile=None):
-    """Récupère les annonces de stationnement/box/parking depuis Gens de Confiance.
+    """Récupère les annonces de stationnement/box/parking depuis Gens de Confiance (location ou achat).
     Isole strictement la recherche de parking de celle des appartements meublés."""
     print("[INFO] [Parking] Interrogation du site Gens de Confiance (isolation parking)...")
     if not os.path.exists(GDC_SESSION_FILE):
@@ -2481,17 +2494,19 @@ def scrape_gdc_parking(profile=None):
         print(f"[WARN] [Parking GDC] Impossible de lire {GDC_SESSION_FILE}: {e}")
         return []
 
-    url_file = GDC_PARKING_URL_FILE
-    search_url = "https://gensdeconfiance.com/fr/s/immobilier/locations-immobilieres?type=offering&propertyTypes=carPark&terms=lyon&currentAdSort=displayDate_desc"
+    p_params = profile.get("params", {}) if profile and isinstance(profile, dict) else {}
+    is_achat = p_params.get("transaction") in ("achat", "vente", "buy")
     
-    if profile and isinstance(profile, dict):
-        p_params = profile.get("params", {})
-        if p_params.get("gdc_url"):
-            search_url = p_params.get("gdc_url")
-        elif profile.get("gdc_url_file"):
-            url_file = profile.get("gdc_url_file")
-            
-    if os.path.exists(url_file):
+    url_file = profile.get("gdc_url_file") if profile and profile.get("gdc_url_file") else (GDC_ACHAT_PARKING_URL_FILE if is_achat else GDC_PARKING_URL_FILE)
+    if is_achat:
+        default_search_url = "https://gensdeconfiance.com/fr/s/immobilier?type=offering&propertyTypes=carPark&terms=lyon&categories=realestate__sale&currentAdSort=displayDate_desc"
+    else:
+        default_search_url = "https://gensdeconfiance.com/fr/s/immobilier/locations-immobilieres?type=offering&propertyTypes=carPark&terms=lyon&currentAdSort=displayDate_desc"
+        
+    search_url = default_search_url
+    if p_params.get("gdc_url"):
+        search_url = p_params.get("gdc_url")
+    elif url_file and os.path.exists(url_file):
         try:
             with open(url_file, "r", encoding="utf-8") as f:
                 url_data = json.load(f)
@@ -2538,13 +2553,20 @@ def scrape_gdc_parking(profile=None):
 
                 for item in items:
                     try:
+                        cat = item.get("category")
+                        if is_achat and cat and cat != "realestate__sale":
+                            continue
+                        elif not is_achat and cat and cat != "realestate__rent":
+                            continue
+
                         uuid = item.get("uuid")
                         slug = item.get("slug")
                         if not uuid and not slug:
                             continue
 
+                        category_path = "realestate__sale" if is_achat else "realestate__rent"
                         if uuid:
-                            ad_url = f"https://gensdeconfiance.com/fr/ui/post/realestate__rent/{uuid}"
+                            ad_url = f"https://gensdeconfiance.com/fr/ui/post/{category_path}/{uuid}"
                         else:
                             ad_url = f"https://gensdeconfiance.com/fr/annonce/{slug}"
 
@@ -2555,7 +2577,10 @@ def scrape_gdc_parking(profile=None):
                         title = item.get("title") or "Place de parking / Garage Gens de Confiance"
                         price_val = (item.get("price") or {}).get("value")
                         charge_val = (item.get("rentalCharge") or {}).get("value") or 0
-                        price = (float(price_val) + float(charge_val)) if price_val is not None else None
+                        if is_achat:
+                            price = float(price_val) if price_val is not None else None
+                        else:
+                            price = (float(price_val) + float(charge_val)) if price_val is not None else None
 
                         addr = item.get("address") or {}
                         city = addr.get("city") or ""
@@ -2605,6 +2630,217 @@ def scrape_gdc_parking(profile=None):
             print(f"[WARN] [Parking GDC] Erreur curl_cffi: {e}")
 
     print(f"[INFO] [Parking] Gens de Confiance: {len(ads)} annonce(s) candidate(s) trouvée(s).")
+    return ads
+
+
+def scrape_jinka_parking(profile=None):
+    """Récupère les annonces de stationnement/box depuis Jinka (agrégateur SeLoger, LeBonCoin, ParuVendu, etc.)."""
+    print("[INFO] [Parking] Interrogation de Jinka (agrégateur SeLoger/LBC/Régies)...")
+    if profile is None:
+        profile = {}
+    p_params = profile.get("params", {})
+    is_achat = p_params.get("transaction") in ("achat", "vente", "buy")
+    
+    token = None
+    if os.path.exists(JINKA_TOKEN_FILE):
+        try:
+            with open(JINKA_TOKEN_FILE, "r", encoding="utf-8") as f:
+                token_data = json.load(f)
+            token = token_data.get("token")
+        except Exception:
+            token = None
+            
+    if not token or not is_jinka_token_valid(token):
+        token = auto_refresh_jinka_token()
+        
+    if not token:
+        print("[WARN] [Parking Jinka] Aucun token Jinka valide.")
+        return []
+        
+    def send_jinka_api(url, current_token):
+        req_headers = {
+            "Authorization": f"Bearer {current_token}",
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+            "Accept": "application/json, text/plain, */*"
+        }
+        if curl_requests:
+            try:
+                return curl_requests.get(url, headers=req_headers, impersonate="chrome120", timeout=15)
+            except Exception:
+                pass
+        return requests.get(url, headers=req_headers, timeout=15)
+
+    try:
+        r_alerts = send_jinka_api("https://api.jinka.fr/apiv2/alert", token)
+        if r_alerts.status_code == 401:
+            token = auto_refresh_jinka_token()
+            if token:
+                r_alerts = send_jinka_api("https://api.jinka.fr/apiv2/alert", token)
+        if r_alerts.status_code != 200:
+            print(f"[WARN] [Parking Jinka] Impossible de récupérer les alertes (code {r_alerts.status_code}).")
+            return []
+            
+        alerts = r_alerts.json()
+    except Exception as e:
+        print(f"[WARN] [Parking Jinka] Erreur API Jinka: {e}")
+        return []
+        
+    ads = []
+    seen_ids = set()
+    custom_aid = profile.get("jinka_alert_id")
+    
+    for alert in alerts:
+        aid = alert.get("id")
+        if custom_aid and aid != custom_aid:
+            continue
+            
+        user_name = (alert.get("user_name") or "").lower()
+        name = (alert.get("name") or "").lower()
+        full_name = f"{user_name} {name}"
+        
+        if not custom_aid:
+            if is_achat:
+                is_match = any(k in full_name for k in ["parking", "garage", "box"]) and any(k in full_name for k in ["achat", "vente", "vendre"])
+            else:
+                is_match = any(k in full_name for k in ["parking", "garage", "box"]) and not any(k in full_name for k in ["achat", "vente", "vendre"])
+            if not is_match:
+                continue
+                
+        print(f"[INFO] [Parking Jinka] Traitement de l'alerte '{alert.get('user_name') or alert.get('name')}'...")
+        try:
+            r_dash = send_jinka_api(f"https://api.jinka.fr/apiv2/alert/{aid}/dashboard", token)
+            if r_dash.status_code != 200:
+                continue
+            data = r_dash.json()
+            raw_items = data.get("ads", [])
+            
+            nb_pages = data.get("pagination", {}).get("nbPages", 1)
+            for page_num in range(2, min(nb_pages + 1, 3)):
+                try:
+                    r_p = send_jinka_api(f"https://api.jinka.fr/apiv2/alert/{aid}/dashboard?page={page_num}", token)
+                    if r_p.status_code == 200:
+                        raw_items.extend(r_p.json().get("ads", []))
+                except Exception:
+                    break
+                    
+            for item in raw_items:
+                try:
+                    j_id = item.get("id")
+                    if not j_id or j_id in seen_ids:
+                        continue
+                    seen_ids.add(j_id)
+                    
+                    price = item.get("rent") or item.get("price")
+                    if price is not None:
+                        try:
+                            price = float(price)
+                        except (ValueError, TypeError):
+                            price = None
+                            
+                    source_key = (item.get("source") or "").lower()
+                    source_label = item.get("source_label") or item.get("source") or "Jinka"
+                    external_id = item.get("external_id")
+                    
+                    if "seloger" in source_key:
+                        source_name = "SeLoger"
+                        ad_url = f"https://www.seloger.com/annonces/{'achat' if is_achat else 'locations'}/parking/lyon/{external_id}.htm" if external_id else f"https://www.jinka.fr/ad/{j_id}"
+                    elif "bienici" in source_key and external_id:
+                        source_name = "Bien'ici"
+                        ad_url = f"https://www.bienici.com/annonce/{external_id}"
+                    elif "leboncoin" in source_key and external_id and str(external_id).isdigit():
+                        source_name = "LeBonCoin"
+                        ad_url = f"https://www.leboncoin.fr/ad/{'ventes_immobilieres' if is_achat else 'locations'}/{external_id}"
+                    elif "paruvendu" in source_key:
+                        source_name = "ParuVendu"
+                        ad_url = f"https://www.jinka.fr/ad/{j_id}"
+                    else:
+                        source_name = source_label
+                        ad_url = f"https://www.jinka.fr/ad/{j_id}"
+                        
+                    desc = item.get("description") or ""
+                    title = desc.split("\n")[0][:80] if desc else f"Stationnement {item.get('city') or 'Lyon'}"
+                    if title.lower().startswith("titre :"):
+                        title = title[7:].strip()
+                    title = title.split("?")[0].strip()
+                    if not title or len(title) < 5:
+                        title = f"Garage / Box {item.get('city') or 'Lyon'}"
+                        
+                    surface = item.get("area") or 0.0
+                    try:
+                        surface = float(surface)
+                    except (ValueError, TypeError):
+                        surface = 0.0
+                        
+                    lat = item.get("lat")
+                    lon = item.get("lng")
+                    
+                    ads.append({
+                        "id": f"jinka_{j_id}",
+                        "title": title,
+                        "description": desc,
+                        "price": price,
+                        "surfaceArea": surface,
+                        "url": ad_url,
+                        "source": source_name,
+                        "postalCode": item.get("postal_code") or "69003",
+                        "city": item.get("city") or "Lyon",
+                        "district": {"libelle": item.get("quartier_name") or item.get("city") or "Lyon 3e"},
+                        "blurInfo": {
+                            "position": {
+                                "lat": lat,
+                                "lon": lon
+                            }
+                        }
+                    })
+                    print(f" [V] [Parking Jinka] Annonce retenue : {title} | {price}€ | {source_name} ({lat}, {lon})")
+                except Exception as ex:
+                    print(f"[WARN] [Parking Jinka] Erreur item: {ex}")
+        except Exception as e:
+            print(f"[WARN] [Parking Jinka] Erreur dashboard alerte {aid}: {e}")
+            
+    print(f"[INFO] [Parking] Jinka: {len(ads)} annonce(s) candidate(s) trouvée(s).")
+    return ads
+
+
+def scrape_seloger_parking(profile=None):
+    """Tente une interrogation directe de SeLoger pour les parkings (en complément du relai Jinka)."""
+    if profile is None:
+        profile = {}
+    p_params = profile.get("params", {})
+    is_achat = p_params.get("transaction") in ("achat", "vente", "buy")
+    budget_max = p_params.get("budget_max", 150 if not is_achat else 35000)
+    budget_min = p_params.get("budget_min", 0 if not is_achat else 20000)
+
+    print(f"[INFO] [Parking] Interrogation du site SeLoger ({'achat' if is_achat else 'location'})...")
+    project_type = 2 if is_achat else 1
+    price_filter = f"{budget_min}/{budget_max}" if is_achat else f"NaN/{budget_max}"
+    url = f"https://www.seloger.com/list.htm?types=3&projects={project_type}&places=[{{%22inseeCodes%22:[690383,690387,690386]}}]&price={price_filter}"
+    
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+        "Accept-Language": "fr-FR,fr;q=0.9,en-US;q=0.8,en;q=0.7"
+    }
+    
+    ads = []
+    if curl_requests and BeautifulSoup:
+        try:
+            resp = curl_requests.get(url, headers=headers, impersonate="chrome120", timeout=10)
+            if resp.status_code == 200 and "datadome" not in resp.text.lower():
+                soup = BeautifulSoup(resp.text, "html.parser")
+                tag = soup.find("script", id="__NEXT_DATA__")
+                if tag and tag.text:
+                    try:
+                        next_json = json.loads(tag.text)
+                        items = next_json.get("props", {}).get("pageProps", {}).get("dehydratedState", {}).get("queries", [])
+                    except Exception:
+                        pass
+                print(f"[INFO] [Parking] SeLoger direct : {len(ads)} annonce(s) récupérée(s).")
+            else:
+                print("[INFO] [Parking] SeLoger direct protégé (anti-bot DataDome) -> Vos alertes SeLoger sont automatiquement agrégées via Jinka.")
+        except Exception as e:
+            print(f"[INFO] [Parking] SeLoger direct non disponible ({e}) -> Relais assuré par Jinka.")
+            
     return ads
 
 
@@ -2698,7 +2934,11 @@ def run_parking_search(profile=None):
     target_lat = params.get("cible_lat")
     target_lon = params.get("cible_lon")
     max_radius = params.get("rayon_metres", 650)
-    max_budget = params.get("budget_max", 150)
+    
+    is_achat = params.get("transaction") in ("achat", "vente", "buy")
+    min_budget = params.get("budget_min", 0 if not is_achat else 20000)
+    max_budget = params.get("budget_max", 150 if not is_achat else 35000)
+    configured_sources = profile.get("sources", ["bienici", "seloger", "jinka", "gdc"])
     
     # Géocodage automatique de l'adresse cible si coordonnées manquantes
     if target_address and (target_lat is None or target_lon is None):
@@ -2711,9 +2951,11 @@ def run_parking_search(profile=None):
     if target_lat is None or target_lon is None:
         target_lat, target_lon = 45.7528, 4.8531  # 56 avenue Félix Faure par défaut
     
+    budget_label = f"Budget: {min_budget}€ - {max_budget}€" if min_budget > 0 else f"Budget max: {max_budget}€"
     print(f"\n=== Lancement de : {profile.get('name')} ===")
-    print(f"[CRITERES] Recherche: {profile.get('name')}")
-    print(f"[CRITERES] Cible: {target_address} (GPS: {target_lat}, {target_lon}) | Rayon max: {max_radius}m | Budget max: {max_budget}€")
+    print(f"[CRITERES] Recherche: {profile.get('name')} ({'Achat' if is_achat else 'Location'})")
+    print(f"[CRITERES] Cible: {target_address} (GPS: {target_lat}, {target_lon}) | Rayon max: {max_radius}m | {budget_label}")
+    print(f"    * Sources actives : {', '.join(configured_sources)}")
     print(f"    * Fichier de données : {target_data_file}")
     
     # 0. Purge
@@ -2738,9 +2980,11 @@ def run_parking_search(profile=None):
     for it in existing_data:
         it_price_str = it.get("prix", "")
         clean_p = "".join(c for c in it_price_str.split(",")[0] if c.isdigit())
-        if clean_p and float(clean_p) > max_budget:
-            removed_out_of_criteria += 1
-            continue
+        if clean_p:
+            p_val = float(clean_p)
+            if p_val > max_budget or (min_budget > 0 and p_val < min_budget):
+                removed_out_of_criteria += 1
+                continue
             
         it_full_text = (it.get("titre", "") + " " + it.get("notes", "") + " " + it.get("avantages", "")).lower()
         it_surface = float(it.get("surface") or 0.0)
@@ -2769,7 +3013,8 @@ def run_parking_search(profile=None):
         valid_existing.append(it)
         
     if removed_out_of_criteria > 0:
-        print(f"[INFO] [Parking] {removed_out_of_criteria} annonce(s) existante(s) retirée(s) car hors des critères (rayon <= {max_radius}m, budget <= {max_budget}€, véhicule Tesla).")
+        budget_info = f"budget {min_budget}€ - {max_budget}€" if min_budget > 0 else f"budget <= {max_budget}€"
+        print(f"[INFO] [Parking] {removed_out_of_criteria} annonce(s) existante(s) retirée(s) car hors des critères (rayon <= {max_radius}m, {budget_info}, véhicule Tesla).")
         existing_data = valid_existing
         try:
             with open(target_data_file, "w", encoding="utf-8") as f:
@@ -2779,17 +3024,36 @@ def run_parking_search(profile=None):
             
     existing_urls = {item.get("lien_annonce") for item in existing_data if item.get("lien_annonce")}
     
-    # 2. Collecte des annonces
+    # 2. Collecte des annonces selon les sources configurées
     all_raw_ads = []
-    try:
-        all_raw_ads.extend(scrape_bienici_parking(params))
-    except Exception as e:
-        print(f"[ERREUR] Scan Bien'ici Parking: {e}")
-        
-    try:
-        all_raw_ads.extend(scrape_gdc_parking(profile))
-    except Exception as e:
-        print(f"[ERREUR] Scan GDC Parking: {e}")
+    
+    # 2.1 Bien'ici
+    if "bienici" in configured_sources:
+        try:
+            all_raw_ads.extend(scrape_bienici_parking(params))
+        except Exception as e:
+            print(f"[ERREUR] Scan Bien'ici Parking: {e}")
+            
+    # 2.2 Gens de Confiance
+    if "gdc" in configured_sources:
+        try:
+            all_raw_ads.extend(scrape_gdc_parking(profile))
+        except Exception as e:
+            print(f"[ERREUR] Scan GDC Parking: {e}")
+            
+    # 2.3 Jinka (agrégateur SeLoger, LeBonCoin, ParuVendu, etc.)
+    if "jinka" in configured_sources:
+        try:
+            all_raw_ads.extend(scrape_jinka_parking(profile))
+        except Exception as e:
+            print(f"[ERREUR] Scan Jinka Parking: {e}")
+            
+    # 2.4 SeLoger (tentative directe avec repli automatique)
+    if "seloger" in configured_sources:
+        try:
+            all_raw_ads.extend(scrape_seloger_parking(profile))
+        except Exception as e:
+            print(f"[ERREUR] Scan SeLoger Parking: {e}")
         
     print(f"[INFO] {len(all_raw_ads)} annonces de stationnement brutes à analyser...")
     new_listings_count = 0
@@ -2823,14 +3087,16 @@ def run_parking_search(profile=None):
         
         # Filtrage prix
         if not price:
-            match = re.search(r'\b(\d{2,3})\s*(?:€|euros|euro)\b', description, re.IGNORECASE)
+            match = re.search(r'\b(\d{2,6})\s*(?:€|euros|euro)\b', description, re.IGNORECASE)
             if match:
                 price = float(match.group(1))
                 
-        if price and price > max_budget:
-            rejected_price_count += 1
-            print(f"[REJECT_PRIX] {ad_id}: Loyer {price}€ > Budget max ({max_budget}€).")
-            continue
+        if price:
+            if price > max_budget or (min_budget > 0 and price < min_budget):
+                rejected_price_count += 1
+                budget_txt = f"{min_budget}€ - {max_budget}€" if min_budget > 0 else f"<= {max_budget}€"
+                print(f"[REJECT_PRIX] {ad_id}: Prix/Loyer {price}€ hors budget ({budget_txt}).")
+                continue
             
         # Filtrage distance à l'adresse cible (calcul itinéraire piéton réel)
         lat = ad.get("blurInfo", {}).get("position", {}).get("lat")
@@ -2896,7 +3162,10 @@ def run_parking_search(profile=None):
             tesla_verdict = "⚠️ Stationnement standard / extérieur"
             
         type_parking = "Box fermé" if is_box else ("Place en sous-sol" if is_sous_sol else ("Place extérieure" if is_exterieur else "Stationnement"))
-        formatted_price = f"{price:,.2f} €".replace(",", " ").replace(".", ",") if price else "Loyer N/C"
+        if is_achat:
+            formatted_price = f"{int(price):,} €".replace(",", " ") if price else "Prix N/C"
+        else:
+            formatted_price = f"{price:,.2f} €".replace(",", " ").replace(".", ",") if price else "Loyer N/C"
         
         distance_str = f"{int(dist)} m à pied (~{walking_mins} min)" if dist else "Proximité immédiate"
         adresse_estimee = exact_addr if exact_addr else f"{district_libelle}, {postal_code or '69003'} Lyon"
@@ -2969,12 +3238,13 @@ def run_parking_search(profile=None):
             with open(target_data_file, "w", encoding="utf-8") as f:
                 json.dump(existing_data, f, ensure_ascii=False, indent=4)
             print(f"[INFO] [Parking] Scan terminé. {new_listings_count} nouvelles annonces ajoutées à {target_data_file}.")
-            sync_data_to_github(f"feat: ajout de {new_listings_count} parking(s) autour du 56 Félix Faure", [target_data_file, SEARCHES_FILE])
+            sync_data_to_github(f"feat: ajout de {new_listings_count} parking(s) ({profile.get('name')})", [target_data_file, SEARCHES_FILE])
         except Exception as e:
             print(f"[ERREUR] Impossible de sauvegarder dans {target_data_file}: {e}")
     else:
+        budget_disp = f"{min_budget}€ et {max_budget}€" if min_budget > 0 else f"{max_budget}€/mois"
         print(f"[INFO] [Parking] Scan terminé ({profile.get('name')}). Aucune nouvelle annonce trouvée.")
-        print(f"[CONSEIL] Aucune nouvelle annonce dans un rayon de {max_radius}m sous {max_budget}€/mois. Pour voir plus d'annonces, vous pouvez élargir le rayon de recherche dans 'Critères' (ex: {max(650, max_radius + 200)}m).")
+        print(f"[CONSEIL] Aucune nouvelle annonce dans un rayon de {max_radius}m pour {budget_disp}. Pour voir plus d'annonces, vous pouvez élargir le rayon de recherche dans 'Critères' (ex: {max(650, max_radius + 200)}m).")
         
     return new_listings_count
 
