@@ -976,9 +976,480 @@
             from { transform: translateY(20px); opacity: 0; }
             to { transform: translateY(0); opacity: 1; }
         }
-        @keyframes toastOut {
-            from { transform: translateY(0); opacity: 1; }
-            to { transform: translateY(20px); opacity: 0; }
+        /* ==========================================================================
+           SCAN MONITOR & PROGRESS BAR
+           ========================================================================== */
+        .scan-monitor-panel {
+            max-width: 860px;
+            max-height: 92vh;
+            display: flex;
+            flex-direction: column;
+            gap: 1.1rem;
+        }
+
+        .monitor-title-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 0.9rem;
+        }
+
+        .monitor-pulse-dot {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            flex-shrink: 0;
+            transition: all 0.3s ease;
+        }
+
+        .pulse-idle {
+            background: #64748b;
+        }
+
+        .pulse-running {
+            background: #0ea5e9;
+            box-shadow: 0 0 14px #0ea5e9;
+            animation: pulseGlow 1.4s infinite;
+        }
+
+        .pulse-success {
+            background: #10b981;
+            box-shadow: 0 0 14px #10b981;
+        }
+
+        .pulse-error {
+            background: #ef4444;
+            box-shadow: 0 0 14px #ef4444;
+        }
+
+        @keyframes pulseGlow {
+            0% { transform: scale(0.95); opacity: 0.8; }
+            50% { transform: scale(1.15); opacity: 1; filter: brightness(1.2); }
+            100% { transform: scale(0.95); opacity: 0.8; }
+        }
+
+        .monitor-subtitle {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            margin-top: 0.15rem;
+        }
+
+        .monitor-header-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.65rem;
+        }
+
+        .badge-status {
+            font-size: 0.75rem;
+            padding: 0.3rem 0.7rem;
+            border-radius: 999px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .badge-idle { background: rgba(148, 163, 184, 0.15); color: #94a3b8; border: 1px solid rgba(148, 163, 184, 0.3); }
+        .badge-running { background: rgba(14, 165, 233, 0.15); color: #38bdf8; border: 1px solid rgba(14, 165, 233, 0.4); }
+        .badge-success { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.4); }
+        .badge-error { background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.4); }
+
+        .btn-icon {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 1.1rem;
+            padding: 0.2rem 0.4rem;
+            border-radius: 6px;
+            transition: all 0.2s;
+        }
+        .btn-icon:hover {
+            color: var(--text-main);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        /* Criteria Recap Box */
+        .monitor-criteria-card {
+            background: rgba(15, 23, 42, 0.5);
+            border: 1px solid rgba(99, 102, 241, 0.25);
+            border-radius: 12px;
+            padding: 0.85rem 1.1rem;
+        }
+
+        .criteria-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #c7d2fe;
+            margin-bottom: 0.5rem;
+        }
+
+        .btn-text-action {
+            background: none;
+            border: none;
+            color: #38bdf8;
+            cursor: pointer;
+            font-size: 0.75rem;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            transition: color 0.2s;
+        }
+        .btn-text-action:hover {
+            color: #7dd3fc;
+            text-decoration: underline;
+        }
+
+        .criteria-pills-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .criteria-pill {
+            font-size: 0.76rem;
+            padding: 0.35rem 0.65rem;
+            border-radius: 6px;
+            background: rgba(99, 102, 241, 0.12);
+            border: 1px solid rgba(99, 102, 241, 0.25);
+            color: #cbd5e1;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+        }
+        .criteria-pill strong {
+            color: #38bdf8;
+        }
+
+        /* Progress Bar */
+        .monitor-progress-section {
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+        }
+
+        .progress-info-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.88rem;
+        }
+
+        .stage-text {
+            font-weight: 600;
+            color: #f8fafc;
+            display: flex;
+            align-items: center;
+            gap: 0.45rem;
+        }
+
+        .pct-text {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 700;
+            font-size: 1.15rem;
+            color: #38bdf8;
+        }
+
+        .progress-track {
+            width: 100%;
+            height: 12px;
+            background: rgba(15, 23, 42, 0.75);
+            border-radius: 999px;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+            position: relative;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #6366f1, #0ea5e9, #10b981);
+            background-size: 200% 100%;
+            border-radius: 999px;
+            transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .progress-fill.active {
+            animation: shimmer 2s linear infinite;
+        }
+
+        @keyframes shimmer {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        .progress-submessage {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            font-style: italic;
+        }
+
+        /* Counters Grid */
+        .monitor-stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 0.75rem;
+        }
+
+        .monitor-stat-card {
+            background: rgba(15, 23, 42, 0.4);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 0.75rem 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .monitor-stat-card.stat-success {
+            border-color: rgba(16, 185, 129, 0.3);
+            background: rgba(16, 185, 129, 0.08);
+        }
+
+        .monitor-stat-card.stat-warning {
+            border-color: rgba(245, 158, 11, 0.3);
+            background: rgba(245, 158, 11, 0.08);
+        }
+
+        .monitor-stat-card.stat-danger {
+            border-color: rgba(239, 68, 68, 0.3);
+            background: rgba(239, 68, 68, 0.08);
+        }
+
+        .stat-icon {
+            font-size: 1.3rem;
+            color: var(--text-muted);
+            width: 32px;
+            text-align: center;
+        }
+
+        .monitor-stat-card.stat-success .stat-icon { color: var(--success); }
+        .monitor-stat-card.stat-warning .stat-icon { color: var(--warning); }
+        .monitor-stat-card.stat-danger .stat-icon { color: var(--danger); }
+
+        .stat-num {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #f8fafc;
+            line-height: 1.1;
+        }
+
+        .stat-lbl {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 0.15rem;
+        }
+
+        /* Advice Box */
+        .monitor-advice-alert {
+            border-radius: 10px;
+            padding: 0.85rem 1.1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+            font-size: 0.85rem;
+            line-height: 1.45;
+        }
+
+        .monitor-advice-alert.advice-tip {
+            background: rgba(245, 158, 11, 0.12);
+            border: 1px solid rgba(245, 158, 11, 0.35);
+            color: #fef3c7;
+        }
+
+        .monitor-advice-alert.advice-success {
+            background: rgba(16, 185, 129, 0.15);
+            border: 1px solid rgba(16, 185, 129, 0.4);
+            color: #d1fae5;
+        }
+
+        .advice-content {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+        }
+
+        .advice-content i {
+            font-size: 1.2rem;
+            margin-top: 0.15rem;
+            flex-shrink: 0;
+        }
+
+        /* Terminal Console */
+        .monitor-terminal-wrapper {
+            background: #070b14;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .terminal-toolbar {
+            background: #0f172a;
+            padding: 0.5rem 0.85rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            font-size: 0.75rem;
+        }
+
+        .terminal-dots {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .dot {
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+        .dot.red { background: #ef4444; }
+        .dot.yellow { background: #f59e0b; }
+        .dot.green { background: #10b981; }
+
+        .terminal-title {
+            color: var(--text-muted);
+            margin-left: 0.4rem;
+            font-weight: 500;
+        }
+
+        .terminal-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .terminal-autoscroll-toggle {
+            color: var(--text-muted);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+            font-size: 0.75rem;
+            user-select: none;
+        }
+
+        .btn-term-action {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-muted);
+            cursor: pointer;
+            border-radius: 4px;
+            padding: 0.2rem 0.45rem;
+            font-size: 0.75rem;
+            transition: all 0.2s;
+        }
+        .btn-term-action:hover {
+            color: var(--text-main);
+            background: rgba(255, 255, 255, 0.12);
+        }
+
+        .terminal-body {
+            height: 220px;
+            overflow-y: auto;
+            padding: 0.75rem 0.85rem;
+            font-family: 'Consolas', 'Fira Code', 'Courier New', monospace;
+            font-size: 0.78rem;
+            line-height: 1.5;
+            color: #cbd5e1;
+            scroll-behavior: smooth;
+        }
+
+        .terminal-line {
+            white-space: pre-wrap;
+            word-break: break-all;
+            padding: 0.05rem 0;
+        }
+
+        .terminal-placeholder {
+            color: #64748b;
+            font-style: italic;
+        }
+
+        .line-ok { color: #34d399; font-weight: 600; }
+        .line-info { color: #38bdf8; }
+        .line-reject-dist { color: #f59e0b; }
+        .line-reject-prix { color: #f87171; }
+        .line-warn { color: #fbbf24; }
+        .line-skip { color: #64748b; }
+        .line-crit { color: #c084fc; font-weight: 600; }
+        .line-bilan { color: #38bdf8; font-weight: 700; background: rgba(56, 189, 248, 0.1); padding: 0.2rem 0.4rem; border-radius: 4px; }
+        .line-conseil { color: #fde047; font-weight: 600; }
+
+        .monitor-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 0.5rem;
+            padding-top: 0.85rem;
+        }
+
+        .monitor-last-run {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        /* Minimized Floating Pill */
+        .scan-minimized-pill {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            z-index: 2100;
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(99, 102, 241, 0.4);
+            border-radius: 999px;
+            padding: 0.65rem 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            cursor: pointer;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            transition: all 0.25s ease;
+            font-size: 0.82rem;
+            color: var(--text-main);
+        }
+
+        .scan-minimized-pill:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 14px 35px rgba(99, 102, 241, 0.35);
+            border-color: #6366f1;
+        }
+
+        .min-pulse-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #0ea5e9;
+            box-shadow: 0 0 10px #0ea5e9;
+            animation: pulseGlow 1.4s infinite;
+        }
+
+        .min-pulse-dot.success {
+            background: #10b981;
+            box-shadow: 0 0 10px #10b981;
+            animation: none;
+        }
+
+        .min-pct {
+            font-weight: 700;
+            color: #38bdf8;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        .min-expand-icon {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-left: 0.2rem;
         }
     </style>
 </head>
@@ -1018,7 +1489,10 @@
             </div>
             <div class="profiles-actions">
                 <button class="btn btn-sm btn-scan" id="btn-run-scan" onclick="triggerScanCurrentSearch()" title="Lancer le scan immédiat pour cette recherche">
-                    <i class="fa-solid fa-play"></i> Lancer le Scan
+                    <i class="fa-solid fa-play"></i> <span id="btn-run-scan-text">Lancer le Scan</span>
+                </button>
+                <button class="btn btn-sm btn-secondary" id="btn-view-logs" onclick="openScanMonitor()" title="Afficher la barre de progression et le journal d'exécution du scan">
+                    <i class="fa-solid fa-terminal"></i> Journal / État
                 </button>
                 <button class="btn btn-sm btn-secondary" onclick="openSearchSettingsModal()" title="Consulter et modifier les critères de la recherche">
                     <i class="fa-solid fa-sliders"></i> Critères
@@ -1200,7 +1674,8 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" onclick="closeSearchSettingsModal()">Fermer</button>
-                    <button type="submit" class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> Enregistrer les Critères</button>
+                    <button type="submit" class="btn btn-secondary"><i class="fa-solid fa-floppy-disk"></i> Enregistrer les Critères</button>
+                    <button type="button" class="btn btn-scan" onclick="saveCriteriaAndRunScan()"><i class="fa-solid fa-bolt"></i> Enregistrer &amp; Lancer le Scan</button>
                 </div>
             </form>
         </div>
@@ -1246,6 +1721,126 @@
                 </div>
             </form>
         </div>
+    </div>
+
+    <!-- Modal Journal & Progression du Scan en Direct -->
+    <div id="scan-monitor-modal" class="modal-backdrop" onclick="if(event.target === this) closeScanMonitor()">
+        <div class="modal-content glass-panel scan-monitor-panel">
+            <div class="modal-header">
+                <div class="monitor-title-wrapper">
+                    <div id="monitor-pulse-dot" class="monitor-pulse-dot pulse-idle"></div>
+                    <div>
+                        <h3 id="monitor-title"><i class="fa-solid fa-satellite-dish"></i> Suivi du Scan en Direct</h3>
+                        <p id="monitor-subtitle" class="monitor-subtitle">Recherche active : Chargement...</p>
+                    </div>
+                </div>
+                <div class="monitor-header-actions">
+                    <span id="monitor-status-pill" class="badge-status badge-idle">Prêt</span>
+                    <button type="button" class="btn-icon" onclick="minimizeScanMonitor()" title="Minimiser"><i class="fa-solid fa-window-minimize"></i></button>
+                    <button type="button" class="btn-close" onclick="closeScanMonitor()" title="Fermer">&times;</button>
+                </div>
+            </div>
+
+            <!-- Active Criteria Banner -->
+            <div class="monitor-criteria-card">
+                <div class="criteria-card-header">
+                    <span class="criteria-card-title"><i class="fa-solid fa-crosshairs"></i> Critères appliqués pour ce scan</span>
+                    <button type="button" class="btn-text-action" onclick="openSearchSettingsModal()"><i class="fa-solid fa-pen-to-square"></i> Modifier les critères</button>
+                </div>
+                <div class="criteria-pills-grid" id="monitor-criteria-pills">
+                    <!-- Populated dynamically -->
+                </div>
+            </div>
+
+            <!-- Visual Progress Bar Section -->
+            <div class="monitor-progress-section">
+                <div class="progress-info-row">
+                    <span id="monitor-stage-text" class="stage-text"><i class="fa-solid fa-hourglass-start"></i> En attente</span>
+                    <span id="monitor-pct-text" class="pct-text">0%</span>
+                </div>
+                <div class="progress-track">
+                    <div id="monitor-progress-bar" class="progress-fill" style="width: 0%;"></div>
+                </div>
+                <div id="monitor-message-text" class="progress-submessage">Prêt à lancer le scan</div>
+            </div>
+
+            <!-- Live KPI Counters Grid -->
+            <div class="monitor-stats-grid">
+                <div class="monitor-stat-card">
+                    <div class="stat-icon"><i class="fa-solid fa-cloud-arrow-down"></i></div>
+                    <div class="stat-meta">
+                        <div class="stat-num" id="mon-stat-raw">0</div>
+                        <div class="stat-lbl">Collectées (brutes)</div>
+                    </div>
+                </div>
+                <div class="monitor-stat-card stat-success">
+                    <div class="stat-icon"><i class="fa-solid fa-circle-check"></i></div>
+                    <div class="stat-meta">
+                        <div class="stat-num text-success" id="mon-stat-added">0</div>
+                        <div class="stat-lbl">Nouvelles ajoutées</div>
+                    </div>
+                </div>
+                <div class="monitor-stat-card stat-warning">
+                    <div class="stat-icon"><i class="fa-solid fa-route"></i></div>
+                    <div class="stat-meta">
+                        <div class="stat-num text-warning" id="mon-stat-dist">0</div>
+                        <div class="stat-lbl">Rejetées (trop loin)</div>
+                    </div>
+                </div>
+                <div class="monitor-stat-card stat-danger">
+                    <div class="stat-icon"><i class="fa-solid fa-tags"></i></div>
+                    <div class="stat-meta">
+                        <div class="stat-num text-danger" id="mon-stat-price">0</div>
+                        <div class="stat-lbl">Rejetées (hors budget)</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Advice / Insights Alert Box -->
+            <div id="monitor-advice-alert" class="monitor-advice-alert" style="display:none;">
+                <div class="advice-content">
+                    <i id="advice-icon" class="fa-solid fa-lightbulb"></i>
+                    <div id="advice-text">Conseil intelligent</div>
+                </div>
+                <button type="button" class="btn btn-sm btn-secondary" onclick="openSearchSettingsModal()"><i class="fa-solid fa-sliders"></i> Ajuster les critères</button>
+            </div>
+
+            <!-- Live Terminal Output Console -->
+            <div class="monitor-terminal-wrapper">
+                <div class="terminal-toolbar">
+                    <div class="terminal-dots">
+                        <span class="dot red"></span>
+                        <span class="dot yellow"></span>
+                        <span class="dot green"></span>
+                        <span class="terminal-title">Journal d'exécution agent.py</span>
+                    </div>
+                    <div class="terminal-actions">
+                        <label class="terminal-autoscroll-toggle">
+                            <input type="checkbox" id="mon-autoscroll" checked> Auto-scroll
+                        </label>
+                        <button type="button" class="btn-term-action" onclick="copyMonitorLogs()" title="Copier les logs"><i class="fa-regular fa-copy"></i> Copier</button>
+                        <button type="button" class="btn-term-action" onclick="clearMonitorLogs()" title="Vider l'affichage"><i class="fa-solid fa-trash-can"></i></button>
+                    </div>
+                </div>
+                <div id="monitor-terminal-body" class="terminal-body">
+                    <div class="terminal-line terminal-placeholder">Aucun log en cours. Cliquez sur "Lancer le Scan" pour démarrer.</div>
+                </div>
+            </div>
+
+            <div class="modal-footer monitor-footer">
+                <span class="monitor-last-run" id="monitor-last-run-time"></span>
+                <button type="button" class="btn btn-secondary" onclick="closeScanMonitor()">Fermer</button>
+                <button type="button" class="btn btn-primary" id="btn-monitor-action" onclick="triggerScanCurrentSearch()"><i class="fa-solid fa-rotate-right"></i> Relancer le Scan</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Floating Minimized Scan Pill -->
+    <div id="scan-minimized-pill" class="scan-minimized-pill" onclick="restoreScanMonitor()" style="display:none;">
+        <span class="min-pulse-dot" id="min-pulse-dot"></span>
+        <span class="min-title" id="min-title">Scan en cours</span>
+        <span class="min-pct" id="min-pct">0%</span>
+        <i class="fa-solid fa-up-right-and-down-left-from-center min-expand-icon"></i>
     </div>
 
     <script>
@@ -1619,39 +2214,375 @@
             filterAndRender();
         }
 
-        // Trigger scan for the active search profile
-        async function triggerScanCurrentSearch() {
-            const btn = document.getElementById('btn-run-scan');
-            if (!btn) return;
-            const originalHtml = btn.innerHTML;
-            btn.disabled = true;
-            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Scan en cours...';
+        // =========================================================================
+        // REAL-TIME SCAN MONITORING & PROGRESS SYSTEM
+        // =========================================================================
+        let scanPollInterval = null;
+        let lastLogCursor = 0;
+        let scanIsRunning = false;
+        let scanLogsCache = [];
 
-            if (isLocalServer) {
-                try {
-                    const res = await fetch('/api/run_agent', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ search: currentSearchId })
-                    });
-                    if (res.ok) {
-                        showToast(`Scan de '${currentSearchId}' lancé avec succès en tâche de fond !`, "success");
-                    } else if (res.status === 409) {
-                        showToast("Un scan est déjà en cours d'exécution.", "info");
-                    } else {
-                        showToast("Erreur lors du déclenchement du scan.", "danger");
-                    }
-                } catch (e) {
-                    showToast("Erreur réseau vers le serveur local", "danger");
+        function openScanMonitor() {
+            const modal = document.getElementById('scan-monitor-modal');
+            const pill = document.getElementById('scan-minimized-pill');
+            if (pill) pill.style.display = 'none';
+            if (modal) {
+                modal.classList.add('open');
+                updateMonitorCriteriaView();
+                // Si on est sur le serveur local, charger l'état et les logs actuels
+                if (isLocalServer) {
+                    fetchScanStatusAndLogs(true);
                 }
-            } else {
-                showToast("Le scan autonome s'exécute sur le serveur local via : python agent.py", "info");
+            }
+        }
+
+        function closeScanMonitor() {
+            const modal = document.getElementById('scan-monitor-modal');
+            if (modal) modal.classList.remove('open');
+            // Si le scan tourne encore en tâche de fond, afficher le widget discret
+            if (scanIsRunning) {
+                const pill = document.getElementById('scan-minimized-pill');
+                if (pill) pill.style.display = 'flex';
+            }
+        }
+
+        function minimizeScanMonitor() {
+            const modal = document.getElementById('scan-monitor-modal');
+            if (modal) modal.classList.remove('open');
+            const pill = document.getElementById('scan-minimized-pill');
+            if (pill) pill.style.display = 'flex';
+        }
+
+        function restoreScanMonitor() {
+            openScanMonitor();
+        }
+
+        function updateMonitorCriteriaView() {
+            const profile = searchesConfig?.searches.find(s => s.id === currentSearchId) || {};
+            const isParking = profile.type === 'parking';
+            const subtitle = document.getElementById('monitor-subtitle');
+            if (subtitle) {
+                subtitle.textContent = `Profil actif : ${profile.name || currentSearchId} (${isParking ? 'Stationnement / Box' : 'Appartement'})`;
             }
 
-            setTimeout(() => {
-                btn.disabled = false;
-                btn.innerHTML = originalHtml;
-            }, 3000);
+            const pillsContainer = document.getElementById('monitor-criteria-pills');
+            if (!pillsContainer) return;
+
+            const p = profile.params || {};
+            if (isParking) {
+                pillsContainer.innerHTML = `
+                    <div class="criteria-pill"><i class="fa-solid fa-location-dot"></i> Cible : <strong>${p.adresse_cible || '56 av. Félix Faure, Lyon 3e'}</strong></div>
+                    <div class="criteria-pill"><i class="fa-solid fa-ruler"></i> Rayon max : <strong>${p.rayon_metres || 650} m</strong></div>
+                    <div class="criteria-pill"><i class="fa-solid fa-euro-sign"></i> Budget max : <strong>${p.budget_max || 150} €/mois</strong></div>
+                    <div class="criteria-pill"><i class="fa-solid fa-car"></i> Véhicule : <strong>Tesla Model 3 / Y</strong></div>
+                    <div class="criteria-pill"><i class="fa-solid fa-shield-halved"></i> Box / Prise : <strong>Recherché</strong></div>
+                `;
+            } else {
+                pillsContainer.innerHTML = `
+                    <div class="criteria-pill"><i class="fa-solid fa-euro-sign"></i> Budget : <strong>${p.budget_min || 1500} - ${p.budget_max || 2500} €</strong></div>
+                    <div class="criteria-pill"><i class="fa-solid fa-maximize"></i> Surface min : <strong>${p.surface_min || 70} m²</strong></div>
+                    <div class="criteria-pill"><i class="fa-solid fa-door-open"></i> Pièces min : <strong>${p.pieces_min || 3}</strong></div>
+                    <div class="criteria-pill"><i class="fa-solid fa-elevator"></i> Ascenseur : <strong>Requis</strong></div>
+                    <div class="criteria-pill"><i class="fa-solid fa-snowflake"></i> Clim ou Balcon : <strong>Requis</strong></div>
+                `;
+            }
+        }
+
+        async function triggerScanCurrentSearch() {
+            if (!isLocalServer) {
+                showToast("Le scan autonome s'exécute sur le serveur local via : python agent.py", "info");
+                return;
+            }
+
+            // Ouvrir la console de monitoring immédiatement
+            openScanMonitor();
+
+            // Réinitialiser la console pour cette exécution
+            lastLogCursor = 0;
+            scanLogsCache = [];
+            const termBody = document.getElementById('monitor-terminal-body');
+            if (termBody) {
+                termBody.innerHTML = '<div class="terminal-line terminal-placeholder">Démarrage du scan... Initialisation du processus agent.py.</div>';
+            }
+            const adviceBox = document.getElementById('monitor-advice-alert');
+            if (adviceBox) adviceBox.style.display = 'none';
+
+            setMonitorStatusState('running', 'Lancement...');
+            setProgressBar(5, 'Initialisation du scan et lecture des critères...', 'Démarrage');
+
+            try {
+                const res = await fetch('/api/run_agent', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ search: currentSearchId })
+                });
+
+                if (res.ok) {
+                    showToast(`Scan de '${currentSearchId}' lancé !`, "success");
+                    scanIsRunning = true;
+                    startScanPolling();
+                } else if (res.status === 409) {
+                    showToast("Un scan est déjà en cours d'exécution. Suivi en direct activé.", "info");
+                    scanIsRunning = true;
+                    startScanPolling();
+                } else {
+                    showToast("Erreur lors du déclenchement du scan.", "danger");
+                    setMonitorStatusState('error', 'Erreur de lancement');
+                }
+            } catch (err) {
+                console.error("Scan trigger error:", err);
+                showToast("Erreur réseau vers le serveur local", "danger");
+                setMonitorStatusState('error', 'Erreur réseau');
+            }
+        }
+
+        function startScanPolling() {
+            if (scanPollInterval) clearInterval(scanPollInterval);
+            scanPollInterval = setInterval(fetchScanStatusAndLogs, 750);
+            fetchScanStatusAndLogs();
+        }
+
+        function stopScanPolling() {
+            if (scanPollInterval) {
+                clearInterval(scanPollInterval);
+                scanPollInterval = null;
+            }
+            scanIsRunning = false;
+        }
+
+        async function fetchScanStatusAndLogs(forceSingle = false) {
+            if (!isLocalServer) return;
+
+            try {
+                // 1. Statut général du scan
+                const statusRes = await fetch('/api/agent_status', { cache: 'no-store' });
+                if (!statusRes.ok) return;
+                const status = await statusRes.json();
+
+                // 2. Logs incrémentaux
+                const logRes = await fetch(`/api/agent_log?cursor=${lastLogCursor}&format=json`, { cache: 'no-store' });
+                let newLogs = [];
+                if (logRes.ok) {
+                    const logData = await logRes.json();
+                    newLogs = logData.logs || [];
+                    lastLogCursor = logData.cursor || (lastLogCursor + newLogs.length);
+                }
+
+                // Mettre à jour l'interface
+                updateScanMonitorUI(status, newLogs);
+
+                // Détection de fin
+                if (!status.running && !forceSingle && scanIsRunning) {
+                    stopScanPolling();
+                    handleScanCompleted(status);
+                }
+            } catch (err) {
+                console.warn("Erreur polling status:", err);
+            }
+        }
+
+        function updateScanMonitorUI(status, newLogs) {
+            const isRunning = status.running;
+            scanIsRunning = isRunning;
+
+            // 1. Bouton "Lancer le scan" dans la barre du haut
+            const topBtn = document.getElementById('btn-run-scan');
+            if (topBtn) {
+                if (isRunning) {
+                    topBtn.classList.add('btn-running');
+                    topBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Scan (${status.progress || 10}%)`;
+                } else {
+                    topBtn.classList.remove('btn-running');
+                    topBtn.innerHTML = `<i class="fa-solid fa-play"></i> Lancer le Scan`;
+                }
+            }
+
+            // 2. Statut dans l'en-tête du modal
+            if (isRunning) {
+                setMonitorStatusState('running', status.stage || 'En cours');
+            } else if (status.success === true) {
+                setMonitorStatusState('success', 'Terminé avec succès');
+            } else if (status.success === false) {
+                setMonitorStatusState('error', 'Erreur rencontrée');
+            } else {
+                setMonitorStatusState('idle', 'Prêt');
+            }
+
+            // 3. Barre de progression & message d'étape
+            const pct = Math.max(0, Math.min(100, status.progress || (isRunning ? 15 : 0)));
+            setProgressBar(pct, status.message || (isRunning ? 'Scan en cours...' : 'Prêt'), status.stage || 'Scan');
+
+            // 4. Compteurs en temps réel (KPIs)
+            const stats = status.stats || {};
+            const rawEl = document.getElementById('mon-stat-raw');
+            const addedEl = document.getElementById('mon-stat-added');
+            const distEl = document.getElementById('mon-stat-dist');
+            const priceEl = document.getElementById('mon-stat-price');
+            
+            if (rawEl) rawEl.textContent = stats.raw_collected || 0;
+            if (addedEl) addedEl.textContent = stats.new_added || 0;
+            if (distEl) distEl.textContent = stats.rejected_distance || 0;
+            if (priceEl) priceEl.textContent = stats.rejected_price || 0;
+
+            // 5. Widget flottant réduit
+            const minPill = document.getElementById('scan-minimized-pill');
+            const minPct = document.getElementById('min-pct');
+            const minTitle = document.getElementById('min-title');
+            const minDot = document.getElementById('min-pulse-dot');
+            if (minPill && minPct && minTitle && minDot) {
+                minPct.textContent = `${pct}%`;
+                minTitle.textContent = isRunning ? (status.stage || 'Scan en cours') : 'Scan terminé';
+                if (!isRunning) {
+                    minDot.className = 'min-pulse-dot success';
+                } else {
+                    minDot.className = 'min-pulse-dot';
+                }
+            }
+
+            // 6. Horodatage dernier run
+            const lastRunEl = document.getElementById('monitor-last-run-time');
+            if (lastRunEl && status.last_run) {
+                lastRunEl.innerHTML = `<i class="fa-regular fa-clock"></i> Dernier scan : ${status.last_run}`;
+            }
+
+            // 7. Ajout des nouveaux logs
+            if (newLogs && newLogs.length > 0) {
+                appendLogsToTerminal(newLogs);
+            }
+        }
+
+        function setMonitorStatusState(state, text) {
+            const dot = document.getElementById('monitor-pulse-dot');
+            const pill = document.getElementById('monitor-status-pill');
+            if (!dot || !pill) return;
+
+            dot.className = `monitor-pulse-dot pulse-${state}`;
+            pill.className = `badge-status badge-${state}`;
+
+            let icon = '';
+            if (state === 'running') icon = '<i class="fa-solid fa-spinner fa-spin"></i> ';
+            else if (state === 'success') icon = '<i class="fa-solid fa-circle-check"></i> ';
+            else if (state === 'error') icon = '<i class="fa-solid fa-circle-exclamation"></i> ';
+            else icon = '<i class="fa-solid fa-circle-dot"></i> ';
+
+            pill.innerHTML = `${icon}<span>${text}</span>`;
+        }
+
+        function setProgressBar(pct, message, stage) {
+            const bar = document.getElementById('monitor-progress-bar');
+            const pctText = document.getElementById('monitor-pct-text');
+            const stageText = document.getElementById('monitor-stage-text');
+            const msgText = document.getElementById('monitor-message-text');
+
+            if (bar) {
+                bar.style.width = `${pct}%`;
+                if (pct > 0 && pct < 100) {
+                    bar.classList.add('active');
+                } else {
+                    bar.classList.remove('active');
+                }
+            }
+            if (pctText) pctText.textContent = `${pct}%`;
+            if (stageText && stage) stageText.innerHTML = `<i class="fa-solid fa-gear ${pct < 100 ? 'fa-spin' : ''}"></i> ${stage}`;
+            if (msgText && message) msgText.textContent = message;
+        }
+
+        function appendLogsToTerminal(lines) {
+            const termBody = document.getElementById('monitor-terminal-body');
+            if (!termBody) return;
+
+            const placeholder = termBody.querySelector('.terminal-placeholder');
+            if (placeholder) placeholder.remove();
+
+            lines.forEach(line => {
+                scanLogsCache.push(line);
+                const lineEl = document.createElement('div');
+                lineEl.className = 'terminal-line ' + getLineCssClass(line);
+                lineEl.textContent = line;
+                termBody.appendChild(lineEl);
+            });
+
+            const autoscroll = document.getElementById('mon-autoscroll');
+            if (autoscroll && autoscroll.checked) {
+                termBody.scrollTop = termBody.scrollHeight;
+            }
+        }
+
+        function getLineCssClass(line) {
+            if (line.includes('[OK]')) return 'line-ok';
+            if (line.includes('[REJECT_DIST]') || line.includes('Trop loin')) return 'line-reject-dist';
+            if (line.includes('[REJECT_PRIX]') || (line.includes('Loyer') && line.includes('>'))) return 'line-reject-prix';
+            if (line.includes('[BILAN_PARKING]')) return 'line-bilan';
+            if (line.includes('[CONSEIL]')) return 'line-conseil';
+            if (line.includes('[CRITERES]')) return 'line-crit';
+            if (line.includes('[SKIP]')) return 'line-skip';
+            if (line.includes('[WARN]')) return 'line-warn';
+            if (line.includes('[INFO]')) return 'line-info';
+            return '';
+        }
+
+        function handleScanCompleted(status) {
+            const added = status.stats?.new_added || 0;
+            const distRej = status.stats?.rejected_distance || 0;
+            const priceRej = status.stats?.rejected_price || 0;
+            const total = status.stats?.raw_collected || 0;
+            const already = status.stats?.already_known || 0;
+
+            const adviceBox = document.getElementById('monitor-advice-alert');
+            const adviceText = document.getElementById('advice-text');
+            const adviceIcon = document.getElementById('advice-icon');
+
+            if (adviceBox && adviceText) {
+                adviceBox.style.display = 'flex';
+                if (added > 0) {
+                    adviceBox.className = 'monitor-advice-alert advice-success';
+                    if (adviceIcon) adviceIcon.className = 'fa-solid fa-circle-check';
+                    adviceText.innerHTML = `<strong>🎉 Succès ! ${added} nouvelle(s) annonce(s) ajoutée(s)</strong> avec vos critères actuels. Le tableau de bord a été actualisé automatiquement ci-dessous.`;
+                    showToast(`${added} nouvelle(s) annonce(s) ajoutée(s) !`, "success");
+                } else {
+                    adviceBox.className = 'monitor-advice-alert advice-tip';
+                    if (adviceIcon) adviceIcon.className = 'fa-solid fa-lightbulb';
+                    let tipMsg = status.advice;
+                    if (!tipMsg) {
+                        const profile = searchesConfig?.searches.find(s => s.id === currentSearchId) || {};
+                        const curRadius = profile.params?.rayon_metres || 222;
+                        tipMsg = `<strong>ℹ️ Bilan : 0 nouvelle annonce ajoutée.</strong> Sur les ${total} annonces analysées, ${already} étaient déjà en base, ${distRej} étaient trop loin (> ${curRadius}m), et ${priceRej} hors budget. Pour débloquer plus de places, <strong>augmentez le rayon dans 'Critères'</strong> (ex: 650m ou 800m).`;
+                    }
+                    adviceText.innerHTML = tipMsg;
+                    showToast("Scan terminé : Aucune nouvelle annonce pour ces critères.", "info");
+                }
+            }
+
+            // Rafraîchir immédiatement les annonces du tableau de bord !
+            fetchData(true);
+        }
+
+        function copyMonitorLogs() {
+            const text = scanLogsCache.join('\n');
+            navigator.clipboard.writeText(text).then(() => {
+                showToast("Journal d'exécution copié dans le presse-papiers !", "success");
+            }).catch(() => {
+                showToast("Impossible de copier automatiquement.", "info");
+            });
+        }
+
+        function clearMonitorLogs() {
+            scanLogsCache = [];
+            const termBody = document.getElementById('monitor-terminal-body');
+            if (termBody) {
+                termBody.innerHTML = '<div class="terminal-line terminal-placeholder">Journal vidé.</div>';
+            }
+        }
+
+        // Action depuis le modal Critères : enregistrer les critères ET lancer immédiatement le scan !
+        async function saveCriteriaAndRunScan() {
+            const form = document.getElementById('settings-form');
+            if (form) {
+                await submitSearchSettings(new Event('submit', { cancelable: true }));
+                setTimeout(() => {
+                    triggerScanCurrentSearch();
+                }, 300);
+            }
         }
 
         // Save updated notes
@@ -1922,8 +2853,8 @@
                     specsHtml = `
                         <div class="card-specs">
                             <div class="spec-item">
-                                <div class="spec-label">Distance 56 Félix Faure</div>
-                                <div class="spec-value">${item.distance_metres ? item.distance_metres + ' m' : 'Proche'}</div>
+                                <div class="spec-label">À pied (56 Félix Faure)</div>
+                                <div class="spec-value">${item.distance_metres ? item.distance_metres + ' m' : 'Proche'}${item.distance_marche_minutes ? ' (~' + item.distance_marche_minutes + ' min)' : ''}</div>
                             </div>
                             <div class="spec-item">
                                 <div class="spec-label">Protection</div>
