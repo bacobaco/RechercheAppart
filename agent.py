@@ -34,7 +34,7 @@ try:
 except ImportError:
     sync_playwright = None
 
-DATA_FILE = "data.json"
+DATA_FILE = "data_achat_parking_felix_faure.json"
 SEARCHES_FILE = "searches.json"
 
 def load_searches_config():
@@ -68,7 +68,6 @@ def load_searches_config():
 JINKA_SESSION_FILE = "jinka_session.json"
 JINKA_TOKEN_FILE = "jinka_token.json"
 GDC_SESSION_FILE = "gdc_session.json"
-GDC_URL_FILE = "gdc_url.json"
 GDC_PARKING_URL_FILE = "gdc_parking_url.json"
 GDC_ACHAT_PARKING_URL_FILE = "gdc_achat_parking_url.json"
 GDC_DEFAULT_COOKIES = "cookies_gdc.json"
@@ -1912,7 +1911,7 @@ def sync_data_to_github(commit_msg="Mise à jour des annonces", files=None):
         print(f"[GITHUB] [AVERTISSEMENT] Erreur lors de la synchronisation GitHub : {e}")
 
 def purge_old_eliminated(target_data_file=DATA_FILE):
-    """Supprime définitivement de data.json les annonces éliminées depuis plus de 30 jours.
+    """Supprime définitivement du fichier de données les annonces éliminées depuis plus de 30 jours.
     Cible les statuts 'Éliminer' et 'Déjà loué'.
     Utilise le champ 'date_elimination' si présent, sinon 'date_decouverte' comme fallback."""
     if not os.path.exists(target_data_file):
@@ -3258,7 +3257,7 @@ def run_parking_search(profile=None):
 
 def main():
     import argparse
-    parser = argparse.ArgumentParser(description="Agent de Veille Immobilière & Multi-Recherches Lyon")
+    parser = argparse.ArgumentParser(description="RechercheBiens - Agent de Veille Immobilière & Stationnements Lyon")
     parser.add_argument("--search", "--profile", dest="search_id", default=None, help="ID de la recherche à lancer ('achat_parking_felix_faure', 'parking_felix_faure', ou 'all')")
     parser.add_argument("--list", action="store_true", help="Lister toutes les recherches configurées et quitter")
     args = parser.parse_args()
@@ -3278,7 +3277,7 @@ def main():
         print("="*80 + "\n")
         return
         
-    print("=== Démarrage de l'Agent de Veille Multi-Recherches ===")
+    print("=== Démarrage de RechercheBiens - Agent de Veille Multi-Recherches ===")
     
     target_search_id = args.search_id
     total_added = 0

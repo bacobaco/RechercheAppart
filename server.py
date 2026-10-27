@@ -14,7 +14,7 @@ import sys
 
 PORT = 8000
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-DATA_FILE = os.path.join(BASE_DIR, "data.json")
+DATA_FILE = os.path.join(BASE_DIR, "data_achat_parking_felix_faure.json")
 SEARCHES_FILE = os.path.join(BASE_DIR, "searches.json")
 LOG_FILE = os.path.join(BASE_DIR, "agent.log")
 
@@ -29,14 +29,14 @@ def get_searches_config():
         except Exception as e:
             print(f"[ERREUR] Lecture de {SEARCHES_FILE}: {e}")
     return {
-        "active_search_id": "meuble_1",
+        "active_search_id": "achat_parking_felix_faure",
         "searches": [
             {
-                "id": "meuble_1",
-                "name": "Recherche Meublé 1",
-                "type": "appartement",
+                "id": "achat_parking_felix_faure",
+                "name": "Recherche Achat Parking 56 rue Félix Faure Lyon",
+                "type": "parking",
                 "enabled": True,
-                "data_file": "data.json"
+                "data_file": "data_achat_parking_felix_faure.json"
             }
         ]
     }
@@ -44,17 +44,17 @@ def get_searches_config():
 def get_target_data_file(search_id=None):
     """Détermine le chemin absolu du fichier de données pour un ID de recherche."""
     cfg = get_searches_config()
-    target_id = search_id or cfg.get("active_search_id", "meuble_1")
+    target_id = search_id or cfg.get("active_search_id", "achat_parking_felix_faure")
     
     for s in cfg.get("searches", []):
         if s.get("id") == target_id:
-            df = s.get("data_file", "data.json")
+            df = s.get("data_file", "data_achat_parking_felix_faure.json")
             return os.path.join(BASE_DIR, df), s
             
     return DATA_FILE, None
 
 def sync_github_background(commit_msg="Mise à jour des annonces"):
-    """Synchronise data.json, searches.json et les fichiers de données vers GitHub en arrière-plan."""
+    """Synchronise searches.json et les fichiers de données vers GitHub en arrière-plan."""
     def _sync():
         with sync_lock:
             try:
@@ -651,7 +651,7 @@ class DashboardHandler(http.server.SimpleHTTPRequestHandler):
 if __name__ == "__main__":
     socketserver.TCPServer.allow_reuse_address = True
     with socketserver.TCPServer(("", PORT), DashboardHandler) as httpd:
-        print(f"Serveur démarré sur http://localhost:{PORT}")
+        print(f"RechercheBiens - Serveur démarré sur http://localhost:{PORT}")
         print(f"Tableau de bord local : http://localhost:{PORT}/dashboard.html")
         print(f"Tableau de bord en ligne (GitHub Pages) : https://bacobaco.github.io/RechercheAppart/")
         try:

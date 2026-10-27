@@ -6,7 +6,7 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    <title>Veille Immobilière & Multi-Recherches Lyon</title>
+    <title>RechercheBiens - Veille Immobilière Lyon</title>
     <!-- Google Fonts & FontAwesome Icons -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1460,8 +1460,8 @@
             <div class="brand">
                 <i class="fa-solid fa-radar" id="brand-icon"></i>
                 <div>
-                    <h1 id="brand-title">Veille Immobilière & Multi-Recherches</h1>
-                    <p id="brand-subtitle">Recherche autonome d'appartements et de parkings à Lyon</p>
+                    <h1 id="brand-title">RechercheBiens</h1>
+                    <p id="brand-subtitle">Veille immobilière autonome à Lyon (Achat & Location Parkings, Box, Garages)</p>
                 </div>
             </div>
             
@@ -2018,7 +2018,7 @@
                 if (isEditing) return;
 
                 const currentProfile = searchesConfig?.searches.find(s => s.id === currentSearchId) || {};
-                const dataFile = currentProfile.data_file || "data.json";
+                const dataFile = currentProfile.data_file || "data_achat_parking_felix_faure.json";
 
                 let dataFetched = null;
 
@@ -2038,8 +2038,8 @@
                     if (staticRes.ok) {
                         dataFetched = await staticRes.json();
                     } else {
-                        // Fallback to data.json
-                        const fallbackRes = await fetch('./data.json?t=' + Date.now(), { cache: 'no-store' });
+                        // Fallback to active search data file
+                        const fallbackRes = await fetch('./data_achat_parking_felix_faure.json?t=' + Date.now(), { cache: 'no-store' });
                         if (fallbackRes.ok) dataFetched = await fallbackRes.json();
                     }
                 }
