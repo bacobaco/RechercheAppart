@@ -133,14 +133,15 @@
         "lien_annonce": "https://gensdeconfiance.com/fr/ui/post/realestate__rent/c728af3a-a288-457b-872d-27943a26761a",
         "google_street_view": "https://www.google.com/maps/dir/?api=1&origin=56%20avenue%20F%C3%A9lix%20Faure%2C%2069003%20Lyon&destination=45.753712900000004,4.8514936&travelmode=walking",
         "date_decouverte": "2026-10-20",
-        "statut": "Nouveau",
+        "statut": "Éliminer",
         "remarques_visite": "",
         "questions_visite": "",
         "notes": "trop petit 13m2!\nDistance au 56 avenue Félix Faure, 69003 Lyon: 214 m à pied (~3 min) \nVéhicule: Tesla Model 3/Y",
         "latitude": 45.753712900000004,
         "longitude": 4.8514936,
         "distance_marche_minutes": 3,
-        "distance_vol_oiseau": 163
+        "distance_vol_oiseau": 163,
+        "date_elimination": "2026-10-30"
     },
     {
         "titre": "PARKING EN SOUS SOL",
