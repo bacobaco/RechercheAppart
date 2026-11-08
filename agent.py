@@ -2855,27 +2855,32 @@ def geocode_address(address):
     if not address or len(address.strip()) < 4:
         return None
     try:
-        url = "https://api-adresse.data.gouv.fr/search/?" + urllib.parse.urlencode({"q": address.strip(), "limit": 1})
-        req = urllib.request.Request(url, headers={"User-Agent": "VeilleImmo/1.0"})
-        with urllib.request.urlopen(req, timeout=5) as resp:
-            if resp.status == 200:
-                data = json.loads(resp.read().decode("utf-8"))
-                features = data.get("features", [])
-                if features:
-                    coords = features[0].get("geometry", {}).get("coordinates", [])
-                    if len(coords) == 2:
-                        lon, lat = coords[0], coords[1]
-                        return lat, lon
+        url = "https://api-adresse.data.gouv.fr/search/"
+        resp = requests.get(
+            url,
+            params={"q": address.strip(), "limit": 1},
+            headers={"User-Agent": "VeilleImmo/1.0"},
+            timeout=5
+        )
+        if resp.status_code == 200:
+            data = resp.json()
+            features = data.get("features", [])
+            if features:
+                coords = features[0].get("geometry", {}).get("coordinates", [])
+                if len(coords) == 2:
+                    lon, lat = coords[0], coords[1]
+                    return lat, lon
     except Exception as e:
         print(f"[WARN] Géocodage adresse '{address}': {e}")
     return None
 
 _walking_route_cache = {}
 
-def get_walking_distance(lat1, lon1, lat2, lon2, timeout=4):
+def get_walking_distance(lat1, lon1, lat2, lon2, timeout=5):
     """
     Calcule la distance et le temps réel d'itinéraire à pied entre deux coordonnées GPS
-    en utilisant l'API d'itinéraire piéton OpenStreetMap / OSRM.
+    en utilisant l'API d'itinéraire piéton OpenStreetMap (routed-foot).
+    Utilise `requests` (et ses certificats certifi) pour fonctionner à l'identique sur Mac et PC.
     Retourne (distance_metres, duree_minutes, source).
     En cas d'échec ou d'absence de réseau, utilise un fallback estimé (Haversine * 1.35).
     """
@@ -2887,34 +2892,32 @@ def get_walking_distance(lat1, lon1, lat2, lon2, timeout=4):
     if cache_key in _walking_route_cache:
         return _walking_route_cache[cache_key]
 
-    urls = [
-        f"https://routing.openstreetmap.de/routed-foot/route/v1/foot/{lon1},{lat1};{lon2},{lat2}?overview=false",
-        f"http://router.project-osrm.org/route/v1/foot/{lon1},{lat1};{lon2},{lat2}?overview=false"
-    ]
+    url = f"https://routing.openstreetmap.de/routed-foot/route/v1/foot/{lon1},{lat1};{lon2},{lat2}?overview=false"
     
-    for url in urls:
+    for attempt in range(2):
         try:
-            req = urllib.request.Request(url, headers={"User-Agent": "VeilleImmo/1.0 (Lyon pedestrian route)"})
-            with urllib.request.urlopen(req, timeout=timeout) as resp:
-                if resp.status == 200:
-                    data = json.loads(resp.read().decode("utf-8"))
-                    if data.get("code") == "Ok" and data.get("routes"):
-                        route = data["routes"][0]
-                        dist_m = round(float(route.get("distance", crow_dist * 1.35)))
-                        dur_s = float(route.get("duration", dist_m / 1.25))
-                        dur_min = max(1, round(dur_s / 60))
-                        res = (dist_m, dur_min, "osrm_foot")
-                        _walking_route_cache[cache_key] = res
-                        return res
+            resp = requests.get(
+                url,
+                headers={"User-Agent": "VeilleImmo/1.0 (Lyon pedestrian route)"},
+                timeout=timeout
+            )
+            if resp.status_code == 200:
+                data = resp.json()
+                if data.get("code") == "Ok" and data.get("routes"):
+                    route = data["routes"][0]
+                    dist_m = round(float(route.get("distance", crow_dist * 1.35)))
+                    dur_s = float(route.get("duration", dist_m / 1.25))
+                    dur_min = max(1, round(dur_s / 60))
+                    res = (dist_m, dur_min, "osrm_foot")
+                    _walking_route_cache[cache_key] = res
+                    return res
         except Exception:
             continue
 
     # Fallback si indisponibilité réseau : coefficient piéton urbain 1.35
     fallback_dist = round(crow_dist * 1.35)
     fallback_min = max(1, round(fallback_dist / 75))
-    res = (fallback_dist, fallback_min, "estimated_urban")
-    _walking_route_cache[cache_key] = res
-    return res
+    return (fallback_dist, fallback_min, "estimated_urban")
 
 
 def run_parking_search(profile=None):
@@ -3002,7 +3005,11 @@ def run_parking_search(profile=None):
         it_lat = it.get("latitude")
         it_lon = it.get("longitude")
         if it_lat and it_lon:
-            w_dist, w_min, _ = get_walking_distance(target_lat, target_lon, it_lat, it_lon)
+            w_dist, w_min, r_src = get_walking_distance(target_lat, target_lon, it_lat, it_lon)
+            if r_src != "osrm_foot" and it.get("distance_metres"):
+                # En cas d'indisponibilité temporaire du serveur de routage piéton, conserver la distance déjà connue
+                w_dist = it.get("distance_metres")
+                w_min = it.get("distance_marche_minutes") or max(1, round(w_dist / 75))
             it["distance_metres"] = w_dist
             it["distance_cible"] = f"{w_dist} m à pied (~{w_min} min)"
             it["distance_marche_minutes"] = w_min

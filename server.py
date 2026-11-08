@@ -96,17 +96,22 @@ def geocode_address(address):
     if not address or len(address.strip()) < 4:
         return None
     try:
-        url = "https://api-adresse.data.gouv.fr/search/?" + urllib.parse.urlencode({"q": address.strip(), "limit": 1})
-        req = urllib.request.Request(url, headers={"User-Agent": "VeilleImmo/1.0"})
-        with urllib.request.urlopen(req, timeout=4) as resp:
-            if resp.status == 200:
-                data = json.loads(resp.read().decode("utf-8"))
-                features = data.get("features", [])
-                if features:
-                    coords = features[0].get("geometry", {}).get("coordinates", [])
-                    if len(coords) == 2:
-                        lon, lat = coords[0], coords[1]
-                        return lat, lon
+        import requests
+        url = "https://api-adresse.data.gouv.fr/search/"
+        resp = requests.get(
+            url,
+            params={"q": address.strip(), "limit": 1},
+            headers={"User-Agent": "VeilleImmo/1.0"},
+            timeout=4
+        )
+        if resp.status_code == 200:
+            data = resp.json()
+            features = data.get("features", [])
+            if features:
+                coords = features[0].get("geometry", {}).get("coordinates", [])
+                if len(coords) == 2:
+                    lon, lat = coords[0], coords[1]
+                    return lat, lon
     except Exception as e:
         print(f"[WARN] Géocodage adresse '{address}': {e}")
     return None
