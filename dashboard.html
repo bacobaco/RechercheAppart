@@ -1849,7 +1849,7 @@
 
     <script>
         let searchesConfig = null;
-        let currentSearchId = "achat_parking_felix_faure";
+        let currentSearchId = "parking_felix_faure";
         let allListings = [];
         let showEliminated = false;
         let isLocalServer = false;
@@ -1892,17 +1892,8 @@
 
                 if (!cfg) {
                     cfg = {
-                        active_search_id: "achat_parking_felix_faure",
+                        active_search_id: "parking_felix_faure",
                         searches: [
-                            {
-                                id: "achat_parking_felix_faure",
-                                name: "Recherche Achat Parking 56 rue Félix Faure Lyon",
-                                type: "parking",
-                                icon: "fa-warehouse",
-                                enabled: true,
-                                data_file: "data_achat_parking_felix_faure.json",
-                                description: "Achat parking / garage / box pour Tesla autour du 56 Félix Faure Lyon 3"
-                            },
                             {
                                 id: "parking_felix_faure",
                                 name: "Recherche Parking 56 rue Félix Faure Lyon",
@@ -1911,6 +1902,15 @@
                                 enabled: true,
                                 data_file: "data_parking_felix_faure.json",
                                 description: "Location parking / box pour Tesla autour du 56 Félix Faure Lyon 3"
+                            },
+                            {
+                                id: "achat_parking_felix_faure",
+                                name: "Recherche Achat Parking 56 rue Félix Faure Lyon",
+                                type: "parking",
+                                icon: "fa-warehouse",
+                                enabled: true,
+                                data_file: "data_achat_parking_felix_faure.json",
+                                description: "Achat parking / garage / box pour Tesla autour du 56 Félix Faure Lyon 3"
                             }
                         ]
                     };
@@ -1926,7 +1926,7 @@
                 } else if (searchesConfig.active_search_id && searchesConfig.searches.some(s => s.id === searchesConfig.active_search_id)) {
                     currentSearchId = searchesConfig.active_search_id;
                 } else {
-                    currentSearchId = searchesConfig.searches[0]?.id || "achat_parking_felix_faure";
+                    currentSearchId = searchesConfig.searches[0]?.id || "parking_felix_faure";
                 }
 
                 renderProfileTabs();
@@ -2018,7 +2018,7 @@
                 if (isEditing) return;
 
                 const currentProfile = searchesConfig?.searches.find(s => s.id === currentSearchId) || {};
-                const dataFile = currentProfile.data_file || "data_achat_parking_felix_faure.json";
+                const dataFile = currentProfile.data_file || "data_parking_felix_faure.json";
 
                 let dataFetched = null;
 
@@ -2039,7 +2039,7 @@
                         dataFetched = await staticRes.json();
                     } else {
                         // Fallback to active search data file
-                        const fallbackRes = await fetch('./data_achat_parking_felix_faure.json?t=' + Date.now(), { cache: 'no-store' });
+                        const fallbackRes = await fetch('./data_parking_felix_faure.json?t=' + Date.now(), { cache: 'no-store' });
                         if (fallbackRes.ok) dataFetched = await fallbackRes.json();
                     }
                 }
