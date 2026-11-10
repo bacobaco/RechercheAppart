@@ -14,7 +14,7 @@ import sys
 
 PORT = 8000
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-DATA_FILE = os.path.join(BASE_DIR, "data_achat_parking_felix_faure.json")
+DATA_FILE = os.path.join(BASE_DIR, "data_parking_felix_faure.json")
 SEARCHES_FILE = os.path.join(BASE_DIR, "searches.json")
 LOG_FILE = os.path.join(BASE_DIR, "agent.log")
 
@@ -29,14 +29,14 @@ def get_searches_config():
         except Exception as e:
             print(f"[ERREUR] Lecture de {SEARCHES_FILE}: {e}")
     return {
-        "active_search_id": "achat_parking_felix_faure",
+        "active_search_id": "parking_felix_faure",
         "searches": [
             {
-                "id": "achat_parking_felix_faure",
-                "name": "Recherche Achat Parking 56 rue Félix Faure Lyon",
+                "id": "parking_felix_faure",
+                "name": "Recherche Parking 56 rue Félix Faure Lyon",
                 "type": "parking",
                 "enabled": True,
-                "data_file": "data_achat_parking_felix_faure.json"
+                "data_file": "data_parking_felix_faure.json"
             }
         ]
     }
@@ -44,11 +44,11 @@ def get_searches_config():
 def get_target_data_file(search_id=None):
     """Détermine le chemin absolu du fichier de données pour un ID de recherche."""
     cfg = get_searches_config()
-    target_id = search_id or cfg.get("active_search_id", "achat_parking_felix_faure")
+    target_id = search_id or cfg.get("active_search_id", "parking_felix_faure")
     
     for s in cfg.get("searches", []):
         if s.get("id") == target_id:
-            df = s.get("data_file", "data_achat_parking_felix_faure.json")
+            df = s.get("data_file", "data_parking_felix_faure.json")
             return os.path.join(BASE_DIR, df), s
             
     return DATA_FILE, None

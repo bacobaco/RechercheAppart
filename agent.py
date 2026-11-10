@@ -34,7 +34,7 @@ try:
 except ImportError:
     sync_playwright = None
 
-DATA_FILE = "data_achat_parking_felix_faure.json"
+DATA_FILE = "data_parking_felix_faure.json"
 SEARCHES_FILE = "searches.json"
 
 def load_searches_config():
@@ -46,21 +46,21 @@ def load_searches_config():
         except Exception as e:
             print(f"[ERREUR] Impossible de lire {SEARCHES_FILE}: {e}")
     return {
-        "active_search_id": "achat_parking_felix_faure",
+        "active_search_id": "parking_felix_faure",
         "searches": [
-            {
-                "id": "achat_parking_felix_faure",
-                "name": "Recherche Achat Parking 56 rue Félix Faure Lyon",
-                "type": "parking",
-                "enabled": True,
-                "data_file": "data_achat_parking_felix_faure.json"
-            },
             {
                 "id": "parking_felix_faure",
                 "name": "Recherche Parking 56 rue Félix Faure Lyon",
                 "type": "parking",
                 "enabled": True,
                 "data_file": "data_parking_felix_faure.json"
+            },
+            {
+                "id": "achat_parking_felix_faure",
+                "name": "Recherche Achat Parking 56 rue Félix Faure Lyon",
+                "type": "parking",
+                "enabled": True,
+                "data_file": "data_achat_parking_felix_faure.json"
             }
         ]
     }
@@ -68,6 +68,7 @@ def load_searches_config():
 JINKA_SESSION_FILE = "jinka_session.json"
 JINKA_TOKEN_FILE = "jinka_token.json"
 GDC_SESSION_FILE = "gdc_session.json"
+GDC_URL_FILE = "gdc_url.json"
 GDC_PARKING_URL_FILE = "gdc_parking_url.json"
 GDC_ACHAT_PARKING_URL_FILE = "gdc_achat_parking_url.json"
 GDC_DEFAULT_COOKIES = "cookies_gdc.json"
