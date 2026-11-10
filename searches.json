@@ -26,6 +26,7 @@
       "sources": [
         "bienici",
         "seloger",
+        "leboncoin",
         "jinka",
         "gdc"
       ]
@@ -56,6 +57,7 @@
       "sources": [
         "bienici",
         "seloger",
+        "leboncoin",
         "jinka",
         "gdc"
       ]

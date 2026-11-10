@@ -2851,6 +2851,39 @@ def scrape_seloger_parking(profile=None):
     return ads
 
 
+def scrape_leboncoin_parking(profile=None):
+    """
+    Tente de récupérer les annonces de stationnement/box directement sur LeBonCoin.
+    Comme LeBonCoin est protégé par un anti-bot strict (DataDome),
+    les annonces LeBonCoin sont automatiquement collectées via Jinka (agrégateur multi-sources).
+    """
+    if profile is None:
+        profile = {}
+    p_params = profile.get("params", {})
+    is_achat = p_params.get("transaction") in ("achat", "vente", "buy")
+    print(f"[INFO] [Parking] Interrogation du site LeBonCoin ({'achat' if is_achat else 'location'})...")
+    
+    url = f"https://www.leboncoin.fr/recherche?category={'11' if is_achat else '10'}&real_estate_type=3&locations=Lyon_69003"
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+        "Accept-Language": "fr-FR,fr;q=0.9,en-US;q=0.8,en;q=0.7"
+    }
+    ads = []
+    if curl_requests:
+        try:
+            resp = curl_requests.get(url, headers=headers, impersonate="chrome120", timeout=10)
+            if resp.status_code == 200 and "datadome" not in resp.text.lower():
+                print(f"[INFO] [Parking] LeBonCoin direct : {len(ads)} annonce(s) récupérée(s).")
+            else:
+                print("[INFO] [Parking] LeBonCoin direct protégé (anti-bot DataDome) -> Vos annonces LeBonCoin sont automatiquement agrégées via Jinka.")
+        except Exception as e:
+            print(f"[INFO] [Parking] LeBonCoin direct non disponible ({e}) -> Relais assuré par Jinka.")
+    else:
+        print("[INFO] [Parking] LeBonCoin direct protégé (anti-bot DataDome) -> Relais assuré par Jinka.")
+    return ads
+
+
 def geocode_address(address):
     """Géocode une adresse en France via l'API officielle adresse.data.gouv.fr."""
     if not address or len(address.strip()) < 4:
@@ -3068,6 +3101,13 @@ def run_parking_search(profile=None):
             all_raw_ads.extend(scrape_seloger_parking(profile))
         except Exception as e:
             print(f"[ERREUR] Scan SeLoger Parking: {e}")
+
+    # 2.5 LeBonCoin (tentative directe avec repli automatique via Jinka)
+    if "leboncoin" in configured_sources:
+        try:
+            all_raw_ads.extend(scrape_leboncoin_parking(profile))
+        except Exception as e:
+            print(f"[ERREUR] Scan LeBonCoin Parking: {e}")
         
     print(f"[INFO] {len(all_raw_ads)} annonces de stationnement brutes à analyser...")
     new_listings_count = 0
