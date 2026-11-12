@@ -522,6 +522,311 @@ def get_district_coordinates(text):
         return 45.7622, 4.8272 # Vieux Lyon
     return 45.7578, 4.8322 # Default Bellecour
 
+
+def evaluate_ad_seriousness(ad, profile=None, search_type=None, transaction=None):
+    """
+    Évalue le sérieux et la fiabilité d'une annonce sur une échelle de 0 à 10.
+    Analyse 5 piliers clés :
+      1. Risque d'arnaque (mandat, acompte préalable, scénario d'éloignement)
+      2. Cohérence du prix par rapport au marché local (Lyon 3e / quartier cible)
+      3. Profil annonceur & source (Professionnel / Réseau de confiance / Particulier)
+      4. Qualité rédactionnelle & clarté (syntaxe, précision technique, bizarreries)
+      5. Sécurité juridique & légalité (bail Code civil vs loi 89, copropriété, recharge)
+    """
+    if profile:
+        if not search_type:
+            search_type = profile.get("type", "parking")
+        if not transaction:
+            transaction = profile.get("params", {}).get("transaction", "location")
+    if not search_type:
+        search_type = "parking"
+    if not transaction:
+        transaction = "location"
+
+    titre = ad.get("titre", "") or ""
+    prix_str = str(ad.get("prix", "") or "")
+    notes = ad.get("notes", "") or ""
+    avantages = ad.get("avantages", "") or ""
+    inconvenients = ad.get("inconvenients", "") or ""
+    source = ad.get("source", "") or ""
+    quartier = ad.get("quartier", "") or ""
+    adresse = ad.get("adresse_estimee", "") or ""
+    type_pk = ad.get("type_parking", "") or ""
+    surface = float(ad.get("surface") or 0.0)
+
+    full_text = f"{titre} {notes} {avantages} {inconvenients} {adresse} {source} {type_pk}".lower()
+
+    # Extraction numérique du prix
+    clean_price = re.sub(r"[^\d,.]", "", prix_str).replace(" ", "").replace(",", ".")
+    try:
+        price_num = float(clean_price)
+    except Exception:
+        price_num = 0.0
+
+    points_forts = []
+    points_vigilance = []
+    red_flags = []
+
+    # ---------------------------------------------------------
+    # 1. RISQUE D'ARNAQUE (Pondération 30%)
+    # ---------------------------------------------------------
+    scam_keywords = [
+        "mandat", "western union", "moneygram", "transcash", "pcs mastercard",
+        "toneo", "neocurf", "coupon de recharge", "virement avant", "payer avant",
+        "bloquer le bien", "dépôt pour réserver", "mission humanitaire",
+        "déplacement à l'étranger", "hors de france", "urgent cause départ",
+        "uniquement sur whatsapp", "contactez moi à mon adresse personnelle"
+    ]
+    detected_scam = [k for k in scam_keywords if k in full_text]
+
+    trust_signals = [
+        "visite", "visiter", "bip", "télécommande", "sécurisé", "securise",
+        "portail", "copropriété", "gardien", "remise en main propre", "quittance"
+    ]
+    detected_trust = [k for k in trust_signals if k in full_text]
+
+    if detected_scam:
+        score_arnaque = 1.0
+        red_flags.append(f"Signaux d'alerte arnaque détectés : {', '.join(detected_scam)}")
+    elif len(detected_trust) >= 2:
+        score_arnaque = 9.5
+        points_forts.append("Absence totale de signal d'arnaque ; accès et visites cohérents")
+    else:
+        score_arnaque = 8.5
+        points_forts.append("Aucun élément suspect d'escroquerie détecté")
+
+    # ---------------------------------------------------------
+    # 2. PRIX VS MARCHÉ (Pondération 25%)
+    # ---------------------------------------------------------
+    score_prix = 8.0
+    prix_detail = ""
+    if search_type == "parking" and transaction == "location":
+        is_box = any(k in full_text for k in ["box", "garage"])
+        if is_box:
+            # Box fermé Lyon 3 : marché 110 € - 165 €
+            if price_num == 0:
+                score_prix = 7.0
+                prix_detail = "Loyer non précisé"
+            elif price_num < 65:
+                score_prix = 3.0
+                red_flags.append(f"Loyer anormalement bas ({price_num:.0f} €/mois) pour un box fermé à Lyon 3 (risque d'arnaque ou fausse annonce)")
+                prix_detail = f"Anomalie : {price_num:.0f} €/mois est très en dessous du marché (110-160 €)"
+            elif 70 <= price_num < 105:
+                score_prix = 9.0
+                points_forts.append(f"Prix très attractif ({price_num:.0f} €/mois) pour un box fermé dans ce secteur")
+                prix_detail = f"Très bon positionnement ({price_num:.0f} €/mois vs 110-160 € habituels)"
+            elif 105 <= price_num <= 165:
+                score_prix = 9.5
+                points_forts.append(f"Loyer ({price_num:.0f} €/mois) parfaitement cohérent avec les tarifs réels du marché à Lyon 3 (110-160 €)")
+                prix_detail = f"Plein marché : {price_num:.0f} €/mois (moyenne quartier ~135 €)"
+            elif 165 < price_num <= 200:
+                score_prix = 7.5
+                points_vigilance.append(f"Loyer en fourchette haute ({price_num:.0f} €/mois) : vérifier les prestations (borne, surface > 20 m²)")
+                prix_detail = f"Fourchette haute ({price_num:.0f} €/mois) justifiée par de bonnes prestations"
+            else:
+                score_prix = 6.0
+                points_vigilance.append(f"Loyer élevé ({price_num:.0f} €/mois) par rapport à la moyenne du quartier")
+                prix_detail = f"Loyer élevé ({price_num:.0f} €/mois)"
+        else:
+            # Place sous-sol ou standard : 75 - 110 €
+            if price_num == 0:
+                score_prix = 7.0
+                prix_detail = "Loyer non précisé"
+            elif price_num < 45:
+                score_prix = 3.5
+                red_flags.append(f"Loyer suspect ({price_num:.0f} €/mois) pour du stationnement sécurisé")
+                prix_detail = f"Loyer suspect ({price_num:.0f} €/mois)"
+            elif 70 <= price_num <= 115:
+                score_prix = 9.5
+                points_forts.append(f"Loyer ({price_num:.0f} €/mois) bien positionné dans les prix du marché (75-110 €)")
+                prix_detail = f"Prix marché standard ({price_num:.0f} €/mois)"
+            else:
+                score_prix = 8.0
+                prix_detail = f"Loyer de {price_num:.0f} €/mois"
+    elif search_type == "parking" and transaction == "achat":
+        # Achat Lyon 3e : 20 000 € - 36 000 €
+        if price_num < 15000:
+            score_prix = 4.0
+            red_flags.append(f"Prix d'achat ({price_num:,.0f} €) anormalement bas pour un box/garage dans le 3e")
+            prix_detail = f"Prix d'achat anormalement bas ({price_num:,.0f} €)"
+        elif 20000 <= price_num <= 36000:
+            score_prix = 9.5
+            points_forts.append(f"Prix d'achat ({price_num:,.0f} €) parfaitement dans les prix du marché local".replace(",", " "))
+            prix_detail = f"Prix conforme au marché de vente (20-35k €)"
+        else:
+            score_prix = 8.0
+            prix_detail = f"Prix d'achat de {price_num:,.0f} €".replace(",", " ")
+    else:
+        # Appartement location : calcul loyer / m²
+        if surface > 0 and price_num > 0:
+            prix_m2 = price_num / surface
+            if prix_m2 < 11.0:
+                score_prix = 3.5
+                red_flags.append(f"Loyer au m² ({prix_m2:.1f} €/m²) suspect pour Lyon intra-muros (miroir d'arnaque)")
+                prix_detail = f"Loyer anormalement bas ({prix_m2:.1f} €/m²)"
+            elif 14.0 <= prix_m2 <= 24.0:
+                score_prix = 9.5
+                points_forts.append(f"Loyer au m² ({prix_m2:.1f} €/m²) conforme au marché lyonnais et encadrement")
+                prix_detail = f"Conforme marché et encadrement ({prix_m2:.1f} €/m²)"
+            else:
+                score_prix = 7.5
+                prix_detail = f"Loyer de {prix_m2:.1f} €/m²"
+        else:
+            score_prix = 8.0
+            prix_detail = f"Loyer : {prix_str}"
+
+    # ---------------------------------------------------------
+    # 3. ANNONCEUR & SOURCE (Pondération 20%)
+    # ---------------------------------------------------------
+    score_annonceur = 7.5
+    src_lower = source.lower()
+    is_agency = any(k in src_lower or k in full_text for k in [
+        "square habitat", "citya", "nexity", "foncia", "bien'ici",
+        "agence", "régie", "regie", "cabinet", "siren", "carte t", "frais d'agence"
+    ])
+    is_gdc = "gens de confiance" in src_lower or "gdc" in src_lower
+
+    if is_agency:
+        score_annonceur = 9.5
+        points_forts.append("Professionnel de l'immobilier / Régie certifiée (carte T, cadre juridique garanti, sécurité maximale)")
+        annonceur_detail = f"Agence professionnelle / Régie ({source})"
+    elif is_gdc:
+        score_annonceur = 9.0
+        points_forts.append("Plateforme Gens de Confiance (profils vérifiés par parrainage, grande fiabilité)")
+        annonceur_detail = "Particulier vérifié (Réseau Gens de Confiance)"
+    elif any(k in src_lower for k in ["paruvendu", "leboncoin", "pap", "particulier"]):
+        score_annonceur = 8.0
+        points_forts.append(f"Annonceur particulier sur {source} (pratique courante et saine pour les parkings)")
+        points_vigilance.append("Contact direct de particulier à particulier : exiger impérativement une visite physique sur place avant tout versement")
+        annonceur_detail = f"Particulier ({source})"
+    else:
+        score_annonceur = 7.0
+        points_vigilance.append(f"Source : {source}. Vérifier l'identité et le titre de propriété du bailleur")
+        annonceur_detail = f"Source : {source}"
+
+    # ---------------------------------------------------------
+    # 4. RÉDACTION & CLARTÉ (Pondération 15%)
+    # ---------------------------------------------------------
+    score_redaction = 8.0
+    weird_phrases = [
+        "homme honnête", "monsieur sérieux", "chambre de maître", "dieu vous bénisse",
+        "mutation urgente", "loyer modéré pour personne propre", "commodité spacieuse"
+    ]
+    has_weird = any(w in full_text for w in weird_phrases)
+    if has_weird:
+        score_redaction = 3.5
+        red_flags.append("Tournures de phrases suspectes ou traductions automatiques typiques des escroqueries")
+        redaction_detail = "Présence de formulations atypiques ou traduites"
+    else:
+        desc_length = len(full_text)
+        if desc_length > 150:
+            score_redaction = 9.2
+            points_forts.append("Description claire et détaillée (dimensions, accès, portail et caractéristiques précisées)")
+            redaction_detail = "Riche en détails concrets et vocabulaire professionnel"
+        elif desc_length < 50:
+            score_redaction = 6.5
+            points_vigilance.append("Description succincte : faire confirmer par écrit les dimensions et conditions d'accès")
+            redaction_detail = "Description courte"
+        else:
+            score_redaction = 8.0
+            redaction_detail = "Description correcte et compréhensible"
+
+    # ---------------------------------------------------------
+    # 5. LÉGALITÉ, CONFORMITÉ & COPROPRIÉTÉ (Pondération 10%)
+    # ---------------------------------------------------------
+    score_legalite = 8.5
+    if search_type == "parking":
+        has_elec = any(k in full_text for k in ["prise", "borne", "électrique", "electrique", "recharge", "tesla"])
+        if has_elec:
+            points_vigilance.append("Point recharge électrique : vérifier que la prise est sur un sous-compteur individuel et non sur les charges communes de copropriété")
+        points_forts.append("Régime juridique : Bail de droit commun (Code civil art. 1709), grande liberté contractuelle")
+        points_vigilance.append("Dépôt de garantie usuel : 1 à 2 mois de loyer max, plus caution de 40 à 80 € pour l'émetteur/bip")
+        legalite_detail = "Bail Code civil standard (vérifier usage électrique & règlement copro)"
+    else:
+        points_forts.append("Soumis à la loi du 6 juillet 1989 et encadrement des loyers à Lyon")
+        points_vigilance.append("Vérifier le DPE, les charges réelles et l'état des lieux d'entrée contradictoire")
+        legalite_detail = "Bail d'habitation loi 1989"
+
+    # Calcul de la note globale pondérée
+    global_score = round(
+        (score_arnaque * 0.30) +
+        (score_prix * 0.25) +
+        (score_annonceur * 0.20) +
+        (score_redaction * 0.15) +
+        (score_legalite * 0.10),
+        1
+    )
+
+    if red_flags:
+        global_score = min(global_score, 4.5)
+
+    global_score = max(1.0, min(10.0, global_score))
+
+    if global_score >= 8.8:
+        niveau = "Très élevé"
+        label = "Excellente fiabilité"
+        badge_class = "serieux-high"
+        resume = "Annonce très sérieuse et parfaitement conforme aux prix et règles du marché local."
+    elif global_score >= 7.5:
+        niveau = "Élevé"
+        label = "Annonce sérieuse"
+        badge_class = "serieux-good"
+        resume = "Annonce saine et bien positionnée. Vigilance standard d'usage lors de la visite."
+    elif global_score >= 5.5:
+        niveau = "Moyen"
+        label = "Points à vérifier"
+        badge_class = "serieux-medium"
+        resume = "Annonce globalement recevable mais certains détails ou garanties méritent clarification."
+    else:
+        niveau = "Faible"
+        label = "Risque d'arnaque"
+        badge_class = "serieux-risk"
+        resume = "Alerte : plusieurs signaux anormaux détectés (prix suspect, mentions douteuses ou acompte)."
+
+    return {
+        "score": global_score,
+        "niveau": niveau,
+        "label": label,
+        "badge_class": badge_class,
+        "resume": resume,
+        "criteres": {
+            "arnaque": {
+                "nom": "Risque d'arnaque",
+                "score": score_arnaque,
+                "statut": "ok" if score_arnaque >= 8 else ("warning" if score_arnaque >= 5 else "danger"),
+                "detail": "Aucun piège détecté" if score_arnaque >= 8 else "Attention aux modalités de paiement"
+            },
+            "prix": {
+                "nom": "Cohérence Prix / Marché",
+                "score": score_prix,
+                "statut": "ok" if score_prix >= 8 else ("warning" if score_prix >= 5 else "danger"),
+                "detail": prix_detail
+            },
+            "annonceur": {
+                "nom": "Annonceur & Source",
+                "score": score_annonceur,
+                "statut": "ok" if score_annonceur >= 8 else "info",
+                "detail": annonceur_detail
+            },
+            "redaction": {
+                "nom": "Rédaction & Clarté",
+                "score": score_redaction,
+                "statut": "ok" if score_redaction >= 8 else ("warning" if score_redaction >= 5 else "danger"),
+                "detail": redaction_detail
+            },
+            "legalite": {
+                "nom": "Sécurité juridique & Copro",
+                "score": score_legalite,
+                "statut": "ok" if score_legalite >= 8 else "info",
+                "detail": legalite_detail
+            }
+        },
+        "points_forts": points_forts,
+        "points_vigilance": points_vigilance,
+        "red_flags": red_flags
+    }
+
+
 def parse_barnes_page(html_text, url):
     """Helper to extract details from Barnes Lyon property details page."""
     lines = [line.strip() for line in html_text.split('\n') if line.strip()]
@@ -2388,6 +2693,13 @@ def run_apartment_search(profile=None):
             "questions_visite": "",
             "notes": f"Avantages: {avantages}\nInconvénients: {inconvenients}"
         }
+
+        # Évaluation indice de sérieux & risque d'arnaque
+        serieux_eval = evaluate_ad_seriousness(new_item, profile=profile, search_type="appartement", transaction="location")
+        new_item["indice_serieux"] = serieux_eval["score"]
+        new_item["indice_serieux_niveau"] = serieux_eval["niveau"]
+        new_item["indice_serieux_details"] = serieux_eval
+
         
         existing_data.append(new_item)
         existing_urls.add(ad_url)
@@ -3276,6 +3588,12 @@ def run_parking_search(profile=None):
             "questions_visite": "",
             "notes": f"Distance au {target_address}: {distance_str}\nVéhicule: Tesla Model 3/Y\nAvantages: {', '.join(avantages)}\nInconvénients: {', '.join(inconvenients)}"
         }
+
+        # Évaluation indice de sérieux & risque d'arnaque
+        serieux_eval = evaluate_ad_seriousness(new_item, profile=profile, search_type="parking", transaction="achat" if is_achat else "location")
+        new_item["indice_serieux"] = serieux_eval["score"]
+        new_item["indice_serieux_niveau"] = serieux_eval["niveau"]
+        new_item["indice_serieux_details"] = serieux_eval
         
         existing_data.append(new_item)
         existing_urls.add(ad_url)

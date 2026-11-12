@@ -12,6 +12,11 @@ from datetime import datetime
 import shutil
 import sys
 
+try:
+    from agent import evaluate_ad_seriousness
+except ImportError:
+    evaluate_ad_seriousness = None
+
 PORT = 8000
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_FILE = os.path.join(BASE_DIR, "data_parking_felix_faure.json")
@@ -262,7 +267,7 @@ def run_agent_task(search_id=None):
                         total = max(1, agent_status["stats"]["raw_collected"])
                         agent_status["progress"] = min(92, 72 + int((agent_status["stats"]["analyzed"] / total) * 20))
                         
-                    elif "[OK]" in line:
+                    elif "[OK] Nouvelle annonce ajoutée" in line or "[OK] [Parking] Nouvelle place ajoutée" in line:
                         agent_status["stats"]["new_added"] += 1
                         agent_status["stats"]["analyzed"] += 1
                         agent_status["message"] = f"✨ Nouvelle annonce ajoutée (+{agent_status['stats']['new_added']}) !"
@@ -271,10 +276,24 @@ def run_agent_task(search_id=None):
                     elif "[CONSEIL]" in line:
                         agent_status["advice"] = line.replace("[CONSEIL]", "").strip()
                         
-                    elif "Scan terminé" in line or "[BILAN_PARKING]" in line:
+                    elif "Scan terminé" in line or "[BILAN_PARKING]" in line or "[BILAN_IMMO]" in line:
                         agent_status["stage"] = "Finalisation"
                         agent_status["progress"] = 96
                         agent_status["message"] = "Enregistrement et synchronisation..."
+                        
+                        m_add = re.search(r"Ajoutées:\s*(\d+)", line)
+                        if m_add:
+                            agent_status["stats"]["new_added"] = int(m_add.group(1))
+                        m_dist = re.search(r"Trop loin:\s*(\d+)", line)
+                        if m_dist:
+                            agent_status["stats"]["rejected_distance"] = int(m_dist.group(1))
+                        m_price = re.search(r"Hors budget:\s*(\d+)", line)
+                        if m_price:
+                            agent_status["stats"]["rejected_price"] = int(m_price.group(1))
+                        m_known = re.search(r"Déjà en base:\s*(\d+)", line)
+                        if m_known:
+                            agent_status["stats"]["already_known"] = int(m_known.group(1))
+
 
         proc.wait()
         with agent_status_lock:
@@ -326,7 +345,7 @@ class DashboardHandler(http.server.SimpleHTTPRequestHandler):
 
         elif path == "/api/data":
             search_id = query.get("search", [None])[0] or query.get("id", [None])[0]
-            target_file, _ = get_target_data_file(search_id)
+            target_file, profile = get_target_data_file(search_id)
 
             self.send_response(200)
             self.send_header("Content-type", "application/json; charset=utf-8")
@@ -335,11 +354,26 @@ class DashboardHandler(http.server.SimpleHTTPRequestHandler):
             self.send_header("Expires", "0")
             self.end_headers()
             if os.path.exists(target_file):
-                with open(target_file, "r", encoding="utf-8") as f:
-                    self.wfile.write(f.read().encode("utf-8"))
+                try:
+                    with open(target_file, "r", encoding="utf-8") as f:
+                        items = json.load(f)
+                    
+                    if evaluate_ad_seriousness and isinstance(items, list):
+                        s_type = profile.get("type", "parking") if profile else "parking"
+                        s_tx = profile.get("params", {}).get("transaction", "location") if profile else "location"
+                        for it in items:
+                            if "indice_serieux" not in it or "indice_serieux_details" not in it:
+                                eval_res = evaluate_ad_seriousness(it, profile=profile, search_type=s_type, transaction=s_tx)
+                                it["indice_serieux"] = eval_res["score"]
+                                it["indice_serieux_niveau"] = eval_res["niveau"]
+                                it["indice_serieux_details"] = eval_res
+                    self.wfile.write(json.dumps(items, ensure_ascii=False, indent=2).encode("utf-8"))
+                except Exception as e:
+                    self.wfile.write(b"[]")
             else:
                 self.wfile.write(b"[]")
             return
+
 
         elif path == "/api/agent_status":
             self.send_response(200)
@@ -575,6 +609,16 @@ class DashboardHandler(http.server.SimpleHTTPRequestHandler):
                 new_item["tesla_compatible"] = params.get("tesla_compatible")
             if params.get("prise_electrique"):
                 new_item["prise_electrique"] = params.get("prise_electrique")
+
+            # Évaluation indice de sérieux
+            if evaluate_ad_seriousness:
+                s_type = profile.get("type", "parking") if profile else "parking"
+                s_tx = profile.get("params", {}).get("transaction", "location") if profile else "location"
+                eval_res = evaluate_ad_seriousness(new_item, profile=profile, search_type=s_type, transaction=s_tx)
+                new_item["indice_serieux"] = eval_res["score"]
+                new_item["indice_serieux_niveau"] = eval_res["niveau"]
+                new_item["indice_serieux_details"] = eval_res
+
             
             data = []
             if os.path.exists(target_file):
@@ -604,6 +648,33 @@ class DashboardHandler(http.server.SimpleHTTPRequestHandler):
             self.end_headers()
             self.wfile.write(json.dumps({"status": "success", "listing": new_item}).encode("utf-8"))
             sync_github_background(f"feat: ajout manuel de l'annonce '{titre}' ({search_id or 'défaut'})")
+            return
+
+        elif self.path == "/api/analyze_ad_serieux":
+            search_id = params.get("search") or params.get("search_id")
+            _, profile = get_target_data_file(search_id)
+            item_data = params.get("item") or params
+            s_type = params.get("type") or (profile.get("type", "parking") if profile else "parking")
+            s_tx = params.get("transaction") or (profile.get("params", {}).get("transaction", "location") if profile else "location")
+            if evaluate_ad_seriousness:
+                eval_res = evaluate_ad_seriousness(item_data, profile=profile, search_type=s_type, transaction=s_tx)
+            else:
+                eval_res = {
+                    "score": 8.0,
+                    "niveau": "Élevé",
+                    "label": "Évaluation standard",
+                    "badge_class": "serieux-good",
+                    "resume": "Évaluation non disponible en direct",
+                    "criteres": {},
+                    "points_forts": [],
+                    "points_vigilance": [],
+                    "red_flags": []
+                }
+            
+            self.send_response(200)
+            self.send_header("Content-type", "application/json; charset=utf-8")
+            self.end_headers()
+            self.wfile.write(json.dumps(eval_res, ensure_ascii=False).encode("utf-8"))
             return
 
         elif self.path == "/api/sync_github":

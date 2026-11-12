@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,9 +11,11 @@
     <!-- Google Fonts & FontAwesome Icons -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
+
     <style>
         :root {
             --bg-color: #0b0f19;
@@ -47,7 +50,12 @@
             overflow-x: hidden;
         }
 
-        h1, h2, h3, h4, h5, h6 {
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6 {
             font-family: 'Outfit', sans-serif;
             font-weight: 600;
         }
@@ -185,6 +193,7 @@
             color: white;
             border: none;
         }
+
         .btn-primary:hover {
             background: linear-gradient(135deg, #4f46e5, #4338ca);
             box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
@@ -196,6 +205,7 @@
             border: 1px solid rgba(16, 185, 129, 0.3);
             box-shadow: none;
         }
+
         .btn-sync:hover {
             background: rgba(16, 185, 129, 0.3);
             box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
@@ -207,6 +217,7 @@
             border: none;
             box-shadow: 0 4px 14px rgba(14, 165, 233, 0.3);
         }
+
         .btn-scan:hover {
             background: linear-gradient(135deg, #0284c7, #1d4ed8);
             box-shadow: 0 6px 20px rgba(14, 165, 233, 0.4);
@@ -357,15 +368,41 @@
             font-family: 'Outfit', sans-serif;
         }
 
-        .stat-card.total { border-left: 4px solid var(--accent); }
-        .stat-card.visiter { border-left: 4px solid var(--success); }
-        .stat-card.tesla { border-left: 4px solid #38bdf8; }
-        .stat-card.box { border-left: 4px solid #a855f7; }
-        .stat-card.elec { border-left: 4px solid #10b981; }
-        .stat-card.infos { border-left: 4px solid var(--info); }
-        .stat-card.attente { border-left: 4px solid var(--warning); }
-        .stat-card.nouveau { border-left: 4px solid #38bdf8; }
-        .stat-card.elimine { border-left: 4px solid var(--danger); }
+        .stat-card.total {
+            border-left: 4px solid var(--accent);
+        }
+
+        .stat-card.visiter {
+            border-left: 4px solid var(--success);
+        }
+
+        .stat-card.tesla {
+            border-left: 4px solid #38bdf8;
+        }
+
+        .stat-card.box {
+            border-left: 4px solid #a855f7;
+        }
+
+        .stat-card.elec {
+            border-left: 4px solid #10b981;
+        }
+
+        .stat-card.infos {
+            border-left: 4px solid var(--info);
+        }
+
+        .stat-card.attente {
+            border-left: 4px solid var(--warning);
+        }
+
+        .stat-card.nouveau {
+            border-left: 4px solid #38bdf8;
+        }
+
+        .stat-card.elimine {
+            border-left: 4px solid var(--danger);
+        }
 
         /* ==========================================================================
            CONTROLS & FILTERS
@@ -467,12 +504,31 @@
             box-shadow: 0 16px 36px 0 rgba(0, 0, 0, 0.45);
         }
 
-        .listing-card.status-nouveau { border-top-color: #38bdf8; }
-        .listing-card.status-visiter { border-top-color: var(--success); }
-        .listing-card.status-infos { border-top-color: var(--info); }
-        .listing-card.status-attente { border-top-color: var(--warning); }
-        .listing-card.status-loue { border-top-color: var(--danger); opacity: 0.65; }
-        .listing-card.status-elimine { border-top-color: var(--danger); opacity: 0.65; }
+        .listing-card.status-nouveau {
+            border-top-color: #38bdf8;
+        }
+
+        .listing-card.status-visiter {
+            border-top-color: var(--success);
+        }
+
+        .listing-card.status-infos {
+            border-top-color: var(--info);
+        }
+
+        .listing-card.status-attente {
+            border-top-color: var(--warning);
+        }
+
+        .listing-card.status-loue {
+            border-top-color: var(--danger);
+            opacity: 0.65;
+        }
+
+        .listing-card.status-elimine {
+            border-top-color: var(--danger);
+            opacity: 0.65;
+        }
 
         /* Reorder Controls */
         .card-header {
@@ -701,8 +757,13 @@
             margin-bottom: 0;
         }
 
-        .detail-line.plus { color: #86efac; }
-        .detail-line.minus { color: #fca5a5; }
+        .detail-line.plus {
+            color: #86efac;
+        }
+
+        .detail-line.minus {
+            color: #fca5a5;
+        }
 
         /* Notes & Annotations styling */
         .card-notes {
@@ -893,6 +954,7 @@
             cursor: pointer;
             line-height: 1;
         }
+
         .btn-close:hover {
             color: var(--danger);
         }
@@ -915,7 +977,9 @@
             font-weight: 500;
         }
 
-        .form-group input, .form-group select, .form-group textarea {
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
             width: 100%;
             padding: 0.65rem 0.85rem;
             background: rgba(15, 23, 42, 0.6);
@@ -927,7 +991,9 @@
             font-size: 0.9rem;
         }
 
-        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
             border-color: var(--accent);
         }
 
@@ -968,14 +1034,30 @@
             animation: toastIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
 
-        .toast-success { border-left: 4px solid var(--success); }
-        .toast-danger { border-left: 4px solid var(--danger); }
-        .toast-info { border-left: 4px solid var(--info); }
+        .toast-success {
+            border-left: 4px solid var(--success);
+        }
+
+        .toast-danger {
+            border-left: 4px solid var(--danger);
+        }
+
+        .toast-info {
+            border-left: 4px solid var(--info);
+        }
 
         @keyframes toastIn {
-            from { transform: translateY(20px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
+            from {
+                transform: translateY(20px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
         }
+
         /* ==========================================================================
            SCAN MONITOR & PROGRESS BAR
            ========================================================================== */
@@ -1022,9 +1104,21 @@
         }
 
         @keyframes pulseGlow {
-            0% { transform: scale(0.95); opacity: 0.8; }
-            50% { transform: scale(1.15); opacity: 1; filter: brightness(1.2); }
-            100% { transform: scale(0.95); opacity: 0.8; }
+            0% {
+                transform: scale(0.95);
+                opacity: 0.8;
+            }
+
+            50% {
+                transform: scale(1.15);
+                opacity: 1;
+                filter: brightness(1.2);
+            }
+
+            100% {
+                transform: scale(0.95);
+                opacity: 0.8;
+            }
         }
 
         .monitor-subtitle {
@@ -1049,10 +1143,29 @@
             gap: 0.4rem;
         }
 
-        .badge-idle { background: rgba(148, 163, 184, 0.15); color: #94a3b8; border: 1px solid rgba(148, 163, 184, 0.3); }
-        .badge-running { background: rgba(14, 165, 233, 0.15); color: #38bdf8; border: 1px solid rgba(14, 165, 233, 0.4); }
-        .badge-success { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.4); }
-        .badge-error { background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.4); }
+        .badge-idle {
+            background: rgba(148, 163, 184, 0.15);
+            color: #94a3b8;
+            border: 1px solid rgba(148, 163, 184, 0.3);
+        }
+
+        .badge-running {
+            background: rgba(14, 165, 233, 0.15);
+            color: #38bdf8;
+            border: 1px solid rgba(14, 165, 233, 0.4);
+        }
+
+        .badge-success {
+            background: rgba(16, 185, 129, 0.15);
+            color: #34d399;
+            border: 1px solid rgba(16, 185, 129, 0.4);
+        }
+
+        .badge-error {
+            background: rgba(239, 68, 68, 0.15);
+            color: #f87171;
+            border: 1px solid rgba(239, 68, 68, 0.4);
+        }
 
         .btn-icon {
             background: none;
@@ -1064,6 +1177,7 @@
             border-radius: 6px;
             transition: all 0.2s;
         }
+
         .btn-icon:hover {
             color: var(--text-main);
             background: rgba(255, 255, 255, 0.08);
@@ -1099,6 +1213,7 @@
             gap: 0.35rem;
             transition: color 0.2s;
         }
+
         .btn-text-action:hover {
             color: #7dd3fc;
             text-decoration: underline;
@@ -1121,6 +1236,7 @@
             align-items: center;
             gap: 0.35rem;
         }
+
         .criteria-pill strong {
             color: #38bdf8;
         }
@@ -1177,8 +1293,13 @@
         }
 
         @keyframes shimmer {
-            0% { background-position: 200% 0; }
-            100% { background-position: -200% 0; }
+            0% {
+                background-position: 200% 0;
+            }
+
+            100% {
+                background-position: -200% 0;
+            }
         }
 
         .progress-submessage {
@@ -1226,9 +1347,17 @@
             text-align: center;
         }
 
-        .monitor-stat-card.stat-success .stat-icon { color: var(--success); }
-        .monitor-stat-card.stat-warning .stat-icon { color: var(--warning); }
-        .monitor-stat-card.stat-danger .stat-icon { color: var(--danger); }
+        .monitor-stat-card.stat-success .stat-icon {
+            color: var(--success);
+        }
+
+        .monitor-stat-card.stat-warning .stat-icon {
+            color: var(--warning);
+        }
+
+        .monitor-stat-card.stat-danger .stat-icon {
+            color: var(--danger);
+        }
 
         .stat-num {
             font-family: 'Outfit', sans-serif;
@@ -1312,9 +1441,18 @@
             border-radius: 50%;
             display: inline-block;
         }
-        .dot.red { background: #ef4444; }
-        .dot.yellow { background: #f59e0b; }
-        .dot.green { background: #10b981; }
+
+        .dot.red {
+            background: #ef4444;
+        }
+
+        .dot.yellow {
+            background: #f59e0b;
+        }
+
+        .dot.green {
+            background: #10b981;
+        }
 
         .terminal-title {
             color: var(--text-muted);
@@ -1348,6 +1486,7 @@
             font-size: 0.75rem;
             transition: all 0.2s;
         }
+
         .btn-term-action:hover {
             color: var(--text-main);
             background: rgba(255, 255, 255, 0.12);
@@ -1375,15 +1514,48 @@
             font-style: italic;
         }
 
-        .line-ok { color: #34d399; font-weight: 600; }
-        .line-info { color: #38bdf8; }
-        .line-reject-dist { color: #f59e0b; }
-        .line-reject-prix { color: #f87171; }
-        .line-warn { color: #fbbf24; }
-        .line-skip { color: #64748b; }
-        .line-crit { color: #c084fc; font-weight: 600; }
-        .line-bilan { color: #38bdf8; font-weight: 700; background: rgba(56, 189, 248, 0.1); padding: 0.2rem 0.4rem; border-radius: 4px; }
-        .line-conseil { color: #fde047; font-weight: 600; }
+        .line-ok {
+            color: #34d399;
+            font-weight: 600;
+        }
+
+        .line-info {
+            color: #38bdf8;
+        }
+
+        .line-reject-dist {
+            color: #f59e0b;
+        }
+
+        .line-reject-prix {
+            color: #f87171;
+        }
+
+        .line-warn {
+            color: #fbbf24;
+        }
+
+        .line-skip {
+            color: #64748b;
+        }
+
+        .line-crit {
+            color: #c084fc;
+            font-weight: 600;
+        }
+
+        .line-bilan {
+            color: #38bdf8;
+            font-weight: 700;
+            background: rgba(56, 189, 248, 0.1);
+            padding: 0.2rem 0.4rem;
+            border-radius: 4px;
+        }
+
+        .line-conseil {
+            color: #fde047;
+            font-weight: 600;
+        }
 
         .monitor-footer {
             display: flex;
@@ -1413,7 +1585,7 @@
             align-items: center;
             gap: 0.75rem;
             cursor: pointer;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
             transition: all 0.25s ease;
             font-size: 0.82rem;
             color: var(--text-main);
@@ -1451,8 +1623,331 @@
             color: var(--text-muted);
             margin-left: 0.2rem;
         }
+
+        /* =========================================================================
+           SERIEUX & AUDIT MODAL STYLES (Indice de confiance sur 10)
+           ========================================================================= */
+        .tag-serieux {
+            cursor: pointer;
+            transition: all 0.2s ease;
+            user-select: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            font-size: 0.75rem;
+            padding: 0.25rem 0.65rem;
+            border-radius: 6px;
+            font-weight: 600;
+        }
+
+        .tag-serieux:hover {
+            transform: translateY(-1px);
+            filter: brightness(1.2);
+        }
+
+        .serieux-high {
+            background: rgba(16, 185, 129, 0.16);
+            color: #34d399;
+            border: 1px solid rgba(16, 185, 129, 0.45);
+            box-shadow: 0 0 10px rgba(16, 185, 129, 0.15);
+        }
+
+        .serieux-good {
+            background: rgba(14, 165, 233, 0.16);
+            color: #38bdf8;
+            border: 1px solid rgba(14, 165, 233, 0.45);
+        }
+
+        .serieux-medium {
+            background: rgba(245, 158, 11, 0.16);
+            color: #fbbf24;
+            border: 1px solid rgba(245, 158, 11, 0.45);
+        }
+
+        .serieux-risk {
+            background: rgba(239, 68, 68, 0.22);
+            color: #f87171;
+            border: 1px solid rgba(239, 68, 68, 0.55);
+            animation: pulseRisk 2s infinite;
+        }
+
+        @keyframes pulseRisk {
+            0% {
+                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.5);
+            }
+
+            70% {
+                box-shadow: 0 0 0 6px rgba(239, 68, 68, 0);
+            }
+
+            100% {
+                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+            }
+        }
+
+        .btn-audit {
+            background: rgba(99, 102, 241, 0.15);
+            color: #c7d2fe;
+            border: 1px solid rgba(99, 102, 241, 0.35);
+            gap: 0.35rem;
+            cursor: pointer;
+        }
+
+        .btn-audit:hover {
+            background: var(--accent);
+            color: #ffffff;
+            box-shadow: 0 4px 12px var(--accent-glow);
+        }
+
+        .serieux-audit-panel {
+            max-width: 780px !important;
+            padding: 2rem !important;
+        }
+
+        .audit-ad-subtitle {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-top: 0.25rem;
+        }
+
+        .audit-hero {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            background: rgba(15, 23, 42, 0.65);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.25rem;
+            margin-bottom: 1.25rem;
+        }
+
+        .audit-hero-score {
+            width: 88px;
+            height: 88px;
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            border: 3px solid;
+            background: rgba(11, 15, 25, 0.75);
+        }
+
+        .audit-hero-score.score-high {
+            border-color: #10b981;
+            color: #34d399;
+            box-shadow: 0 0 20px rgba(16, 185, 129, 0.25);
+        }
+
+        .audit-hero-score.score-good {
+            border-color: #0ea5e9;
+            color: #38bdf8;
+            box-shadow: 0 0 20px rgba(14, 165, 233, 0.25);
+        }
+
+        .audit-hero-score.score-medium {
+            border-color: #f59e0b;
+            color: #fbbf24;
+            box-shadow: 0 0 20px rgba(245, 158, 11, 0.25);
+        }
+
+        .audit-hero-score.score-risk {
+            border-color: #ef4444;
+            color: #f87171;
+            box-shadow: 0 0 20px rgba(239, 68, 68, 0.35);
+        }
+
+        .audit-score-num {
+            font-size: 2rem;
+            font-weight: 800;
+            line-height: 1;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        .audit-score-max {
+            font-size: 0.75rem;
+            opacity: 0.7;
+            font-weight: 600;
+        }
+
+        .audit-hero-content {
+            flex: 1;
+        }
+
+        .audit-hero-level {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 0.3rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .audit-hero-desc {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            line-height: 1.45;
+        }
+
+        .audit-red-flag-banner {
+            background: rgba(239, 68, 68, 0.15);
+            border: 1px solid rgba(239, 68, 68, 0.45);
+            border-radius: 10px;
+            padding: 0.85rem 1.15rem;
+            margin-bottom: 1.25rem;
+            color: #fca5a5;
+            font-size: 0.88rem;
+            display: flex;
+            align-items: flex-start;
+            gap: 0.65rem;
+        }
+
+        .audit-criteria-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+            gap: 0.85rem;
+            margin-bottom: 1.25rem;
+        }
+
+        .audit-criterion-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 0.85rem;
+        }
+
+        .criterion-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.4rem;
+        }
+
+        .criterion-title {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+        }
+
+        .criterion-score {
+            font-size: 0.85rem;
+            font-weight: 700;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        .criterion-bar-bg {
+            height: 6px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 3px;
+            overflow: hidden;
+            margin-bottom: 0.4rem;
+        }
+
+        .criterion-bar-fill {
+            height: 100%;
+            border-radius: 3px;
+            transition: width 0.4s ease;
+        }
+
+        .criterion-desc {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            line-height: 1.35;
+        }
+
+        .audit-lists-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 1.25rem;
+        }
+
+        @media (max-width: 640px) {
+            .audit-lists-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .audit-hero {
+                flex-direction: column;
+                text-align: center;
+            }
+        }
+
+        .audit-box-col {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 1rem;
+        }
+
+        .audit-box-title {
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 0.65rem;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .audit-box-title.forts {
+            color: #34d399;
+        }
+
+        .audit-box-title.vigilance {
+            color: #fbbf24;
+        }
+
+        .audit-ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 0.45rem;
+        }
+
+        .audit-li {
+            font-size: 0.8rem;
+            line-height: 1.4;
+            color: #cbd5e1;
+            display: flex;
+            align-items: flex-start;
+            gap: 0.45rem;
+        }
+
+        .audit-li i {
+            margin-top: 0.2rem;
+            font-size: 0.75rem;
+            flex-shrink: 0;
+        }
+
+        .audit-checklist {
+            background: rgba(99, 102, 241, 0.08);
+            border: 1px solid rgba(99, 102, 241, 0.25);
+            border-radius: 10px;
+            padding: 0.85rem 1rem;
+            font-size: 0.8rem;
+            color: #c7d2fe;
+            line-height: 1.45;
+        }
+
+        .audit-checklist-title {
+            font-weight: 600;
+            margin-bottom: 0.35rem;
+            color: #e0e7ff;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
     </style>
+
 </head>
+
 <body>
     <div class="container">
         <!-- Dashboard Header -->
@@ -1461,10 +1956,11 @@
                 <i class="fa-solid fa-radar" id="brand-icon"></i>
                 <div>
                     <h1 id="brand-title">RechercheBiens</h1>
-                    <p id="brand-subtitle">Veille immobilière autonome à Lyon (Achat & Location Parkings, Box, Garages)</p>
+                    <p id="brand-subtitle">Veille immobilière autonome à Lyon (Achat & Location Parkings, Box, Garages)
+                    </p>
                 </div>
             </div>
-            
+
             <div class="header-actions">
                 <div id="mode-badge" class="mode-badge">
                     <i class="fa-solid fa-spinner fa-spin"></i> <span id="mode-text">Connexion...</span>
@@ -1473,7 +1969,8 @@
                 <button class="btn btn-primary" onclick="openAddModal()" title="Ajouter une annonce manuellement">
                     <i class="fa-solid fa-plus"></i> Ajouter une annonce
                 </button>
-                <button class="btn btn-sync" id="btn-sync-github" onclick="syncToGitHub()" style="display:none;" title="Forcer la synchronisation vers GitHub Pages">
+                <button class="btn btn-sync" id="btn-sync-github" onclick="syncToGitHub()" style="display:none;"
+                    title="Forcer la synchronisation vers GitHub Pages">
                     <i class="fa-brands fa-github"></i> Sync GitHub
                 </button>
                 <button class="btn btn-secondary" onclick="forceRefresh()" title="Actualiser les annonces">
@@ -1488,16 +1985,20 @@
                 <!-- Dynamically populated profile tabs -->
             </div>
             <div class="profiles-actions">
-                <button class="btn btn-sm btn-scan" id="btn-run-scan" onclick="triggerScanCurrentSearch()" title="Lancer le scan immédiat pour cette recherche">
+                <button class="btn btn-sm btn-scan" id="btn-run-scan" onclick="triggerScanCurrentSearch()"
+                    title="Lancer le scan immédiat pour cette recherche">
                     <i class="fa-solid fa-play"></i> <span id="btn-run-scan-text">Lancer le Scan</span>
                 </button>
-                <button class="btn btn-sm btn-secondary" id="btn-view-logs" onclick="openScanMonitor()" title="Afficher la barre de progression et le journal d'exécution du scan">
+                <button class="btn btn-sm btn-secondary" id="btn-view-logs" onclick="openScanMonitor()"
+                    title="Afficher la barre de progression et le journal d'exécution du scan">
                     <i class="fa-solid fa-terminal"></i> Journal / État
                 </button>
-                <button class="btn btn-sm btn-secondary" onclick="openSearchSettingsModal()" title="Consulter et modifier les critères de la recherche">
+                <button class="btn btn-sm btn-secondary" onclick="openSearchSettingsModal()"
+                    title="Consulter et modifier les critères de la recherche">
                     <i class="fa-solid fa-sliders"></i> Critères
                 </button>
-                <button class="btn btn-sm btn-secondary" onclick="openNewSearchModal()" title="Créer un nouveau profil de recherche">
+                <button class="btn btn-sm btn-secondary" onclick="openNewSearchModal()"
+                    title="Créer un nouveau profil de recherche">
                     <i class="fa-solid fa-plus"></i> Nouvelle Recherche
                 </button>
             </div>
@@ -1522,7 +2023,8 @@
             <div class="search-filters">
                 <div class="search-box">
                     <i class="fa-solid fa-magnifying-glass"></i>
-                    <input type="text" id="search-input" placeholder="Rechercher par mot-clé (titre, quartier, adresse...)" oninput="filterAndRender()">
+                    <input type="text" id="search-input"
+                        placeholder="Rechercher par mot-clé (titre, quartier, adresse...)" oninput="filterAndRender()">
                 </div>
                 <select class="filter-select" id="filter-source" onchange="filterAndRender()">
                     <option value="">Toutes les sources</option>
@@ -1541,7 +2043,7 @@
                     <option value="Déjà loué">Déjà loué</option>
                 </select>
             </div>
-            
+
             <button class="btn btn-secondary" id="toggle-eliminated-btn" onclick="toggleShowEliminated()">
                 <i class="fa-solid fa-eye"></i> Afficher les éliminés
             </button>
@@ -1561,7 +2063,8 @@
     <div id="add-modal" class="modal-backdrop" onclick="if(event.target === this) closeAddModal()">
         <div class="modal-content glass-panel">
             <div class="modal-header">
-                <h3><i class="fa-solid fa-plus-circle" style="color: var(--accent);"></i> <span id="add-modal-title">Ajouter une annonce</span></h3>
+                <h3><i class="fa-solid fa-plus-circle" style="color: var(--accent);"></i> <span
+                        id="add-modal-title">Ajouter une annonce</span></h3>
                 <button type="button" class="btn-close" onclick="closeAddModal()">&times;</button>
             </div>
             <form id="add-form" onsubmit="submitAddModal(event)">
@@ -1616,16 +2119,19 @@
                     </div>
                     <div class="form-group">
                         <label for="add-avantages">Avantages clés</label>
-                        <input type="text" id="add-avantages" placeholder="ex: Box fermé, bip, électricité, très proche">
+                        <input type="text" id="add-avantages"
+                            placeholder="ex: Box fermé, bip, électricité, très proche">
                     </div>
                     <div class="form-group full">
                         <label for="add-notes">Notes &amp; Observations</label>
-                        <textarea id="add-notes" class="notes-textarea" placeholder="Remarques, contact agence, disponibilité..."></textarea>
+                        <textarea id="add-notes" class="notes-textarea"
+                            placeholder="Remarques, contact agence, disponibilité..."></textarea>
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" onclick="closeAddModal()">Annuler</button>
-                    <button type="submit" class="btn btn-primary"><i class="fa-solid fa-check"></i> Enregistrer et Synchroniser</button>
+                    <button type="submit" class="btn btn-primary"><i class="fa-solid fa-check"></i> Enregistrer et
+                        Synchroniser</button>
                 </div>
             </form>
         </div>
@@ -1678,8 +2184,10 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" onclick="closeSearchSettingsModal()">Fermer</button>
-                    <button type="submit" class="btn btn-secondary"><i class="fa-solid fa-floppy-disk"></i> Enregistrer les Critères</button>
-                    <button type="button" class="btn btn-scan" onclick="saveCriteriaAndRunScan()"><i class="fa-solid fa-bolt"></i> Enregistrer &amp; Lancer le Scan</button>
+                    <button type="submit" class="btn btn-secondary"><i class="fa-solid fa-floppy-disk"></i> Enregistrer
+                        les Critères</button>
+                    <button type="button" class="btn btn-scan" onclick="saveCriteriaAndRunScan()"><i
+                            class="fa-solid fa-bolt"></i> Enregistrer &amp; Lancer le Scan</button>
                 </div>
             </form>
         </div>
@@ -1689,14 +2197,16 @@
     <div id="new-search-modal" class="modal-backdrop" onclick="if(event.target === this) closeNewSearchModal()">
         <div class="modal-content glass-panel">
             <div class="modal-header">
-                <h3><i class="fa-solid fa-plus-circle" style="color: var(--accent);"></i> Créer une nouvelle recherche</h3>
+                <h3><i class="fa-solid fa-plus-circle" style="color: var(--accent);"></i> Créer une nouvelle recherche
+                </h3>
                 <button type="button" class="btn-close" onclick="closeNewSearchModal()">&times;</button>
             </div>
             <form id="new-search-form" onsubmit="submitNewSearch(event)">
                 <div class="form-grid">
                     <div class="form-group full">
                         <label for="new-search-name">Nom de la recherche *</label>
-                        <input type="text" id="new-search-name" required placeholder="ex: Recherche Parking Part-Dieu ou Achat Studio Lyon 2">
+                        <input type="text" id="new-search-name" required
+                            placeholder="ex: Recherche Parking Part-Dieu ou Achat Studio Lyon 2">
                     </div>
                     <div class="form-group">
                         <label for="new-search-type">Type de bien / objet</label>
@@ -1716,12 +2226,14 @@
                     </div>
                     <div class="form-group full">
                         <label for="new-search-desc">Description &amp; Critères clés</label>
-                        <textarea id="new-search-desc" style="min-height: 60px;" placeholder="Explications, contraintes spécifiques..."></textarea>
+                        <textarea id="new-search-desc" style="min-height: 60px;"
+                            placeholder="Explications, contraintes spécifiques..."></textarea>
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" onclick="closeNewSearchModal()">Annuler</button>
-                    <button type="submit" class="btn btn-primary"><i class="fa-solid fa-check"></i> Créer la Recherche</button>
+                    <button type="submit" class="btn btn-primary"><i class="fa-solid fa-check"></i> Créer la
+                        Recherche</button>
                 </div>
             </form>
         </div>
@@ -1740,7 +2252,8 @@
                 </div>
                 <div class="monitor-header-actions">
                     <span id="monitor-status-pill" class="badge-status badge-idle">Prêt</span>
-                    <button type="button" class="btn-icon" onclick="minimizeScanMonitor()" title="Minimiser"><i class="fa-solid fa-window-minimize"></i></button>
+                    <button type="button" class="btn-icon" onclick="minimizeScanMonitor()" title="Minimiser"><i
+                            class="fa-solid fa-window-minimize"></i></button>
                     <button type="button" class="btn-close" onclick="closeScanMonitor()" title="Fermer">&times;</button>
                 </div>
             </div>
@@ -1748,8 +2261,10 @@
             <!-- Active Criteria Banner -->
             <div class="monitor-criteria-card">
                 <div class="criteria-card-header">
-                    <span class="criteria-card-title"><i class="fa-solid fa-crosshairs"></i> Critères appliqués pour ce scan</span>
-                    <button type="button" class="btn-text-action" onclick="openSearchSettingsModal()"><i class="fa-solid fa-pen-to-square"></i> Modifier les critères</button>
+                    <span class="criteria-card-title"><i class="fa-solid fa-crosshairs"></i> Critères appliqués pour ce
+                        scan</span>
+                    <button type="button" class="btn-text-action" onclick="openSearchSettingsModal()"><i
+                            class="fa-solid fa-pen-to-square"></i> Modifier les critères</button>
                 </div>
                 <div class="criteria-pills-grid" id="monitor-criteria-pills">
                     <!-- Populated dynamically -->
@@ -1759,7 +2274,8 @@
             <!-- Visual Progress Bar Section -->
             <div class="monitor-progress-section">
                 <div class="progress-info-row">
-                    <span id="monitor-stage-text" class="stage-text"><i class="fa-solid fa-hourglass-start"></i> En attente</span>
+                    <span id="monitor-stage-text" class="stage-text"><i class="fa-solid fa-hourglass-start"></i> En
+                        attente</span>
                     <span id="monitor-pct-text" class="pct-text">0%</span>
                 </div>
                 <div class="progress-track">
@@ -1806,7 +2322,8 @@
                     <i id="advice-icon" class="fa-solid fa-lightbulb"></i>
                     <div id="advice-text">Conseil intelligent</div>
                 </div>
-                <button type="button" class="btn btn-sm btn-secondary" onclick="openSearchSettingsModal()"><i class="fa-solid fa-sliders"></i> Ajuster les critères</button>
+                <button type="button" class="btn btn-sm btn-secondary" onclick="openSearchSettingsModal()"><i
+                        class="fa-solid fa-sliders"></i> Ajuster les critères</button>
             </div>
 
             <!-- Live Terminal Output Console -->
@@ -1822,19 +2339,24 @@
                         <label class="terminal-autoscroll-toggle">
                             <input type="checkbox" id="mon-autoscroll" checked> Auto-scroll
                         </label>
-                        <button type="button" class="btn-term-action" onclick="copyMonitorLogs()" title="Copier les logs"><i class="fa-regular fa-copy"></i> Copier</button>
-                        <button type="button" class="btn-term-action" onclick="clearMonitorLogs()" title="Vider l'affichage"><i class="fa-solid fa-trash-can"></i></button>
+                        <button type="button" class="btn-term-action" onclick="copyMonitorLogs()"
+                            title="Copier les logs"><i class="fa-regular fa-copy"></i> Copier</button>
+                        <button type="button" class="btn-term-action" onclick="clearMonitorLogs()"
+                            title="Vider l'affichage"><i class="fa-solid fa-trash-can"></i></button>
                     </div>
                 </div>
                 <div id="monitor-terminal-body" class="terminal-body">
-                    <div class="terminal-line terminal-placeholder">Aucun log en cours. Cliquez sur "Lancer le Scan" pour démarrer.</div>
+                    <div class="terminal-line terminal-placeholder">Aucun log en cours. Cliquez sur "Lancer le Scan"
+                        pour démarrer.</div>
                 </div>
             </div>
 
             <div class="modal-footer monitor-footer">
                 <span class="monitor-last-run" id="monitor-last-run-time"></span>
                 <button type="button" class="btn btn-secondary" onclick="closeScanMonitor()">Fermer</button>
-                <button type="button" class="btn btn-primary" id="btn-monitor-action" onclick="triggerScanCurrentSearch()"><i class="fa-solid fa-rotate-right"></i> Relancer le Scan</button>
+                <button type="button" class="btn btn-primary" id="btn-monitor-action"
+                    onclick="triggerScanCurrentSearch()"><i class="fa-solid fa-rotate-right"></i> Relancer le
+                    Scan</button>
             </div>
         </div>
     </div>
@@ -1847,6 +2369,39 @@
         <i class="fa-solid fa-up-right-and-down-left-from-center min-expand-icon"></i>
     </div>
 
+    <!-- Modal Audit de Sérieux & Conformité (Note sur 10) -->
+    <div id="serieux-audit-modal" class="modal-backdrop" onclick="if(event.target === this) closeSerieuxAuditModal()">
+        <div class="modal-content glass-panel serieux-audit-panel">
+            <div class="modal-header">
+                <div>
+                    <h3 style="display:flex; align-items:center; gap:0.5rem;">
+                        <i class="fa-solid fa-shield-halved" style="color: #10b981;"></i>
+                        <span>Audit de Sérieux &amp; Conformité</span>
+                    </h3>
+                    <p id="audit-ad-subtitle" class="audit-ad-subtitle">Chargement des détails de l'annonce...</p>
+                </div>
+                <button type="button" class="btn-close" onclick="closeSerieuxAuditModal()">&times;</button>
+            </div>
+
+            <div id="audit-modal-body" class="audit-modal-body">
+                <!-- Injected dynamically by JS -->
+            </div>
+
+            <div class="modal-actions"
+                style="margin-top: 1.5rem; justify-content: space-between; border-top: 1px solid var(--border-color); padding-top: 1rem;">
+                <a id="audit-btn-link" href="#" target="_blank" class="card-btn"
+                    style="background: rgba(99, 102, 241, 0.2); color: white;">
+                    <i class="fa-solid fa-up-right-from-square"></i> Consulter l'annonce originale
+                </a>
+                <button type="button" class="btn-primary" onclick="closeSerieuxAuditModal()"
+                    style="background: rgba(255, 255, 255, 0.1); border: 1px solid var(--border-color); color: var(--text-main);">
+                    Fermer
+                </button>
+            </div>
+        </div>
+    </div>
+
+
     <script>
         let searchesConfig = null;
         let currentSearchId = "parking_felix_faure";
@@ -1857,7 +2412,7 @@
         // On Load initialization
         window.addEventListener('DOMContentLoaded', async () => {
             await initSearches();
-            
+
             // Polling: local server every 8s, static every 60s
             setInterval(() => {
                 if (isLocalServer) fetchData();
@@ -1878,7 +2433,7 @@
                         cfg = await res.json();
                         isLocalServer = true;
                     }
-                } catch (e) {}
+                } catch (e) { }
 
                 // 2. Fallback to ./searches.json
                 if (!cfg) {
@@ -1887,7 +2442,7 @@
                         if (staticRes.ok) {
                             cfg = await staticRes.json();
                         }
-                    } catch (e) {}
+                    } catch (e) { }
                 }
 
                 if (!cfg) {
@@ -1917,7 +2472,7 @@
                 }
 
                 searchesConfig = cfg;
-                
+
                 // Get URL parameter ?search=... or saved preference or default
                 const urlParams = new URLSearchParams(window.location.search);
                 const urlSearchId = urlParams.get('search') || urlParams.get('id');
@@ -1947,9 +2502,9 @@
                 const isActive = (search.id === currentSearchId);
                 const tab = document.createElement('div');
                 tab.className = `profile-tab ${isActive ? 'active' : ''}`;
-                
+
                 const iconClass = search.icon || (search.type === 'parking' ? 'fa-square-parking' : 'fa-house');
-                
+
                 tab.innerHTML = `
                     <i class="fa-solid ${iconClass}"></i>
                     <span>${search.name}</span>
@@ -1967,7 +2522,7 @@
         async function switchSearchProfile(searchId) {
             if (currentSearchId === searchId) return;
             currentSearchId = searchId;
-            
+
             // Update URL without full reload
             const url = new URL(window.location);
             url.searchParams.set('search', searchId);
@@ -2029,7 +2584,7 @@
                         dataFetched = await apiRes.json();
                         isLocalServer = true;
                     }
-                } catch (e) {}
+                } catch (e) { }
 
                 // 2. Fallback to static file (GitHub Pages)
                 if (!dataFetched) {
@@ -2095,13 +2650,13 @@
         function populateFilters() {
             const sourceSelect = document.getElementById('filter-source');
             const quartierSelect = document.getElementById('filter-quartier');
-            
+
             const currentSource = sourceSelect.value;
             const currentQuartier = quartierSelect.value;
-            
+
             const sources = new Set();
             const quartiers = new Set();
-            
+
             allListings.forEach(item => {
                 if (item.source) sources.add(item.source);
                 if (item.quartier) {
@@ -2109,7 +2664,7 @@
                     quartiers.add(qName);
                 }
             });
-            
+
             sourceSelect.innerHTML = '<option value="">Toutes les sources</option>';
             Array.from(sources).sort().forEach(src => {
                 const opt = document.createElement('option');
@@ -2118,7 +2673,7 @@
                 sourceSelect.appendChild(opt);
             });
             sourceSelect.value = currentSource;
-            
+
             quartierSelect.innerHTML = '<option value="">Tous les quartiers</option>';
             Array.from(quartiers).sort().forEach(q => {
                 const opt = document.createElement('option');
@@ -2273,11 +2828,15 @@
             if (!pillsContainer) return;
 
             const p = profile.params || {};
+            const isAchat = (p.transaction === "achat" || p.transaction === "buy");
             if (isParking) {
+                const budgetDisp = isAchat
+                    ? (p.budget_min ? `${p.budget_min.toLocaleString('fr-FR')} - ${p.budget_max.toLocaleString('fr-FR')} €` : `${p.budget_max.toLocaleString('fr-FR')} €`)
+                    : `${p.budget_max || 150} €/mois`;
                 pillsContainer.innerHTML = `
                     <div class="criteria-pill"><i class="fa-solid fa-location-dot"></i> Cible : <strong>${p.adresse_cible || '56 av. Félix Faure, Lyon 3e'}</strong></div>
                     <div class="criteria-pill"><i class="fa-solid fa-ruler"></i> Rayon max : <strong>${p.rayon_metres || 650} m</strong></div>
-                    <div class="criteria-pill"><i class="fa-solid fa-euro-sign"></i> Budget max : <strong>${p.budget_max || 150} €/mois</strong></div>
+                    <div class="criteria-pill"><i class="fa-solid fa-euro-sign"></i> ${isAchat ? 'Budget' : 'Budget max'} : <strong>${budgetDisp}</strong></div>
                     <div class="criteria-pill"><i class="fa-solid fa-car"></i> Véhicule : <strong>Tesla Model 3 / Y</strong></div>
                     <div class="criteria-pill"><i class="fa-solid fa-shield-halved"></i> Box / Prise : <strong>Recherché</strong></div>
                 `;
@@ -2422,7 +2981,7 @@
             const addedEl = document.getElementById('mon-stat-added');
             const distEl = document.getElementById('mon-stat-dist');
             const priceEl = document.getElementById('mon-stat-price');
-            
+
             if (rawEl) rawEl.textContent = stats.raw_collected || 0;
             if (addedEl) addedEl.textContent = stats.new_added || 0;
             if (distEl) distEl.textContent = stats.rejected_distance || 0;
@@ -2597,9 +3156,9 @@
                 indicator.textContent = "Sauvegarde...";
                 indicator.classList.add('active');
             }
-            
+
             if (saveTimeouts[url]) clearTimeout(saveTimeouts[url]);
-            
+
             saveTimeouts[url] = setTimeout(async () => {
                 let saved = false;
                 if (isLocalServer) {
@@ -2668,23 +3227,23 @@
             const quartierVal = quartierSelect ? quartierSelect.value : "";
             const statutSelect = document.getElementById('filter-statut');
             const statutVal = statutSelect ? statutSelect.value : "";
-            
+
             return allListings.filter(item => {
                 const isEliminated = (item.statut === "Éliminer" || item.statut === "Déjà loué");
                 if (isEliminated && !showEliminated) return false;
                 if (statutVal && item.statut !== statutVal) return false;
                 if (sourceVal && item.source !== sourceVal) return false;
-                
+
                 if (quartierVal) {
                     const qName = item.quartier ? item.quartier.split(',')[0].trim() : "";
                     if (qName !== quartierVal) return false;
                 }
-                
+
                 if (searchVal) {
                     const text = (item.titre + " " + (item.description || "") + " " + (item.adresse_estimee || "") + " " + (item.quartier || "") + " " + (item.type_parking || "") + " " + (item.source || "")).toLowerCase();
                     if (!text.includes(searchVal)) return false;
                 }
-                
+
                 return true;
             });
         }
@@ -2794,7 +3353,7 @@
             const filtered = getFilteredListings();
             const currentProfile = searchesConfig?.searches.find(s => s.id === currentSearchId) || {};
             const isParking = currentProfile.type === 'parking';
-            
+
             if (filtered.length === 0) {
                 grid.innerHTML = `
                     <div class="empty-state">
@@ -2805,24 +3364,24 @@
                 `;
                 return;
             }
-            
+
             grid.innerHTML = "";
             filtered.forEach((item, idx) => {
                 const card = document.createElement('div');
                 card.setAttribute('draggable', 'true');
-                
+
                 let statusClass = "status-nouveau";
                 if (item.statut === "À visiter") statusClass = "status-visiter";
                 else if (item.statut === "Demande d'infos") statusClass = "status-infos";
                 else if (item.statut === "En attente") statusClass = "status-attente";
                 else if (item.statut === "Déjà loué") statusClass = "status-loue";
                 else if (item.statut === "Éliminer") statusClass = "status-elimine";
-                
+
                 card.className = `glass-panel listing-card ${statusClass}`;
-                
+
                 const notesValue = item.notes || "";
                 const indicatorId = `save-indicator-${idx}`;
-                
+
                 let addressHtml = `<span><i class="fa-solid fa-map-pin"></i> ${item.adresse_estimee || "Non précisée"}</span>`;
                 if (item.google_street_view) {
                     addressHtml = `
@@ -2834,7 +3393,19 @@
 
                 const isFirst = (idx === 0);
                 const isLast = (idx === filtered.length - 1);
-                
+
+                // Indice de sérieux & conformité (note sur 10)
+                const serieux = item.indice_serieux_details || calculateAdSeriousness(item, currentProfile);
+                const serieuxBadgeClass = serieux.badge_class || (serieux.score >= 8.8 ? 'serieux-high' : (serieux.score >= 7.5 ? 'serieux-good' : (serieux.score >= 5.5 ? 'serieux-medium' : 'serieux-risk')));
+                const serieuxScoreDisp = serieux.score !== undefined ? `${serieux.score}/10` : 'N/C';
+                const serieuxLabel = serieux.label || (serieux.score >= 8.8 ? 'Excellente fiabilité' : (serieux.score >= 7.5 ? 'Annonce sérieuse' : (serieux.score >= 5.5 ? 'Points à vérifier' : 'Risque arnaque')));
+
+                let serieuxTagHtml = `
+                    <span class="tag tag-serieux ${serieuxBadgeClass}" onclick="openSerieuxAuditModal('${item.lien_annonce.replace(/'/g, "\\'")}')" title="Indice de sérieux : ${serieuxScoreDisp} (${serieuxLabel}) - Cliquez pour l'audit détaillé">
+                        <i class="fa-solid fa-shield-halved"></i> Sérieux : <strong>${serieuxScoreDisp}</strong>
+                    </span>
+                `;
+
                 // Specific specs and tags for Parking vs Apartment
                 let specsHtml = "";
                 let specificTags = "";
@@ -2905,7 +3476,7 @@
                     let incLines = item.inconvenients ? item.inconvenients.split(',').map(s => `<div class="detail-line minus"><i class="fa-solid fa-circle-xmark"></i> ${s.trim()}</div>`).join('') : '';
                     detailsBoxHtml = `<div class="card-details-box">${avLines}${incLines}</div>`;
                 }
-                
+
                 card.innerHTML = `
                     <div class="card-header">
                         <div class="card-header-left">
@@ -2929,8 +3500,10 @@
                         <span class="tag tag-source"><i class="fa-solid fa-globe"></i> ${item.source}</span>
                         <span class="tag tag-quartier"><i class="fa-solid fa-map-location-dot"></i> ${item.quartier || "Lyon"}</span>
                         <span class="tag tag-date"><i class="fa-regular fa-calendar"></i> ${item.date_decouverte}</span>
+                        ${serieuxTagHtml}
                         ${specificTags}
                     </div>
+
                     
                     ${specsHtml}
                     ${itineraryButtonHtml}
@@ -2960,14 +3533,442 @@
                             <option value="Éliminer" ${item.statut === "Éliminer" ? "selected" : ""}>Éliminer</option>
                         </select>
                         
+                        <button type="button" class="card-btn btn-audit" onclick="openSerieuxAuditModal('${item.lien_annonce.replace(/'/g, "\\'")}')" title="Audit complet du sérieux &amp; conformité">
+                            <i class="fa-solid fa-shield-halved"></i> Audit Sérieux
+                        </button>
+
                         <a href="${item.lien_annonce}" target="_blank" class="card-btn">
                             <i class="fa-solid fa-up-right-from-square"></i> Voir
                         </a>
                     </div>
+
                 `;
-                
+
                 grid.appendChild(card);
             });
+        }
+
+        // =========================================================================
+        // INDICE DE SÉRIEUX & AUDIT DE CONFORMITÉ (Note sur 10)
+        // =========================================================================
+        function calculateAdSeriousness(ad, profile) {
+            if (ad && ad.indice_serieux_details && typeof ad.indice_serieux_details === 'object' && ad.indice_serieux_details.score !== undefined) {
+                return ad.indice_serieux_details;
+            }
+
+            const searchType = (profile && profile.type) ? profile.type : "parking";
+            const transaction = (profile && profile.params && profile.params.transaction) ? profile.params.transaction : "location";
+
+            const titre = (ad.titre || "").toLowerCase();
+            const notes = (ad.notes || "").toLowerCase();
+            const avantages = (ad.avantages || "").toLowerCase();
+            const inc = (ad.inconvenients || "").toLowerCase();
+            const source = (ad.source || "");
+            const sourceLower = source.toLowerCase();
+            const typePk = (ad.type_parking || "").toLowerCase();
+            const adresse = (ad.adresse_estimee || "").toLowerCase();
+            const fullText = `${titre} ${notes} ${avantages} ${inc} ${sourceLower} ${typePk} ${adresse}`;
+
+            // Parse price
+            const cleanPrice = String(ad.prix || "").replace(/[^\d.,]/g, '').replace(/\s+/g, '').replace(',', '.');
+            const priceNum = parseFloat(cleanPrice) || 0;
+            const surface = parseFloat(ad.surface) || 0;
+
+            const redFlags = [];
+            const pointsForts = [];
+            const pointsVigilance = [];
+
+            // 1. Risque d'arnaque (30%)
+            const scamKeywords = [
+                "mandat", "western union", "moneygram", "transcash", "pcs mastercard",
+                "toneo", "neocurf", "coupon", "virement avant", "payer avant",
+                "bloquer le bien", "dépôt pour réserver", "mission humanitaire",
+                "déplacement à l'étranger", "hors de france", "urgent cause départ",
+                "uniquement sur whatsapp", "contactez moi à mon adresse personnelle"
+            ];
+            const detectedScams = scamKeywords.filter(k => fullText.includes(k));
+            const trustSignals = ["visite", "visiter", "bip", "télécommande", "sécurisé", "securise", "portail", "copropriété", "gardien", "remise en main propre"];
+            const detectedTrust = trustSignals.filter(k => fullText.includes(k));
+
+            let scoreArnaque = 8.5;
+            if (detectedScams.length > 0) {
+                scoreArnaque = 1.0;
+                redFlags.push(`Signaux d'alerte arnaque détectés : ${detectedScams.join(', ')}`);
+            } else if (detectedTrust.length >= 2) {
+                scoreArnaque = 9.5;
+                pointsForts.push("Absence totale de signal d'arnaque ; accès et visites cohérents");
+            } else {
+                pointsForts.push("Aucun signal suspect d'escroquerie détecté");
+            }
+
+            // 2. Prix vs Marché (25%)
+            let scorePrix = 8.0;
+            let prixDetail = "";
+            if (searchType === "parking" && transaction === "location") {
+                const isBox = (fullText.includes("box") || fullText.includes("garage"));
+                if (isBox) {
+                    if (priceNum === 0) {
+                        scorePrix = 7.0;
+                        prixDetail = "Loyer non précisé";
+                    } else if (priceNum < 65) {
+                        scorePrix = 3.0;
+                        redFlags.push(`Loyer anormalement bas (${Math.round(priceNum)} €/mois) pour un box fermé à Lyon 3 (risque d'arnaque ou fausse annonce)`);
+                        prixDetail = `Anomalie : ${Math.round(priceNum)} €/mois est très bas vs 110-160 € habituels`;
+                    } else if (priceNum < 105) {
+                        scorePrix = 9.0;
+                        pointsForts.push(`Prix très attractif (${Math.round(priceNum)} €/mois) pour un box fermé dans ce quartier`);
+                        prixDetail = `Très attractif (${Math.round(priceNum)} €/mois vs 110-160 €)`;
+                    } else if (priceNum <= 165) {
+                        scorePrix = 9.5;
+                        pointsForts.push(`Loyer (${Math.round(priceNum)} €/mois) parfaitement cohérent avec les tarifs du marché (110-160 €)`);
+                        prixDetail = `Prix conforme au marché (${Math.round(priceNum)} €/mois)`;
+                    } else if (priceNum <= 200) {
+                        scorePrix = 7.5;
+                        pointsVigilance.push(`Loyer en fourchette haute (${Math.round(priceNum)} €/mois) : vérifier les prestations`);
+                        prixDetail = `Fourchette haute (${Math.round(priceNum)} €/mois)`;
+                    } else {
+                        scorePrix = 6.0;
+                        pointsVigilance.push(`Loyer élevé (${Math.round(priceNum)} €/mois) par rapport au quartier`);
+                        prixDetail = `Loyer élevé (${Math.round(priceNum)} €/mois)`;
+                    }
+                } else {
+                    if (priceNum === 0) scorePrix = 7.0;
+                    else if (priceNum < 45) {
+                        scorePrix = 3.5;
+                        redFlags.push(`Loyer suspect (${Math.round(priceNum)} €/mois) pour du stationnement sécurisé`);
+                        prixDetail = `Loyer suspect (${Math.round(priceNum)} €/mois)`;
+                    } else if (priceNum <= 115) {
+                        scorePrix = 9.5;
+                        pointsForts.push(`Loyer (${Math.round(priceNum)} €/mois) bien positionné dans les prix du marché (75-110 €)`);
+                        prixDetail = `Marché standard (${Math.round(priceNum)} €/mois)`;
+                    } else {
+                        scorePrix = 8.0;
+                        prixDetail = `Loyer de ${Math.round(priceNum)} €/mois`;
+                    }
+                }
+            } else if (searchType === "parking" && transaction === "achat") {
+                if (priceNum < 15000) {
+                    scorePrix = 4.0;
+                    redFlags.push(`Prix de vente (${priceNum.toLocaleString()} €) anormalement bas pour un box/garage dans le 3e`);
+                    prixDetail = `Prix anormalement bas (${priceNum.toLocaleString()} €)`;
+                } else if (priceNum <= 36000) {
+                    scorePrix = 9.5;
+                    pointsForts.push(`Prix de vente (${priceNum.toLocaleString()} €) dans les normes du marché (20-35k €)`);
+                    prixDetail = `Conforme au marché de vente (20-35k €)`;
+                } else {
+                    scorePrix = 8.0;
+                    prixDetail = `Prix de vente : ${priceNum.toLocaleString()} €`;
+                }
+            } else {
+                if (surface > 0 && priceNum > 0) {
+                    const pm2 = priceNum / surface;
+                    if (pm2 < 11.0) {
+                        scorePrix = 3.5;
+                        redFlags.push(`Loyer au m² (${pm2.toFixed(1)} €/m²) suspect pour Lyon intra-muros`);
+                        prixDetail = `Loyer anormalement bas (${pm2.toFixed(1)} €/m²)`;
+                    } else if (pm2 <= 24.0) {
+                        scorePrix = 9.5;
+                        pointsForts.push(`Loyer au m² (${pm2.toFixed(1)} €/m²) conforme au marché lyonnais`);
+                        prixDetail = `Conforme au marché (${pm2.toFixed(1)} €/m²)`;
+                    } else {
+                        scorePrix = 7.5;
+                        prixDetail = `Loyer : ${pm2.toFixed(1)} €/m²`;
+                    }
+                } else {
+                    scorePrix = 8.0;
+                    prixDetail = ad.prix || "Loyer NC";
+                }
+            }
+
+            // 3. Annonceur & Source (20%)
+            let scoreAnnonceur = 7.5;
+            let annonceurDetail = `Source : ${source}`;
+            const isAgency = ["square habitat", "citya", "nexity", "foncia", "bien'ici", "agence", "régie", "regie", "cabinet", "carte t", "frais d'agence"].some(k => sourceLower.includes(k) || fullText.includes(k));
+            const isGdc = sourceLower.includes("gens de confiance") || sourceLower.includes("gdc");
+
+            if (isAgency) {
+                scoreAnnonceur = 9.5;
+                pointsForts.push("Professionnel de l'immobilier / Régie certifiée (carte T, cadre juridique garanti, sécurité maximale)");
+                annonceurDetail = `Agence professionnelle / Régie (${source})`;
+            } else if (isGdc) {
+                scoreAnnonceur = 9.0;
+                pointsForts.push("Plateforme Gens de Confiance (profils vérifiés par parrainage, grande fiabilité)");
+                annonceurDetail = "Particulier vérifié (Réseau Gens de Confiance)";
+            } else if (["paruvendu", "leboncoin", "pap", "particulier"].some(k => sourceLower.includes(k))) {
+                scoreAnnonceur = 8.0;
+                pointsForts.push(`Annonceur particulier sur ${source} (pratique courante pour garages/box)`);
+                pointsVigilance.push("Contact direct de particulier à particulier : exiger impérativement une visite physique sur place avant tout paiement");
+                annonceurDetail = `Particulier (${source})`;
+            } else {
+                scoreAnnonceur = 7.0;
+                pointsVigilance.push(`Source : ${source}. Vérifier l'identité et le titre de propriété du bailleur`);
+            }
+
+            // 4. Rédaction & Clarté (15%)
+            let scoreRedaction = 8.0;
+            let redactionDetail = "Description claire";
+            const weirdPhrases = ["homme honnête", "monsieur sérieux", "chambre de maître", "dieu vous bénisse", "mutation urgente", "loyer modéré pour personne propre"];
+            if (weirdPhrases.some(w => fullText.includes(w))) {
+                scoreRedaction = 3.5;
+                redFlags.push("Tournures de phrases suspectes ou traductions automatiques typiques des escroqueries");
+                redactionDetail = "Formulations atypiques détectées";
+            } else if (fullText.length > 150) {
+                scoreRedaction = 9.2;
+                pointsForts.push("Description riche et détaillée (caractéristiques techniques et accès précisés)");
+                redactionDetail = "Précise, riche en détails concrets";
+            } else if (fullText.length < 50) {
+                scoreRedaction = 6.5;
+                pointsVigilance.push("Description très succincte : faire confirmer par écrit les dimensions et accès");
+                redactionDetail = "Description très courte";
+            }
+
+            // 5. Légalité & Sécurité juridique (10%)
+            let scoreLegalite = 8.5;
+            let legaliteDetail = "Bail de droit commun (Code civil)";
+            if (searchType === "parking") {
+                const hasElec = ["prise", "borne", "électrique", "electrique", "recharge", "tesla"].some(k => fullText.includes(k));
+                if (hasElec) {
+                    pointsVigilance.push("Point recharge électrique : vérifier que la prise est sur un sous-compteur individuel et autorisée par la copropriété");
+                }
+                pointsForts.push("Bail de stationnement sous le régime du Code civil (art. 1709, liberté contractuelle)");
+                pointsVigilance.push("Dépôt de garantie usuel : 1 à 2 mois de loyer max, plus caution bip (40-80 €)");
+            } else {
+                pointsForts.push("Soumis à la loi du 6 juillet 1989 et encadrement des loyers à Lyon");
+                pointsVigilance.push("Vérifier le DPE, les charges réelles et l'état des lieux d'entrée");
+                legaliteDetail = "Bail d'habitation loi 1989";
+            }
+
+            let globalScore = Math.round(((scoreArnaque * 0.30) + (scorePrix * 0.25) + (scoreAnnonceur * 0.20) + (scoreRedaction * 0.15) + (scoreLegalite * 0.10)) * 10) / 10;
+            if (redFlags.length > 0) {
+                globalScore = Math.min(globalScore, 4.5);
+            }
+            globalScore = Math.max(1.0, Math.min(10.0, globalScore));
+
+            let niveau = "Très élevé";
+            let label = "Excellente fiabilité";
+            let badgeClass = "serieux-high";
+            let resume = "Annonce très sérieuse et parfaitement conforme aux prix et règles du marché local.";
+
+            if (globalScore < 5.5) {
+                niveau = "Faible";
+                label = "Risque d'arnaque";
+                badgeClass = "serieux-risk";
+                resume = "Alerte : plusieurs signaux anormaux détectés (prix suspect, mentions douteuses ou acompte).";
+            } else if (globalScore < 7.5) {
+                niveau = "Moyen";
+                label = "Points à vérifier";
+                badgeClass = "serieux-medium";
+                resume = "Annonce globalement recevable mais certains détails ou garanties méritent clarification.";
+            } else if (globalScore < 8.8) {
+                niveau = "Élevé";
+                label = "Annonce sérieuse";
+                badgeClass = "serieux-good";
+                resume = "Annonce saine et bien positionnée. Vigilance standard d'usage lors de la visite.";
+            }
+
+            return {
+                score: globalScore,
+                niveau: niveau,
+                label: label,
+                badge_class: badgeClass,
+                resume: resume,
+                criteres: {
+                    arnaque: {
+                        nom: "Risque d'arnaque",
+                        score: scoreArnaque,
+                        statut: scoreArnaque >= 8 ? "ok" : (scoreArnaque >= 5 ? "warning" : "danger"),
+                        detail: scoreArnaque >= 8 ? "Aucun piège détecté" : "Attention aux conditions de paiement"
+                    },
+                    prix: {
+                        nom: "Cohérence Prix / Marché",
+                        score: scorePrix,
+                        statut: scorePrix >= 8 ? "ok" : (scorePrix >= 5 ? "warning" : "danger"),
+                        detail: prixDetail
+                    },
+                    annonceur: {
+                        nom: "Annonceur & Source",
+                        score: scoreAnnonceur,
+                        statut: scoreAnnonceur >= 8 ? "ok" : "info",
+                        detail: annonceurDetail
+                    },
+                    redaction: {
+                        nom: "Rédaction & Clarté",
+                        score: scoreRedaction,
+                        statut: scoreRedaction >= 8 ? "ok" : (scoreRedaction >= 5 ? "warning" : "danger"),
+                        detail: redactionDetail
+                    },
+                    legalite: {
+                        nom: "Sécurité juridique & Copro",
+                        score: scoreLegalite,
+                        statut: scoreLegalite >= 8 ? "ok" : "info",
+                        detail: legaliteDetail
+                    }
+                },
+                points_forts: pointsForts,
+                points_vigilance: pointsVigilance,
+                red_flags: redFlags
+            };
+        }
+
+        function openSerieuxAuditModal(adUrl) {
+            const item = allListings.find(x => x.lien_annonce === adUrl);
+            if (!item) return;
+
+            const currentProfile = searchesConfig?.searches.find(s => s.id === currentSearchId) || {};
+            const serieux = item.indice_serieux_details || calculateAdSeriousness(item, currentProfile);
+
+            document.getElementById('audit-ad-subtitle').innerHTML = `
+                <strong>${item.titre || "Annonce"}</strong> &bull; 
+                <span style="color: #38bdf8; font-weight: 600;">${item.prix || ""}</span> &bull; 
+                <span>Source : ${item.source || "Web"}</span>
+            `;
+
+            const linkBtn = document.getElementById('audit-btn-link');
+            if (linkBtn) linkBtn.href = item.lien_annonce || "#";
+
+            renderSerieuxModalContent(item, serieux);
+
+            const modal = document.getElementById('serieux-audit-modal');
+            if (modal) modal.classList.add('open');
+        }
+
+        function closeSerieuxAuditModal() {
+            const modal = document.getElementById('serieux-audit-modal');
+            if (modal) modal.classList.remove('open');
+        }
+
+        function renderSerieuxModalContent(item, serieux) {
+            const body = document.getElementById('audit-modal-body');
+            if (!body) return;
+
+            let scoreClass = "score-high";
+            let barColor = "#10b981";
+            if (serieux.score < 5.5) {
+                scoreClass = "score-risk";
+                barColor = "#ef4444";
+            } else if (serieux.score < 7.5) {
+                scoreClass = "score-medium";
+                barColor = "#f59e0b";
+            } else if (serieux.score < 8.8) {
+                scoreClass = "score-good";
+                barColor = "#0ea5e9";
+            }
+
+            let redFlagsHtml = "";
+            if (serieux.red_flags && serieux.red_flags.length > 0) {
+                const flagsList = serieux.red_flags.map(f => `<div>&bull; ${f}</div>`).join('');
+                redFlagsHtml = `
+                    <div class="audit-red-flag-banner">
+                        <i class="fa-solid fa-triangle-exclamation" style="font-size: 1.25rem; margin-top: 0.1rem; flex-shrink: 0;"></i>
+                        <div>
+                            <strong style="display:block; margin-bottom: 0.2rem;">Signaux d'alerte détectés :</strong>
+                            ${flagsList}
+                        </div>
+                    </div>
+                `;
+            }
+
+            // Criteria Cards HTML
+            let criteriaHtml = "";
+            if (serieux.criteres) {
+                const critKeys = Object.keys(serieux.criteres);
+                const critIcons = {
+                    arnaque: "fa-shield-halved",
+                    prix: "fa-tag",
+                    annonceur: "fa-building-user",
+                    redaction: "fa-pen-fancy",
+                    legalite: "fa-scale-balanced"
+                };
+
+                criteriaHtml = critKeys.map(k => {
+                    const c = serieux.criteres[k];
+                    const sc = c.score !== undefined ? c.score : 8;
+                    const pct = Math.min(100, Math.max(0, (sc / 10) * 100));
+                    let cColor = "#10b981";
+                    if (sc < 5.0) cColor = "#ef4444";
+                    else if (sc < 7.5) cColor = "#f59e0b";
+                    else if (sc < 8.8) cColor = "#0ea5e9";
+
+                    const iconClass = critIcons[k] || "fa-check";
+
+                    return `
+                        <div class="audit-criterion-card">
+                            <div class="criterion-head">
+                                <span class="criterion-title">
+                                    <i class="fa-solid ${iconClass}" style="color: ${cColor};"></i> ${c.nom}
+                                </span>
+                                <span class="criterion-score" style="color: ${cColor};">${sc}/10</span>
+                            </div>
+                            <div class="criterion-bar-bg">
+                                <div class="criterion-bar-fill" style="width: ${pct}%; background: ${cColor};"></div>
+                            </div>
+                            <div class="criterion-desc">${c.detail || ""}</div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            // Strengths and Vigilance lists
+            const fortsLi = (serieux.points_forts && serieux.points_forts.length > 0)
+                ? serieux.points_forts.map(pt => `<li class="audit-li"><i class="fa-solid fa-circle-check" style="color: #34d399;"></i> <span>${pt}</span></li>`).join('')
+                : `<li class="audit-li" style="color: var(--text-muted);"><i class="fa-solid fa-minus"></i> Aucun point spécifique noté</li>`;
+
+            const vigiLi = (serieux.points_vigilance && serieux.points_vigilance.length > 0)
+                ? serieux.points_vigilance.map(pt => `<li class="audit-li"><i class="fa-solid fa-circle-exclamation" style="color: #fbbf24;"></i> <span>${pt}</span></li>`).join('')
+                : `<li class="audit-li" style="color: var(--text-muted);"><i class="fa-solid fa-check"></i> Vigilance courante</li>`;
+
+            body.innerHTML = `
+                <!-- Hero Score Banner -->
+                <div class="audit-hero">
+                    <div class="audit-hero-score ${scoreClass}">
+                        <span class="audit-score-num">${serieux.score}</span>
+                        <span class="audit-score-max">/ 10</span>
+                    </div>
+                    <div class="audit-hero-content">
+                        <div class="audit-hero-level">
+                            <i class="fa-solid fa-shield-check" style="color: ${barColor};"></i>
+                            <span>${serieux.label || serieux.niveau}</span>
+                        </div>
+                        <div class="audit-hero-desc">${serieux.resume}</div>
+                    </div>
+                </div>
+
+                ${redFlagsHtml}
+
+                <!-- Criteria 5 Pillars Grid -->
+                <div class="audit-criteria-grid">
+                    ${criteriaHtml}
+                </div>
+
+                <!-- Two Columns (Strengths & Vigilance) -->
+                <div class="audit-lists-grid">
+                    <div class="audit-box-col">
+                        <div class="audit-box-title forts">
+                            <i class="fa-solid fa-circle-check"></i> Points forts &amp; Garanties
+                        </div>
+                        <ul class="audit-ul">
+                            ${fortsLi}
+                        </ul>
+                    </div>
+
+                    <div class="audit-box-col">
+                        <div class="audit-box-title vigilance">
+                            <i class="fa-solid fa-triangle-exclamation"></i> Points de vigilance pour la visite
+                        </div>
+                        <ul class="audit-ul">
+                            ${vigiLi}
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Safety Checklist Banner -->
+                <div class="audit-checklist">
+                    <div class="audit-checklist-title">
+                        <i class="fa-solid fa-list-check" style="color: #818cf8;"></i> Règle d'or pour votre visite sur place :
+                    </div>
+                    Ne versez <strong>aucun centime d'acompte ou de caution</strong> avant d'avoir visité les lieux en personne, testé le badge/clé et signé le contrat de bail écrit.
+                </div>
+            `;
         }
 
         // =========================================================================
@@ -2976,12 +3977,12 @@
         function openAddModal() {
             const currentProfile = searchesConfig?.searches.find(s => s.id === currentSearchId) || {};
             const isParking = currentProfile.type === 'parking';
-            
+
             document.getElementById('add-modal-title').textContent = isParking ? "Ajouter un parking / box" : "Ajouter un appartement";
             document.getElementById('field-surface-group').style.display = isParking ? "none" : "block";
             document.getElementById('field-type-parking-group').style.display = isParking ? "block" : "none";
             document.getElementById('field-distance-group').style.display = isParking ? "block" : "none";
-            
+
             const modal = document.getElementById('add-modal');
             if (modal) {
                 modal.classList.add('open');
@@ -3042,7 +4043,7 @@
                         await fetchData(true);
                         return;
                     }
-                } catch (err) {}
+                } catch (err) { }
             }
 
             closeAddModal();
@@ -3097,7 +4098,7 @@
                 const bMin = parseFloat(document.getElementById('cfg-budget-min').value);
                 if (!isNaN(bMin)) profile.params.budget_min = bMin;
             }
-            
+
             if (profile.type === 'parking') {
                 profile.params.adresse_cible = document.getElementById('cfg-target-address').value.trim();
                 profile.params.rayon_metres = parseInt(document.getElementById('cfg-radius').value, 10) || 650;
@@ -3113,7 +4114,7 @@
                         body: JSON.stringify(searchesConfig)
                     });
                     showToast("Paramètres enregistrés et synchronisés !", "success");
-                } catch (err) {}
+                } catch (err) { }
             }
 
             closeSearchSettingsModal();
@@ -3173,7 +4174,7 @@
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(searchesConfig)
                     });
-                } catch (err) {}
+                } catch (err) { }
             }
 
             closeNewSearchModal();
@@ -3183,4 +4184,5 @@
         }
     </script>
 </body>
+
 </html>

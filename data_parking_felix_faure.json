@@ -26,7 +26,61 @@
         "statut": "À visiter",
         "remarques_visite": "",
         "questions_visite": "",
-        "notes": "Distance au 56 avenue Félix Faure, 69003 Lyon: 43 m à pied (~1 min)\nVéhicule: Tesla Model 3/Y\nAvantages: Box fermé privatif (sécurité carrosserie), À 43m (1 min à pied), Accès sécurisé (bip / télécommande)\nInconvénients: Prise électrique non spécifiée"
+        "notes": "Distance au 56 avenue Félix Faure, 69003 Lyon: 43 m à pied (~1 min)\nVéhicule: Tesla Model 3/Y\nAvantages: Box fermé privatif (sécurité carrosserie), À 43m (1 min à pied), Accès sécurisé (bip / télécommande)\nInconvénients: Prise électrique non spécifiée",
+        "indice_serieux": 9.1,
+        "indice_serieux_niveau": "Très élevé",
+        "indice_serieux_details": {
+            "score": 9.1,
+            "niveau": "Très élevé",
+            "label": "Excellente fiabilité",
+            "badge_class": "serieux-high",
+            "resume": "Annonce très sérieuse et parfaitement conforme aux prix et règles du marché local.",
+            "criteres": {
+                "arnaque": {
+                    "nom": "Risque d'arnaque",
+                    "score": 9.5,
+                    "statut": "ok",
+                    "detail": "Aucun piège détecté"
+                },
+                "prix": {
+                    "nom": "Cohérence Prix / Marché",
+                    "score": 9.5,
+                    "statut": "ok",
+                    "detail": "Plein marché : 140 €/mois (moyenne quartier ~135 €)"
+                },
+                "annonceur": {
+                    "nom": "Annonceur & Source",
+                    "score": 8.0,
+                    "statut": "ok",
+                    "detail": "Particulier (ParuVendu)"
+                },
+                "redaction": {
+                    "nom": "Rédaction & Clarté",
+                    "score": 9.2,
+                    "statut": "ok",
+                    "detail": "Riche en détails concrets et vocabulaire professionnel"
+                },
+                "legalite": {
+                    "nom": "Sécurité juridique & Copro",
+                    "score": 8.5,
+                    "statut": "ok",
+                    "detail": "Bail Code civil standard (vérifier usage électrique & règlement copro)"
+                }
+            },
+            "points_forts": [
+                "Absence totale de signal d'arnaque ; accès et visites cohérents",
+                "Loyer (140 €/mois) parfaitement cohérent avec les tarifs réels du marché à Lyon 3 (110-160 €)",
+                "Annonceur particulier sur ParuVendu (pratique courante et saine pour les parkings)",
+                "Description claire et détaillée (dimensions, accès, portail et caractéristiques précisées)",
+                "Régime juridique : Bail de droit commun (Code civil art. 1709), grande liberté contractuelle"
+            ],
+            "points_vigilance": [
+                "Contact direct de particulier à particulier : exiger impérativement une visite physique sur place avant tout versement",
+                "Point recharge électrique : vérifier que la prise est sur un sous-compteur individuel et non sur les charges communes de copropriété",
+                "Dépôt de garantie usuel : 1 à 2 mois de loyer max, plus caution de 40 à 80 € pour l'émetteur/bip"
+            ],
+            "red_flags": []
+        }
     },
     {
         "titre": "Loue parking - 14m² - Saxe Gambetta Garibaldi",
@@ -54,7 +108,60 @@
         "latitude": 45.7531707,
         "longitude": 4.8537992,
         "distance_marche_minutes": 1,
-        "distance_vol_oiseau": 63
+        "distance_vol_oiseau": 63,
+        "indice_serieux": 9.0,
+        "indice_serieux_niveau": "Très élevé",
+        "indice_serieux_details": {
+            "score": 9.0,
+            "niveau": "Très élevé",
+            "label": "Excellente fiabilité",
+            "badge_class": "serieux-high",
+            "resume": "Annonce très sérieuse et parfaitement conforme aux prix et règles du marché local.",
+            "criteres": {
+                "arnaque": {
+                    "nom": "Risque d'arnaque",
+                    "score": 8.5,
+                    "statut": "ok",
+                    "detail": "Aucun piège détecté"
+                },
+                "prix": {
+                    "nom": "Cohérence Prix / Marché",
+                    "score": 9.5,
+                    "statut": "ok",
+                    "detail": "Prix marché standard (100 €/mois)"
+                },
+                "annonceur": {
+                    "nom": "Annonceur & Source",
+                    "score": 9.0,
+                    "statut": "ok",
+                    "detail": "Particulier vérifié (Réseau Gens de Confiance)"
+                },
+                "redaction": {
+                    "nom": "Rédaction & Clarté",
+                    "score": 9.2,
+                    "statut": "ok",
+                    "detail": "Riche en détails concrets et vocabulaire professionnel"
+                },
+                "legalite": {
+                    "nom": "Sécurité juridique & Copro",
+                    "score": 8.5,
+                    "statut": "ok",
+                    "detail": "Bail Code civil standard (vérifier usage électrique & règlement copro)"
+                }
+            },
+            "points_forts": [
+                "Aucun élément suspect d'escroquerie détecté",
+                "Loyer (100 €/mois) bien positionné dans les prix du marché (75-110 €)",
+                "Plateforme Gens de Confiance (profils vérifiés par parrainage, grande fiabilité)",
+                "Description claire et détaillée (dimensions, accès, portail et caractéristiques précisées)",
+                "Régime juridique : Bail de droit commun (Code civil art. 1709), grande liberté contractuelle"
+            ],
+            "points_vigilance": [
+                "Point recharge électrique : vérifier que la prise est sur un sous-compteur individuel et non sur les charges communes de copropriété",
+                "Dépôt de garantie usuel : 1 à 2 mois de loyer max, plus caution de 40 à 80 € pour l'émetteur/bip"
+            ],
+            "red_flags": []
+        }
     },
     {
         "titre": "31 AVENUE FELIX FAURE LYON 3",
@@ -83,7 +190,59 @@
         "statut": "Nouveau",
         "remarques_visite": "",
         "questions_visite": "",
-        "notes": "Distance au 56 avenue Félix Faure, 69003 Lyon: 116 m à pied (~2 min)\nVéhicule: Tesla Model 3/Y\nAvantages: À 116m (2 min à pied)\nInconvénients: Prise électrique non spécifiée"
+        "notes": "Distance au 56 avenue Félix Faure, 69003 Lyon: 116 m à pied (~2 min)\nVéhicule: Tesla Model 3/Y\nAvantages: À 116m (2 min à pied)\nInconvénients: Prise électrique non spécifiée",
+        "indice_serieux": 8.7,
+        "indice_serieux_niveau": "Élevé",
+        "indice_serieux_details": {
+            "score": 8.7,
+            "niveau": "Élevé",
+            "label": "Annonce sérieuse",
+            "badge_class": "serieux-good",
+            "resume": "Annonce saine et bien positionnée. Vigilance standard d'usage lors de la visite.",
+            "criteres": {
+                "arnaque": {
+                    "nom": "Risque d'arnaque",
+                    "score": 8.5,
+                    "statut": "ok",
+                    "detail": "Aucun piège détecté"
+                },
+                "prix": {
+                    "nom": "Cohérence Prix / Marché",
+                    "score": 8.0,
+                    "statut": "ok",
+                    "detail": "Loyer de 125 €/mois"
+                },
+                "annonceur": {
+                    "nom": "Annonceur & Source",
+                    "score": 9.5,
+                    "statut": "ok",
+                    "detail": "Agence professionnelle / Régie (Bien'ici)"
+                },
+                "redaction": {
+                    "nom": "Rédaction & Clarté",
+                    "score": 9.2,
+                    "statut": "ok",
+                    "detail": "Riche en détails concrets et vocabulaire professionnel"
+                },
+                "legalite": {
+                    "nom": "Sécurité juridique & Copro",
+                    "score": 8.5,
+                    "statut": "ok",
+                    "detail": "Bail Code civil standard (vérifier usage électrique & règlement copro)"
+                }
+            },
+            "points_forts": [
+                "Aucun élément suspect d'escroquerie détecté",
+                "Professionnel de l'immobilier / Régie certifiée (carte T, cadre juridique garanti, sécurité maximale)",
+                "Description claire et détaillée (dimensions, accès, portail et caractéristiques précisées)",
+                "Régime juridique : Bail de droit commun (Code civil art. 1709), grande liberté contractuelle"
+            ],
+            "points_vigilance": [
+                "Point recharge électrique : vérifier que la prise est sur un sous-compteur individuel et non sur les charges communes de copropriété",
+                "Dépôt de garantie usuel : 1 à 2 mois de loyer max, plus caution de 40 à 80 € pour l'émetteur/bip"
+            ],
+            "red_flags": []
+        }
     },
     {
         "titre": "Place de stationnement / Garage",
@@ -112,7 +271,60 @@
         "longitude": 4.852135392811308,
         "distance_marche_minutes": 2,
         "distance_vol_oiseau": 117,
-        "date_elimination": "2026-10-30"
+        "date_elimination": "2026-10-30",
+        "indice_serieux": 8.9,
+        "indice_serieux_niveau": "Très élevé",
+        "indice_serieux_details": {
+            "score": 8.9,
+            "niveau": "Très élevé",
+            "label": "Excellente fiabilité",
+            "badge_class": "serieux-high",
+            "resume": "Annonce très sérieuse et parfaitement conforme aux prix et règles du marché local.",
+            "criteres": {
+                "arnaque": {
+                    "nom": "Risque d'arnaque",
+                    "score": 8.5,
+                    "statut": "ok",
+                    "detail": "Aucun piège détecté"
+                },
+                "prix": {
+                    "nom": "Cohérence Prix / Marché",
+                    "score": 9.0,
+                    "statut": "ok",
+                    "detail": "Très bon positionnement (80 €/mois vs 110-160 € habituels)"
+                },
+                "annonceur": {
+                    "nom": "Annonceur & Source",
+                    "score": 9.5,
+                    "statut": "ok",
+                    "detail": "Agence professionnelle / Régie (Bien'ici)"
+                },
+                "redaction": {
+                    "nom": "Rédaction & Clarté",
+                    "score": 9.2,
+                    "statut": "ok",
+                    "detail": "Riche en détails concrets et vocabulaire professionnel"
+                },
+                "legalite": {
+                    "nom": "Sécurité juridique & Copro",
+                    "score": 8.5,
+                    "statut": "ok",
+                    "detail": "Bail Code civil standard (vérifier usage électrique & règlement copro)"
+                }
+            },
+            "points_forts": [
+                "Aucun élément suspect d'escroquerie détecté",
+                "Prix très attractif (80 €/mois) pour un box fermé dans ce secteur",
+                "Professionnel de l'immobilier / Régie certifiée (carte T, cadre juridique garanti, sécurité maximale)",
+                "Description claire et détaillée (dimensions, accès, portail et caractéristiques précisées)",
+                "Régime juridique : Bail de droit commun (Code civil art. 1709), grande liberté contractuelle"
+            ],
+            "points_vigilance": [
+                "Point recharge électrique : vérifier que la prise est sur un sous-compteur individuel et non sur les charges communes de copropriété",
+                "Dépôt de garantie usuel : 1 à 2 mois de loyer max, plus caution de 40 à 80 € pour l'émetteur/bip"
+            ],
+            "red_flags": []
+        }
     },
     {
         "titre": "Loue parking - 13m² - Lyon 3ème",
@@ -141,6 +353,59 @@
         "longitude": 4.8514936,
         "distance_marche_minutes": 3,
         "distance_vol_oiseau": 163,
-        "date_elimination": "2026-10-30"
+        "date_elimination": "2026-10-30",
+        "indice_serieux": 9.0,
+        "indice_serieux_niveau": "Très élevé",
+        "indice_serieux_details": {
+            "score": 9.0,
+            "niveau": "Très élevé",
+            "label": "Excellente fiabilité",
+            "badge_class": "serieux-high",
+            "resume": "Annonce très sérieuse et parfaitement conforme aux prix et règles du marché local.",
+            "criteres": {
+                "arnaque": {
+                    "nom": "Risque d'arnaque",
+                    "score": 8.5,
+                    "statut": "ok",
+                    "detail": "Aucun piège détecté"
+                },
+                "prix": {
+                    "nom": "Cohérence Prix / Marché",
+                    "score": 9.5,
+                    "statut": "ok",
+                    "detail": "Prix marché standard (110 €/mois)"
+                },
+                "annonceur": {
+                    "nom": "Annonceur & Source",
+                    "score": 9.0,
+                    "statut": "ok",
+                    "detail": "Particulier vérifié (Réseau Gens de Confiance)"
+                },
+                "redaction": {
+                    "nom": "Rédaction & Clarté",
+                    "score": 9.2,
+                    "statut": "ok",
+                    "detail": "Riche en détails concrets et vocabulaire professionnel"
+                },
+                "legalite": {
+                    "nom": "Sécurité juridique & Copro",
+                    "score": 8.5,
+                    "statut": "ok",
+                    "detail": "Bail Code civil standard (vérifier usage électrique & règlement copro)"
+                }
+            },
+            "points_forts": [
+                "Aucun élément suspect d'escroquerie détecté",
+                "Loyer (110 €/mois) bien positionné dans les prix du marché (75-110 €)",
+                "Plateforme Gens de Confiance (profils vérifiés par parrainage, grande fiabilité)",
+                "Description claire et détaillée (dimensions, accès, portail et caractéristiques précisées)",
+                "Régime juridique : Bail de droit commun (Code civil art. 1709), grande liberté contractuelle"
+            ],
+            "points_vigilance": [
+                "Point recharge électrique : vérifier que la prise est sur un sous-compteur individuel et non sur les charges communes de copropriété",
+                "Dépôt de garantie usuel : 1 à 2 mois de loyer max, plus caution de 40 à 80 € pour l'émetteur/bip"
+            ],
+            "red_flags": []
+        }
     }
 ]

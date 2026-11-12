@@ -27,7 +27,61 @@
         "remarques_visite": "Vendeur Particulier. Attention monte-charge voiture : contrainte technique et de poids majeure pour un véhicule électrique lourd (Tesla).",
         "questions_visite": "Charge maximale réelle et tolérance du monte-charge ? Dimensions de la cabine ? Fiabilité et coûts d'entretien du monte-charge dans les charges de copropriété ?",
         "notes": "Distance au 56 avenue Félix Faure: 195 m à pied (~2 min)\nVéhicule: Tesla Model 3 / Y\nType: Box fermé 20.7m²\nATTENTION : Accès par monte-charge limité à 2000 kg et 180cm.",
-        "date_elimination": "2026-10-27"
+        "date_elimination": "2026-10-27",
+        "indice_serieux": 8.8,
+        "indice_serieux_niveau": "Très élevé",
+        "indice_serieux_details": {
+            "score": 8.8,
+            "niveau": "Très élevé",
+            "label": "Excellente fiabilité",
+            "badge_class": "serieux-high",
+            "resume": "Annonce très sérieuse et parfaitement conforme aux prix et règles du marché local.",
+            "criteres": {
+                "arnaque": {
+                    "nom": "Risque d'arnaque",
+                    "score": 8.5,
+                    "statut": "ok",
+                    "detail": "Aucun piège détecté"
+                },
+                "prix": {
+                    "nom": "Cohérence Prix / Marché",
+                    "score": 9.5,
+                    "statut": "ok",
+                    "detail": "Prix conforme au marché de vente (20-35k €)"
+                },
+                "annonceur": {
+                    "nom": "Annonceur & Source",
+                    "score": 8.0,
+                    "statut": "ok",
+                    "detail": "Particulier (SeLoger (Particulier))"
+                },
+                "redaction": {
+                    "nom": "Rédaction & Clarté",
+                    "score": 9.2,
+                    "statut": "ok",
+                    "detail": "Riche en détails concrets et vocabulaire professionnel"
+                },
+                "legalite": {
+                    "nom": "Sécurité juridique & Copro",
+                    "score": 8.5,
+                    "statut": "ok",
+                    "detail": "Bail Code civil standard (vérifier usage électrique & règlement copro)"
+                }
+            },
+            "points_forts": [
+                "Aucun élément suspect d'escroquerie détecté",
+                "Prix d'achat (27 000 €) parfaitement dans les prix du marché local",
+                "Annonceur particulier sur SeLoger (Particulier) (pratique courante et saine pour les parkings)",
+                "Description claire et détaillée (dimensions, accès, portail et caractéristiques précisées)",
+                "Régime juridique : Bail de droit commun (Code civil art. 1709), grande liberté contractuelle"
+            ],
+            "points_vigilance": [
+                "Contact direct de particulier à particulier : exiger impérativement une visite physique sur place avant tout versement",
+                "Point recharge électrique : vérifier que la prise est sur un sous-compteur individuel et non sur les charges communes de copropriété",
+                "Dépôt de garantie usuel : 1 à 2 mois de loyer max, plus caution de 40 à 80 € pour l'émetteur/bip"
+            ],
+            "red_flags": []
+        }
     },
     {
         "titre": "Box fermé 16 m² - Part-Dieu / Abondance (35 000 €)",
@@ -56,7 +110,60 @@
         "statut": "Nouveau",
         "remarques_visite": "Vendeur Particulier (tél: 06 72 73 34 23). Box fermé en sous-sol. Idéal pour Tesla Model 3 ou Y.",
         "questions_visite": "Dimensions exactes de la porte et largeur intérieure ? Prise 220V existante ou possibilité raccordement compteur/droit à la prise ? Charges trimestrielles de copropriété ? Taxe foncière ?",
-        "notes": "Distance au 56 avenue Félix Faure: 224 m à pied (~3 min)\nVéhicule: Tesla Model 3 / Y\nType: Box fermé privatif 16m²\nContact Vendeur: 06 72 73 34 23"
+        "notes": "Distance au 56 avenue Félix Faure: 224 m à pied (~3 min)\nVéhicule: Tesla Model 3 / Y\nType: Box fermé privatif 16m²\nContact Vendeur: 06 72 73 34 23",
+        "indice_serieux": 9.1,
+        "indice_serieux_niveau": "Très élevé",
+        "indice_serieux_details": {
+            "score": 9.1,
+            "niveau": "Très élevé",
+            "label": "Excellente fiabilité",
+            "badge_class": "serieux-high",
+            "resume": "Annonce très sérieuse et parfaitement conforme aux prix et règles du marché local.",
+            "criteres": {
+                "arnaque": {
+                    "nom": "Risque d'arnaque",
+                    "score": 8.5,
+                    "statut": "ok",
+                    "detail": "Aucun piège détecté"
+                },
+                "prix": {
+                    "nom": "Cohérence Prix / Marché",
+                    "score": 9.5,
+                    "statut": "ok",
+                    "detail": "Prix conforme au marché de vente (20-35k €)"
+                },
+                "annonceur": {
+                    "nom": "Annonceur & Source",
+                    "score": 9.5,
+                    "statut": "ok",
+                    "detail": "Agence professionnelle / Régie (SeLoger (Particulier))"
+                },
+                "redaction": {
+                    "nom": "Rédaction & Clarté",
+                    "score": 9.2,
+                    "statut": "ok",
+                    "detail": "Riche en détails concrets et vocabulaire professionnel"
+                },
+                "legalite": {
+                    "nom": "Sécurité juridique & Copro",
+                    "score": 8.5,
+                    "statut": "ok",
+                    "detail": "Bail Code civil standard (vérifier usage électrique & règlement copro)"
+                }
+            },
+            "points_forts": [
+                "Aucun élément suspect d'escroquerie détecté",
+                "Prix d'achat (35 000 €) parfaitement dans les prix du marché local",
+                "Professionnel de l'immobilier / Régie certifiée (carte T, cadre juridique garanti, sécurité maximale)",
+                "Description claire et détaillée (dimensions, accès, portail et caractéristiques précisées)",
+                "Régime juridique : Bail de droit commun (Code civil art. 1709), grande liberté contractuelle"
+            ],
+            "points_vigilance": [
+                "Point recharge électrique : vérifier que la prise est sur un sous-compteur individuel et non sur les charges communes de copropriété",
+                "Dépôt de garantie usuel : 1 à 2 mois de loyer max, plus caution de 40 à 80 € pour l'émetteur/bip"
+            ],
+            "red_flags": []
+        }
     },
     {
         "titre": "Garibaldi / Limite LYON 3/LYON 7 : Garage A VENDRE",
@@ -85,6 +192,59 @@
         "statut": "Nouveau",
         "remarques_visite": "",
         "questions_visite": "",
-        "notes": "Distance au 56 avenue Félix Faure, 69003 Lyon: 246 m à pied (~3 min)\nVéhicule: Tesla Model 3/Y\nAvantages: Box fermé privatif (sécurité carrosserie), À 246m (3 min à pied), Accès sécurisé (bip / télécommande)\nInconvénients: Prise électrique non spécifiée"
+        "notes": "Distance au 56 avenue Félix Faure, 69003 Lyon: 246 m à pied (~3 min)\nVéhicule: Tesla Model 3/Y\nAvantages: Box fermé privatif (sécurité carrosserie), À 246m (3 min à pied), Accès sécurisé (bip / télécommande)\nInconvénients: Prise électrique non spécifiée",
+        "indice_serieux": 9.4,
+        "indice_serieux_niveau": "Très élevé",
+        "indice_serieux_details": {
+            "score": 9.4,
+            "niveau": "Très élevé",
+            "label": "Excellente fiabilité",
+            "badge_class": "serieux-high",
+            "resume": "Annonce très sérieuse et parfaitement conforme aux prix et règles du marché local.",
+            "criteres": {
+                "arnaque": {
+                    "nom": "Risque d'arnaque",
+                    "score": 9.5,
+                    "statut": "ok",
+                    "detail": "Aucun piège détecté"
+                },
+                "prix": {
+                    "nom": "Cohérence Prix / Marché",
+                    "score": 9.5,
+                    "statut": "ok",
+                    "detail": "Prix conforme au marché de vente (20-35k €)"
+                },
+                "annonceur": {
+                    "nom": "Annonceur & Source",
+                    "score": 9.5,
+                    "statut": "ok",
+                    "detail": "Agence professionnelle / Régie (Bien'ici)"
+                },
+                "redaction": {
+                    "nom": "Rédaction & Clarté",
+                    "score": 9.2,
+                    "statut": "ok",
+                    "detail": "Riche en détails concrets et vocabulaire professionnel"
+                },
+                "legalite": {
+                    "nom": "Sécurité juridique & Copro",
+                    "score": 8.5,
+                    "statut": "ok",
+                    "detail": "Bail Code civil standard (vérifier usage électrique & règlement copro)"
+                }
+            },
+            "points_forts": [
+                "Absence totale de signal d'arnaque ; accès et visites cohérents",
+                "Prix d'achat (22 500 €) parfaitement dans les prix du marché local",
+                "Professionnel de l'immobilier / Régie certifiée (carte T, cadre juridique garanti, sécurité maximale)",
+                "Description claire et détaillée (dimensions, accès, portail et caractéristiques précisées)",
+                "Régime juridique : Bail de droit commun (Code civil art. 1709), grande liberté contractuelle"
+            ],
+            "points_vigilance": [
+                "Point recharge électrique : vérifier que la prise est sur un sous-compteur individuel et non sur les charges communes de copropriété",
+                "Dépôt de garantie usuel : 1 à 2 mois de loyer max, plus caution de 40 à 80 € pour l'émetteur/bip"
+            ],
+            "red_flags": []
+        }
     }
 ]
